@@ -30,7 +30,9 @@ await page.click('#nNext');ok((await page.textContent('#nErr')).length>3,'step 1
 await page.click('[data-purpose=A]');
 await page.selectOption('#fCompany','GSB');
 await page.fill('#fVehicle','bk 1234 xy');await page.fill('#fCarrier','Budi Santoso');await page.selectOption('#fIcType','KTP');await page.fill('#fIcNo','1271 0123 4567 8901');
-await page.fill('#fPT','Return rejected pipes to supplier');await page.selectOption('#fDept','Stores');await page.fill('#fRep','Andi Wijaya');await page.fill('#fPos','Store lead');
+await page.selectOption('#fReason','rOther');await page.fill('#fPT','');await page.click('#nNext');ok((await page.textContent('#nErr')).includes('Describe'),'Other reason needs a description: '+await page.textContent('#nErr'));
+ok((await page.locator('#fReason option').allTextContents()).join().includes('Rejected on receipt'),'quick reasons offered for purpose A');
+await page.selectOption('#fReason','rA1');await page.fill('#fPT','6in pipes');await page.selectOption('#fDept','Stores');await page.fill('#fRep','Andi Wijaya');await page.fill('#fPos','Store lead');
 await page.fill('#fPhone','123');await page.click('#nNext');ok((await page.textContent('#nErr')).length>3&&(await page.textContent('.stepl')).includes('1'),'IC phone number is required and checked: '+await page.textContent('#nErr'));
 await page.fill('#fPhone','+62 812 3456 7890');await page.click('#nNext');
 ok((await page.textContent('.stepl')).includes('2'),'moved to step 2');
@@ -57,6 +59,7 @@ await page.waitForSelector('#dPrint');
 const ref=(await page.textContent('.ref')).trim();
 ok(/^MGP-[A-Z0-9]+-\d{4}-0001$/.test(ref),'serial number is generated at submit: '+ref);
 ok((await page.locator('.qr svg').count())===1,'QR shown');
+ok(String(m.sheets.Passes.rows[1][8])==='Rejected on receipt: damaged or defective - 6in pipes','reason + details stored as one English text: '+m.sheets.Passes.rows[1][8]);
 ok(m.sheets.Passes.rows[1][13]==='Awaiting signatures'&&m.sheets.Items.rows.length===3,'saved to the Sheet');
 await page.screenshot({path:'/tmp/gp_done.png'});
 // stored photo is stamped & small
