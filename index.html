@@ -1,0 +1,2887 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#ffffff">
+<title>EcoOils Material Gate Pass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ffffff;--panel:#ffffff;--panel2:#f4f4f4;--line:#dcdcdc;--text:#231f20;--mute:#6e6b6c;--h1:#6e6b6c;--ban:#fff4c2;--fld:#aaaaaa;--amber:#ffc600;--amber2:#7a6000;--ok:#2f7a57;--green:#44a276;--bad:#b3261e;--r:8px}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.45 Jost,system-ui,Arial,sans-serif}
+input,select,button,textarea{font-family:Jost,system-ui,Arial,sans-serif}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+.brand{min-width:0;line-height:0}.brand img{display:block;height:34px;width:auto;max-width:100%}
+.right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:none}
+#ver{font-size:12px;color:var(--mute);line-height:1}
+.lang{display:flex;gap:2px}
+.lang button{background:none;border:0;border-bottom:3px solid transparent;border-radius:0;color:var(--mute);padding:3px 8px;font-size:14px;font-weight:400;cursor:pointer;min-height:28px}
+.lang button.on{border-bottom-color:var(--green);color:var(--text);font-weight:600}
+main{max-width:640px;margin:0 auto;padding:0 16px 80px}
+h1{font-weight:300;font-size:22px;letter-spacing:.14em;text-transform:uppercase;color:var(--h1);margin:0 0 16px;padding:26px 0 14px;border-bottom:1px solid var(--text);position:relative;line-height:1.25}
+h1::after{content:"";position:absolute;left:0;bottom:-4px;width:44px;height:7px;background:var(--green)}
+@media(max-width:420px){h1{font-size:18px;letter-spacing:.1em}}
+h2{font-weight:500;font-size:17px;margin:20px 0 6px}
+label{display:block;font-weight:500;font-size:14px;margin:14px 0 4px}
+input,select,textarea{width:100%;background:var(--panel);color:var(--text);border:1px solid var(--fld);border-radius:var(--r);padding:11px;font-size:16px;min-height:48px}
+textarea{min-height:84px;resize:vertical;line-height:1.4}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+input.bad,select.bad,textarea.bad{border-color:var(--bad);border-width:2px}
+.btn{display:block;width:100%;background:var(--green);color:var(--text);border:1px solid var(--green);border-radius:var(--r);padding:13px 15px;min-height:52px;font-weight:600;font-size:17px;cursor:pointer;margin-top:12px;text-align:center;text-decoration:none}
+.btn:hover{background:#3b9068}
+.btn.amber{background:var(--amber);border-color:var(--amber)}.btn.amber:hover{background:#e6b400}
+.btn.ghost{background:var(--panel);color:var(--text);border:1px solid var(--fld);font-size:15px;padding:10px;font-weight:500;min-height:48px}
+.btn.ghost:hover{background:var(--panel2)}
+.btn.danger{background:var(--panel);border:1px solid var(--bad);color:var(--bad);font-size:15px;font-weight:500;min-height:48px}
+.btn.sm{display:inline-block;width:auto;padding:8px 14px;font-size:14px;margin:4px 6px 0 0;min-height:40px}
+.btn:disabled{opacity:.45;cursor:default}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.note{color:var(--mute);font-size:14px;margin:6px 0}
+.err{color:var(--bad);font-size:15px;margin:8px 0;font-weight:500}
+.banner{border-radius:var(--r);padding:10px 12px;margin:8px 0;font-size:15px;background:var(--ban);border:1px solid var(--amber)}
+.hidden{display:none!important}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-top:12px}
+.steps{display:flex;gap:6px;margin:0 0 4px}.steps i{flex:1;height:6px;border-radius:3px;background:var(--line)}.steps i.on{background:var(--green)}
+.stepl{font-size:14px;color:var(--mute);margin-bottom:6px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.tile{border:2px solid var(--fld);border-radius:var(--r);padding:8px;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;background:var(--panel);font-weight:500;position:relative}
+.tile.on{border-color:var(--green)}
+.tile.sel{background:var(--green);border-color:var(--green)}
+.tile img{width:100%;height:110px;object-fit:cover;border-radius:6px;margin-bottom:4px}
+.tile small{color:var(--mute);font-weight:400}.tile.sel small{color:var(--text)}
+.tile .ck{position:absolute;top:6px;right:8px;color:var(--ok);font-weight:700;font-size:20px}
+.tile input[type=file]{position:absolute;inset:0;opacity:0;width:100%;height:100%;min-height:0;cursor:pointer}
+.ph{border:2px dashed var(--fld);background:var(--panel2)}
+.irow{border:1px solid var(--line);border-radius:var(--r);padding:10px;margin-top:10px;background:var(--panel)}
+.irow .row3{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.chip{display:inline-block;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid var(--fld);white-space:nowrap}
+.chip.wait{background:var(--ban);border-color:var(--amber)}.chip.pend{border-color:var(--green);color:var(--ok)}.chip.rel{background:var(--green);border-color:var(--green)}.chip.bad{border-color:var(--bad);color:var(--bad)}.chip.off{color:var(--mute)}
+.pas{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);margin:8px 0;cursor:pointer;width:100%;text-align:left;font-size:16px;min-height:60px}
+.pas b{font-weight:600}.pas small{display:block;color:var(--mute);font-size:13px}
+.ref{font-size:30px;font-weight:300;letter-spacing:.06em;text-align:center;margin:10px 0}
+.big{font-size:22px;font-weight:600;text-align:center;line-height:1.2;margin:0 0 6px}
+.vbox{border-radius:var(--r);padding:22px 16px;margin-top:14px;text-align:center;border:2px solid var(--line)}
+.vbox.ok{background:var(--green);border-color:var(--green)}.vbox.wait{background:var(--ban);border-color:var(--amber)}.vbox.bad{background:#fbe9e7;border-color:var(--bad);color:var(--bad)}
+table.it{border-collapse:collapse;width:100%;font-size:14px;margin-top:6px}table.it th,table.it td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}table.it th{background:var(--panel2);font-weight:500}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:4px 10px;font-size:15px}.kv span:nth-child(odd){color:var(--mute)}.kv span{overflow-wrap:anywhere}
+.sp{display:inline-block;width:24px;height:24px;border:3px solid var(--line);border-top-color:var(--green);border-radius:50%;animation:sp 1s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.links{margin-top:22px;text-align:center}
+.links button{background:none;border:0;color:var(--mute);font:inherit;font-size:14px;min-height:44px;text-decoration:underline;cursor:pointer}
+.qr{display:block;margin:10px auto;width:180px;height:180px}
+.pv{position:relative}.pv img{width:100%;border:1px solid var(--line);border-radius:6px;margin-top:6px}
+.opt{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--fld);border-radius:var(--r);padding:12px;margin-top:8px;cursor:pointer;background:var(--panel);min-height:56px;width:100%;text-align:left;font-size:16px}
+.opt.sel{border-color:var(--green);background:#eef7f2}.opt b{min-width:24px}
+.scroll{overflow-x:auto}
+.adm td,.adm th{font-size:13px}
+#printArea{display:none}
+@media print{
+ @page{size:A4;margin:9mm 10mm}
+ html,body{background:#fff!important;margin:0!important}
+ body>*:not(#printArea){display:none!important}
+ #printArea{display:block!important;color:#000}
+}
+#printArea .pg{font-family:Jost,Arial,Helvetica,sans-serif;font-size:10pt;color:#000;width:100%;line-height:1.3}
+#printArea table{border-collapse:collapse;width:100%}
+#printArea .hd td{border:1px solid #000;padding:2px 6px;font-size:9pt;vertical-align:middle}
+#printArea .hd td.lg{width:48%;border-right:0;border-top:0;border-left:0;border-bottom:0}
+#printArea .hd td.lg img{height:15mm;display:block}
+#printArea .hd td.k{width:16%;border:0;padding:1px 4px}
+#printArea .hd td.v{border:0;padding:1px 4px}
+#printArea .addr{font-size:9pt;margin:8px 0 6px}
+#printArea .ttl{text-align:center;font-weight:600;font-size:14pt;letter-spacing:.04em;margin:8px 0 8px;text-decoration:underline}
+#printArea .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+#printArea .top svg{width:26mm;height:26mm;flex:none}
+#printArea .ln{margin:3px 0}
+#printArea .u{display:inline-block;border-bottom:1px solid #000;min-width:30mm;padding:0 3px;font-weight:600}
+#printArea .chk{display:inline-block;width:3.6mm;height:3.6mm;border:1px solid #000;margin-right:6px;vertical-align:-0.5mm;text-align:center;line-height:3.4mm;font-size:9pt;font-weight:700}
+#printArea .items th,#printArea .items td{border:1px solid #000;padding:2px 6px;font-size:9.5pt;height:6.2mm}
+#printArea .items th{font-weight:700;text-align:center}
+#printArea .sig{display:flex;gap:10mm;margin-top:8mm}
+#printArea .sig>div{flex:1;min-height:23mm}
+#printArea .sig .l{border-bottom:1px solid #000;height:13mm;margin-bottom:2px}
+#printArea .sig small{font-size:8.5pt;font-style:italic;display:block}
+#printArea .ft{margin-top:5mm;font-size:9pt;display:flex;justify-content:space-between}
+#printArea .pg.cmp{font-size:9pt}
+#printArea .pg.cmp .items th,#printArea .pg.cmp .items td{font-size:8pt;padding:1px 4px;height:4.9mm;line-height:1.15}
+#printArea .pg.cmp .hd td.lg img{height:12mm}
+#printArea .pg.cmp .addr{font-size:8pt;margin:4px 0 3px}
+#printArea .pg.cmp .ttl{margin:4px 0 5px;font-size:13pt}
+#printArea .pg.cmp .top svg{width:22mm;height:22mm}
+#printArea .pg.cmp .ln{margin:1px 0}
+#printArea .pg.cmp .sig{margin-top:4mm}
+#printArea .pg.cmp .sig>div{min-height:19mm}
+#printArea .pg.cmp .sig .l{height:9mm}
+#printArea .vf{font-size:7.5pt;color:#333;margin-top:2mm}
+</style></head><body>
+<header><div class="brand" role="img" aria-label="EcoOils Mentari"><img src="data:image/png;base64,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" alt=""></div>
+<div class="right"><span id="ver">v1.0</span><div class="lang" role="group" aria-label="Language"><button id="lEN" type="button">EN</button><button id="lID" type="button">ID</button><button id="lMS" type="button">MS</button></div></div></header>
+<main>
+<div id="banner"></div>
+<section id="vHome" class="hidden"></section>
+<section id="vNew" class="hidden"></section>
+<section id="vDone" class="hidden"></section>
+<section id="vPass" class="hidden"></section>
+<section id="vFind" class="hidden"></section>
+<section id="vVerify" class="hidden"></section>
+<section id="vAdmin" class="hidden"></section>
+</main>
+<div id="printArea"></div>
+<script>
+//---------------------------------------------------------------------
+//
+// QR Code Generator for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//  http://www.opensource.org/licenses/mit-license.php
+//
+// The word 'QR Code' is registered trademark of
+// DENSO WAVE INCORPORATED
+//  http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+
+var qrcode = function() {
+
+  //---------------------------------------------------------------------
+  // qrcode
+  //---------------------------------------------------------------------
+
+  /**
+   * qrcode
+   * @param typeNumber 1 to 40
+   * @param errorCorrectionLevel 'L','M','Q','H'
+   */
+  var qrcode = function(typeNumber, errorCorrectionLevel) {
+
+    var PAD0 = 0xEC;
+    var PAD1 = 0x11;
+
+    var _typeNumber = typeNumber;
+    var _errorCorrectionLevel = QRErrorCorrectionLevel[errorCorrectionLevel];
+    var _modules = null;
+    var _moduleCount = 0;
+    var _dataCache = null;
+    var _dataList = [];
+
+    var _this = {};
+
+    var makeImpl = function(test, maskPattern) {
+
+      _moduleCount = _typeNumber * 4 + 17;
+      _modules = function(moduleCount) {
+        var modules = new Array(moduleCount);
+        for (var row = 0; row < moduleCount; row += 1) {
+          modules[row] = new Array(moduleCount);
+          for (var col = 0; col < moduleCount; col += 1) {
+            modules[row][col] = null;
+          }
+        }
+        return modules;
+      }(_moduleCount);
+
+      setupPositionProbePattern(0, 0);
+      setupPositionProbePattern(_moduleCount - 7, 0);
+      setupPositionProbePattern(0, _moduleCount - 7);
+      setupPositionAdjustPattern();
+      setupTimingPattern();
+      setupTypeInfo(test, maskPattern);
+
+      if (_typeNumber >= 7) {
+        setupTypeNumber(test);
+      }
+
+      if (_dataCache == null) {
+        _dataCache = createData(_typeNumber, _errorCorrectionLevel, _dataList);
+      }
+
+      mapData(_dataCache, maskPattern);
+    };
+
+    var setupPositionProbePattern = function(row, col) {
+
+      for (var r = -1; r <= 7; r += 1) {
+
+        if (row + r <= -1 || _moduleCount <= row + r) continue;
+
+        for (var c = -1; c <= 7; c += 1) {
+
+          if (col + c <= -1 || _moduleCount <= col + c) continue;
+
+          if ( (0 <= r && r <= 6 && (c == 0 || c == 6) )
+              || (0 <= c && c <= 6 && (r == 0 || r == 6) )
+              || (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+            _modules[row + r][col + c] = true;
+          } else {
+            _modules[row + r][col + c] = false;
+          }
+        }
+      }
+    };
+
+    var getBestMaskPattern = function() {
+
+      var minLostPoint = 0;
+      var pattern = 0;
+
+      for (var i = 0; i < 8; i += 1) {
+
+        makeImpl(true, i);
+
+        var lostPoint = QRUtil.getLostPoint(_this);
+
+        if (i == 0 || minLostPoint > lostPoint) {
+          minLostPoint = lostPoint;
+          pattern = i;
+        }
+      }
+
+      return pattern;
+    };
+
+    var setupTimingPattern = function() {
+
+      for (var r = 8; r < _moduleCount - 8; r += 1) {
+        if (_modules[r][6] != null) {
+          continue;
+        }
+        _modules[r][6] = (r % 2 == 0);
+      }
+
+      for (var c = 8; c < _moduleCount - 8; c += 1) {
+        if (_modules[6][c] != null) {
+          continue;
+        }
+        _modules[6][c] = (c % 2 == 0);
+      }
+    };
+
+    var setupPositionAdjustPattern = function() {
+
+      var pos = QRUtil.getPatternPosition(_typeNumber);
+
+      for (var i = 0; i < pos.length; i += 1) {
+
+        for (var j = 0; j < pos.length; j += 1) {
+
+          var row = pos[i];
+          var col = pos[j];
+
+          if (_modules[row][col] != null) {
+            continue;
+          }
+
+          for (var r = -2; r <= 2; r += 1) {
+
+            for (var c = -2; c <= 2; c += 1) {
+
+              if (r == -2 || r == 2 || c == -2 || c == 2
+                  || (r == 0 && c == 0) ) {
+                _modules[row + r][col + c] = true;
+              } else {
+                _modules[row + r][col + c] = false;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    var setupTypeNumber = function(test) {
+
+      var bits = QRUtil.getBCHTypeNumber(_typeNumber);
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[Math.floor(i / 3)][i % 3 + _moduleCount - 8 - 3] = mod;
+      }
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[i % 3 + _moduleCount - 8 - 3][Math.floor(i / 3)] = mod;
+      }
+    };
+
+    var setupTypeInfo = function(test, maskPattern) {
+
+      var data = (_errorCorrectionLevel << 3) | maskPattern;
+      var bits = QRUtil.getBCHTypeInfo(data);
+
+      // vertical
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 6) {
+          _modules[i][8] = mod;
+        } else if (i < 8) {
+          _modules[i + 1][8] = mod;
+        } else {
+          _modules[_moduleCount - 15 + i][8] = mod;
+        }
+      }
+
+      // horizontal
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 8) {
+          _modules[8][_moduleCount - i - 1] = mod;
+        } else if (i < 9) {
+          _modules[8][15 - i - 1 + 1] = mod;
+        } else {
+          _modules[8][15 - i - 1] = mod;
+        }
+      }
+
+      // fixed module
+      _modules[_moduleCount - 8][8] = (!test);
+    };
+
+    var mapData = function(data, maskPattern) {
+
+      var inc = -1;
+      var row = _moduleCount - 1;
+      var bitIndex = 7;
+      var byteIndex = 0;
+      var maskFunc = QRUtil.getMaskFunction(maskPattern);
+
+      for (var col = _moduleCount - 1; col > 0; col -= 2) {
+
+        if (col == 6) col -= 1;
+
+        while (true) {
+
+          for (var c = 0; c < 2; c += 1) {
+
+            if (_modules[row][col - c] == null) {
+
+              var dark = false;
+
+              if (byteIndex < data.length) {
+                dark = ( ( (data[byteIndex] >>> bitIndex) & 1) == 1);
+              }
+
+              var mask = maskFunc(row, col - c);
+
+              if (mask) {
+                dark = !dark;
+              }
+
+              _modules[row][col - c] = dark;
+              bitIndex -= 1;
+
+              if (bitIndex == -1) {
+                byteIndex += 1;
+                bitIndex = 7;
+              }
+            }
+          }
+
+          row += inc;
+
+          if (row < 0 || _moduleCount <= row) {
+            row -= inc;
+            inc = -inc;
+            break;
+          }
+        }
+      }
+    };
+
+    var createBytes = function(buffer, rsBlocks) {
+
+      var offset = 0;
+
+      var maxDcCount = 0;
+      var maxEcCount = 0;
+
+      var dcdata = new Array(rsBlocks.length);
+      var ecdata = new Array(rsBlocks.length);
+
+      for (var r = 0; r < rsBlocks.length; r += 1) {
+
+        var dcCount = rsBlocks[r].dataCount;
+        var ecCount = rsBlocks[r].totalCount - dcCount;
+
+        maxDcCount = Math.max(maxDcCount, dcCount);
+        maxEcCount = Math.max(maxEcCount, ecCount);
+
+        dcdata[r] = new Array(dcCount);
+
+        for (var i = 0; i < dcdata[r].length; i += 1) {
+          dcdata[r][i] = 0xff & buffer.getBuffer()[i + offset];
+        }
+        offset += dcCount;
+
+        var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+        var rawPoly = qrPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+        var modPoly = rawPoly.mod(rsPoly);
+        ecdata[r] = new Array(rsPoly.getLength() - 1);
+        for (var i = 0; i < ecdata[r].length; i += 1) {
+          var modIndex = i + modPoly.getLength() - ecdata[r].length;
+          ecdata[r][i] = (modIndex >= 0)? modPoly.getAt(modIndex) : 0;
+        }
+      }
+
+      var totalCodeCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalCodeCount += rsBlocks[i].totalCount;
+      }
+
+      var data = new Array(totalCodeCount);
+      var index = 0;
+
+      for (var i = 0; i < maxDcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < dcdata[r].length) {
+            data[index] = dcdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      for (var i = 0; i < maxEcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < ecdata[r].length) {
+            data[index] = ecdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      return data;
+    };
+
+    var createData = function(typeNumber, errorCorrectionLevel, dataList) {
+
+      var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectionLevel);
+
+      var buffer = qrBitBuffer();
+
+      for (var i = 0; i < dataList.length; i += 1) {
+        var data = dataList[i];
+        buffer.put(data.getMode(), 4);
+        buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+        data.write(buffer);
+      }
+
+      // calc num max data.
+      var totalDataCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalDataCount += rsBlocks[i].dataCount;
+      }
+
+      if (buffer.getLengthInBits() > totalDataCount * 8) {
+        throw 'code length overflow. ('
+          + buffer.getLengthInBits()
+          + '>'
+          + totalDataCount * 8
+          + ')';
+      }
+
+      // end code
+      if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+        buffer.put(0, 4);
+      }
+
+      // padding
+      while (buffer.getLengthInBits() % 8 != 0) {
+        buffer.putBit(false);
+      }
+
+      // padding
+      while (true) {
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD0, 8);
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD1, 8);
+      }
+
+      return createBytes(buffer, rsBlocks);
+    };
+
+    _this.addData = function(data, mode) {
+
+      mode = mode || 'Byte';
+
+      var newData = null;
+
+      switch(mode) {
+      case 'Numeric' :
+        newData = qrNumber(data);
+        break;
+      case 'Alphanumeric' :
+        newData = qrAlphaNum(data);
+        break;
+      case 'Byte' :
+        newData = qr8BitByte(data);
+        break;
+      case 'Kanji' :
+        newData = qrKanji(data);
+        break;
+      default :
+        throw 'mode:' + mode;
+      }
+
+      _dataList.push(newData);
+      _dataCache = null;
+    };
+
+    _this.isDark = function(row, col) {
+      if (row < 0 || _moduleCount <= row || col < 0 || _moduleCount <= col) {
+        throw row + ',' + col;
+      }
+      return _modules[row][col];
+    };
+
+    _this.getModuleCount = function() {
+      return _moduleCount;
+    };
+
+    _this.make = function() {
+      if (_typeNumber < 1) {
+        var typeNumber = 1;
+
+        for (; typeNumber < 40; typeNumber++) {
+          var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, _errorCorrectionLevel);
+          var buffer = qrBitBuffer();
+
+          for (var i = 0; i < _dataList.length; i++) {
+            var data = _dataList[i];
+            buffer.put(data.getMode(), 4);
+            buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+            data.write(buffer);
+          }
+
+          var totalDataCount = 0;
+          for (var i = 0; i < rsBlocks.length; i++) {
+            totalDataCount += rsBlocks[i].dataCount;
+          }
+
+          if (buffer.getLengthInBits() <= totalDataCount * 8) {
+            break;
+          }
+        }
+
+        _typeNumber = typeNumber;
+      }
+
+      makeImpl(false, getBestMaskPattern() );
+    };
+
+    _this.createTableTag = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var qrHtml = '';
+
+      qrHtml += '<table style="';
+      qrHtml += ' border-width: 0px; border-style: none;';
+      qrHtml += ' border-collapse: collapse;';
+      qrHtml += ' padding: 0px; margin: ' + margin + 'px;';
+      qrHtml += '">';
+      qrHtml += '<tbody>';
+
+      for (var r = 0; r < _this.getModuleCount(); r += 1) {
+
+        qrHtml += '<tr>';
+
+        for (var c = 0; c < _this.getModuleCount(); c += 1) {
+          qrHtml += '<td style="';
+          qrHtml += ' border-width: 0px; border-style: none;';
+          qrHtml += ' border-collapse: collapse;';
+          qrHtml += ' padding: 0px; margin: 0px;';
+          qrHtml += ' width: ' + cellSize + 'px;';
+          qrHtml += ' height: ' + cellSize + 'px;';
+          qrHtml += ' background-color: ';
+          qrHtml += _this.isDark(r, c)? '#000000' : '#ffffff';
+          qrHtml += ';';
+          qrHtml += '"/>';
+        }
+
+        qrHtml += '</tr>';
+      }
+
+      qrHtml += '</tbody>';
+      qrHtml += '</table>';
+
+      return qrHtml;
+    };
+
+    _this.createSvgTag = function(cellSize, margin, alt, title) {
+
+      var opts = {};
+      if (typeof arguments[0] == 'object') {
+        // Called by options.
+        opts = arguments[0];
+        // overwrite cellSize and margin.
+        cellSize = opts.cellSize;
+        margin = opts.margin;
+        alt = opts.alt;
+        title = opts.title;
+      }
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      // Compose alt property surrogate
+      alt = (typeof alt === 'string') ? {text: alt} : alt || {};
+      alt.text = alt.text || null;
+      alt.id = (alt.text) ? alt.id || 'qrcode-description' : null;
+
+      // Compose title property surrogate
+      title = (typeof title === 'string') ? {text: title} : title || {};
+      title.text = title.text || null;
+      title.id = (title.text) ? title.id || 'qrcode-title' : null;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var c, mc, r, mr, qrSvg='', rect;
+
+      rect = 'l' + cellSize + ',0 0,' + cellSize +
+        ' -' + cellSize + ',0 0,-' + cellSize + 'z ';
+
+      qrSvg += '<svg version="1.1" xmlns="http://www.w3.org/2000/svg"';
+      qrSvg += !opts.scalable ? ' width="' + size + 'px" height="' + size + 'px"' : '';
+      qrSvg += ' viewBox="0 0 ' + size + ' ' + size + '" ';
+      qrSvg += ' preserveAspectRatio="xMinYMin meet"';
+      qrSvg += (title.text || alt.text) ? ' role="img" aria-labelledby="' +
+          escapeXml([title.id, alt.id].join(' ').trim() ) + '"' : '';
+      qrSvg += '>';
+      qrSvg += (title.text) ? '<title id="' + escapeXml(title.id) + '">' +
+          escapeXml(title.text) + '</title>' : '';
+      qrSvg += (alt.text) ? '<description id="' + escapeXml(alt.id) + '">' +
+          escapeXml(alt.text) + '</description>' : '';
+      qrSvg += '<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>';
+      qrSvg += '<path d="';
+
+      for (r = 0; r < _this.getModuleCount(); r += 1) {
+        mr = r * cellSize + margin;
+        for (c = 0; c < _this.getModuleCount(); c += 1) {
+          if (_this.isDark(r, c) ) {
+            mc = c*cellSize+margin;
+            qrSvg += 'M' + mc + ',' + mr + rect;
+          }
+        }
+      }
+
+      qrSvg += '" stroke="transparent" fill="black"/>';
+      qrSvg += '</svg>';
+
+      return qrSvg;
+    };
+
+    _this.createDataURL = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      return createDataURL(size, size, function(x, y) {
+        if (min <= x && x < max && min <= y && y < max) {
+          var c = Math.floor( (x - min) / cellSize);
+          var r = Math.floor( (y - min) / cellSize);
+          return _this.isDark(r, c)? 0 : 1;
+        } else {
+          return 1;
+        }
+      } );
+    };
+
+    _this.createImgTag = function(cellSize, margin, alt) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+
+      var img = '';
+      img += '<img';
+      img += '\u0020src="';
+      img += _this.createDataURL(cellSize, margin);
+      img += '"';
+      img += '\u0020width="';
+      img += size;
+      img += '"';
+      img += '\u0020height="';
+      img += size;
+      img += '"';
+      if (alt) {
+        img += '\u0020alt="';
+        img += escapeXml(alt);
+        img += '"';
+      }
+      img += '/>';
+
+      return img;
+    };
+
+    var escapeXml = function(s) {
+      var escaped = '';
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charAt(i);
+        switch(c) {
+        case '<': escaped += '&lt;'; break;
+        case '>': escaped += '&gt;'; break;
+        case '&': escaped += '&amp;'; break;
+        case '"': escaped += '&quot;'; break;
+        default : escaped += c; break;
+        }
+      }
+      return escaped;
+    };
+
+    var _createHalfASCII = function(margin) {
+      var cellSize = 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r1, r2, p;
+
+      var blocks = {
+        '██': '█',
+        '█ ': '▀',
+        ' █': '▄',
+        '  ': ' '
+      };
+
+      var blocksLastLineNoMargin = {
+        '██': '▀',
+        '█ ': '▀',
+        ' █': ' ',
+        '  ': ' '
+      };
+
+      var ascii = '';
+      for (y = 0; y < size; y += 2) {
+        r1 = Math.floor((y - min) / cellSize);
+        r2 = Math.floor((y + 1 - min) / cellSize);
+        for (x = 0; x < size; x += 1) {
+          p = '█';
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r1, Math.floor((x - min) / cellSize))) {
+            p = ' ';
+          }
+
+          if (min <= x && x < max && min <= y+1 && y+1 < max && _this.isDark(r2, Math.floor((x - min) / cellSize))) {
+            p += ' ';
+          }
+          else {
+            p += '█';
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          ascii += (margin < 1 && y+1 >= max) ? blocksLastLineNoMargin[p] : blocks[p];
+        }
+
+        ascii += '\n';
+      }
+
+      if (size % 2 && margin > 0) {
+        return ascii.substring(0, ascii.length - size - 1) + Array(size+1).join('▀');
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.createASCII = function(cellSize, margin) {
+      cellSize = cellSize || 1;
+
+      if (cellSize < 2) {
+        return _createHalfASCII(margin);
+      }
+
+      cellSize -= 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r, p;
+
+      var white = Array(cellSize+1).join('██');
+      var black = Array(cellSize+1).join('  ');
+
+      var ascii = '';
+      var line = '';
+      for (y = 0; y < size; y += 1) {
+        r = Math.floor( (y - min) / cellSize);
+        line = '';
+        for (x = 0; x < size; x += 1) {
+          p = 1;
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r, Math.floor((x - min) / cellSize))) {
+            p = 0;
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          line += p ? white : black;
+        }
+
+        for (r = 0; r < cellSize; r += 1) {
+          ascii += line + '\n';
+        }
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.renderTo2dContext = function(context, cellSize) {
+      cellSize = cellSize || 2;
+      var length = _this.getModuleCount();
+      for (var row = 0; row < length; row++) {
+        for (var col = 0; col < length; col++) {
+          context.fillStyle = _this.isDark(row, col) ? 'black' : 'white';
+          context.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrcode.stringToBytes
+  //---------------------------------------------------------------------
+
+  qrcode.stringToBytesFuncs = {
+    'default' : function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        bytes.push(c & 0xff);
+      }
+      return bytes;
+    }
+  };
+
+  qrcode.stringToBytes = qrcode.stringToBytesFuncs['default'];
+
+  //---------------------------------------------------------------------
+  // qrcode.createStringToBytes
+  //---------------------------------------------------------------------
+
+  /**
+   * @param unicodeData base64 string of byte array.
+   * [16bit Unicode],[16bit Bytes], ...
+   * @param numChars
+   */
+  qrcode.createStringToBytes = function(unicodeData, numChars) {
+
+    // create conversion map.
+
+    var unicodeMap = function() {
+
+      var bin = base64DecodeInputStream(unicodeData);
+      var read = function() {
+        var b = bin.read();
+        if (b == -1) throw 'eof';
+        return b;
+      };
+
+      var count = 0;
+      var unicodeMap = {};
+      while (true) {
+        var b0 = bin.read();
+        if (b0 == -1) break;
+        var b1 = read();
+        var b2 = read();
+        var b3 = read();
+        var k = String.fromCharCode( (b0 << 8) | b1);
+        var v = (b2 << 8) | b3;
+        unicodeMap[k] = v;
+        count += 1;
+      }
+      if (count != numChars) {
+        throw count + ' != ' + numChars;
+      }
+
+      return unicodeMap;
+    }();
+
+    var unknownChar = '?'.charCodeAt(0);
+
+    return function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        if (c < 128) {
+          bytes.push(c);
+        } else {
+          var b = unicodeMap[s.charAt(i)];
+          if (typeof b == 'number') {
+            if ( (b & 0xff) == b) {
+              // 1byte
+              bytes.push(b);
+            } else {
+              // 2bytes
+              bytes.push(b >>> 8);
+              bytes.push(b & 0xff);
+            }
+          } else {
+            bytes.push(unknownChar);
+          }
+        }
+      }
+      return bytes;
+    };
+  };
+
+  //---------------------------------------------------------------------
+  // QRMode
+  //---------------------------------------------------------------------
+
+  var QRMode = {
+    MODE_NUMBER :    1 << 0,
+    MODE_ALPHA_NUM : 1 << 1,
+    MODE_8BIT_BYTE : 1 << 2,
+    MODE_KANJI :     1 << 3
+  };
+
+  //---------------------------------------------------------------------
+  // QRErrorCorrectionLevel
+  //---------------------------------------------------------------------
+
+  var QRErrorCorrectionLevel = {
+    L : 1,
+    M : 0,
+    Q : 3,
+    H : 2
+  };
+
+  //---------------------------------------------------------------------
+  // QRMaskPattern
+  //---------------------------------------------------------------------
+
+  var QRMaskPattern = {
+    PATTERN000 : 0,
+    PATTERN001 : 1,
+    PATTERN010 : 2,
+    PATTERN011 : 3,
+    PATTERN100 : 4,
+    PATTERN101 : 5,
+    PATTERN110 : 6,
+    PATTERN111 : 7
+  };
+
+  //---------------------------------------------------------------------
+  // QRUtil
+  //---------------------------------------------------------------------
+
+  var QRUtil = function() {
+
+    var PATTERN_POSITION_TABLE = [
+      [],
+      [6, 18],
+      [6, 22],
+      [6, 26],
+      [6, 30],
+      [6, 34],
+      [6, 22, 38],
+      [6, 24, 42],
+      [6, 26, 46],
+      [6, 28, 50],
+      [6, 30, 54],
+      [6, 32, 58],
+      [6, 34, 62],
+      [6, 26, 46, 66],
+      [6, 26, 48, 70],
+      [6, 26, 50, 74],
+      [6, 30, 54, 78],
+      [6, 30, 56, 82],
+      [6, 30, 58, 86],
+      [6, 34, 62, 90],
+      [6, 28, 50, 72, 94],
+      [6, 26, 50, 74, 98],
+      [6, 30, 54, 78, 102],
+      [6, 28, 54, 80, 106],
+      [6, 32, 58, 84, 110],
+      [6, 30, 58, 86, 114],
+      [6, 34, 62, 90, 118],
+      [6, 26, 50, 74, 98, 122],
+      [6, 30, 54, 78, 102, 126],
+      [6, 26, 52, 78, 104, 130],
+      [6, 30, 56, 82, 108, 134],
+      [6, 34, 60, 86, 112, 138],
+      [6, 30, 58, 86, 114, 142],
+      [6, 34, 62, 90, 118, 146],
+      [6, 30, 54, 78, 102, 126, 150],
+      [6, 24, 50, 76, 102, 128, 154],
+      [6, 28, 54, 80, 106, 132, 158],
+      [6, 32, 58, 84, 110, 136, 162],
+      [6, 26, 54, 82, 110, 138, 166],
+      [6, 30, 58, 86, 114, 142, 170]
+    ];
+    var G15 = (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0);
+    var G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0);
+    var G15_MASK = (1 << 14) | (1 << 12) | (1 << 10) | (1 << 4) | (1 << 1);
+
+    var _this = {};
+
+    var getBCHDigit = function(data) {
+      var digit = 0;
+      while (data != 0) {
+        digit += 1;
+        data >>>= 1;
+      }
+      return digit;
+    };
+
+    _this.getBCHTypeInfo = function(data) {
+      var d = data << 10;
+      while (getBCHDigit(d) - getBCHDigit(G15) >= 0) {
+        d ^= (G15 << (getBCHDigit(d) - getBCHDigit(G15) ) );
+      }
+      return ( (data << 10) | d) ^ G15_MASK;
+    };
+
+    _this.getBCHTypeNumber = function(data) {
+      var d = data << 12;
+      while (getBCHDigit(d) - getBCHDigit(G18) >= 0) {
+        d ^= (G18 << (getBCHDigit(d) - getBCHDigit(G18) ) );
+      }
+      return (data << 12) | d;
+    };
+
+    _this.getPatternPosition = function(typeNumber) {
+      return PATTERN_POSITION_TABLE[typeNumber - 1];
+    };
+
+    _this.getMaskFunction = function(maskPattern) {
+
+      switch (maskPattern) {
+
+      case QRMaskPattern.PATTERN000 :
+        return function(i, j) { return (i + j) % 2 == 0; };
+      case QRMaskPattern.PATTERN001 :
+        return function(i, j) { return i % 2 == 0; };
+      case QRMaskPattern.PATTERN010 :
+        return function(i, j) { return j % 3 == 0; };
+      case QRMaskPattern.PATTERN011 :
+        return function(i, j) { return (i + j) % 3 == 0; };
+      case QRMaskPattern.PATTERN100 :
+        return function(i, j) { return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 == 0; };
+      case QRMaskPattern.PATTERN101 :
+        return function(i, j) { return (i * j) % 2 + (i * j) % 3 == 0; };
+      case QRMaskPattern.PATTERN110 :
+        return function(i, j) { return ( (i * j) % 2 + (i * j) % 3) % 2 == 0; };
+      case QRMaskPattern.PATTERN111 :
+        return function(i, j) { return ( (i * j) % 3 + (i + j) % 2) % 2 == 0; };
+
+      default :
+        throw 'bad maskPattern:' + maskPattern;
+      }
+    };
+
+    _this.getErrorCorrectPolynomial = function(errorCorrectLength) {
+      var a = qrPolynomial([1], 0);
+      for (var i = 0; i < errorCorrectLength; i += 1) {
+        a = a.multiply(qrPolynomial([1, QRMath.gexp(i)], 0) );
+      }
+      return a;
+    };
+
+    _this.getLengthInBits = function(mode, type) {
+
+      if (1 <= type && type < 10) {
+
+        // 1 - 9
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 10;
+        case QRMode.MODE_ALPHA_NUM : return 9;
+        case QRMode.MODE_8BIT_BYTE : return 8;
+        case QRMode.MODE_KANJI     : return 8;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 27) {
+
+        // 10 - 26
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 12;
+        case QRMode.MODE_ALPHA_NUM : return 11;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 10;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 41) {
+
+        // 27 - 40
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 14;
+        case QRMode.MODE_ALPHA_NUM : return 13;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 12;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else {
+        throw 'type:' + type;
+      }
+    };
+
+    _this.getLostPoint = function(qrcode) {
+
+      var moduleCount = qrcode.getModuleCount();
+
+      var lostPoint = 0;
+
+      // LEVEL1
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount; col += 1) {
+
+          var sameCount = 0;
+          var dark = qrcode.isDark(row, col);
+
+          for (var r = -1; r <= 1; r += 1) {
+
+            if (row + r < 0 || moduleCount <= row + r) {
+              continue;
+            }
+
+            for (var c = -1; c <= 1; c += 1) {
+
+              if (col + c < 0 || moduleCount <= col + c) {
+                continue;
+              }
+
+              if (r == 0 && c == 0) {
+                continue;
+              }
+
+              if (dark == qrcode.isDark(row + r, col + c) ) {
+                sameCount += 1;
+              }
+            }
+          }
+
+          if (sameCount > 5) {
+            lostPoint += (3 + sameCount - 5);
+          }
+        }
+      };
+
+      // LEVEL2
+
+      for (var row = 0; row < moduleCount - 1; row += 1) {
+        for (var col = 0; col < moduleCount - 1; col += 1) {
+          var count = 0;
+          if (qrcode.isDark(row, col) ) count += 1;
+          if (qrcode.isDark(row + 1, col) ) count += 1;
+          if (qrcode.isDark(row, col + 1) ) count += 1;
+          if (qrcode.isDark(row + 1, col + 1) ) count += 1;
+          if (count == 0 || count == 4) {
+            lostPoint += 3;
+          }
+        }
+      }
+
+      // LEVEL3
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount - 6; col += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row, col + 1)
+              &&  qrcode.isDark(row, col + 2)
+              &&  qrcode.isDark(row, col + 3)
+              &&  qrcode.isDark(row, col + 4)
+              && !qrcode.isDark(row, col + 5)
+              &&  qrcode.isDark(row, col + 6) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount - 6; row += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row + 1, col)
+              &&  qrcode.isDark(row + 2, col)
+              &&  qrcode.isDark(row + 3, col)
+              &&  qrcode.isDark(row + 4, col)
+              && !qrcode.isDark(row + 5, col)
+              &&  qrcode.isDark(row + 6, col) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      // LEVEL4
+
+      var darkCount = 0;
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount; row += 1) {
+          if (qrcode.isDark(row, col) ) {
+            darkCount += 1;
+          }
+        }
+      }
+
+      var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+      lostPoint += ratio * 10;
+
+      return lostPoint;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // QRMath
+  //---------------------------------------------------------------------
+
+  var QRMath = function() {
+
+    var EXP_TABLE = new Array(256);
+    var LOG_TABLE = new Array(256);
+
+    // initialize tables
+    for (var i = 0; i < 8; i += 1) {
+      EXP_TABLE[i] = 1 << i;
+    }
+    for (var i = 8; i < 256; i += 1) {
+      EXP_TABLE[i] = EXP_TABLE[i - 4]
+        ^ EXP_TABLE[i - 5]
+        ^ EXP_TABLE[i - 6]
+        ^ EXP_TABLE[i - 8];
+    }
+    for (var i = 0; i < 255; i += 1) {
+      LOG_TABLE[EXP_TABLE[i] ] = i;
+    }
+
+    var _this = {};
+
+    _this.glog = function(n) {
+
+      if (n < 1) {
+        throw 'glog(' + n + ')';
+      }
+
+      return LOG_TABLE[n];
+    };
+
+    _this.gexp = function(n) {
+
+      while (n < 0) {
+        n += 255;
+      }
+
+      while (n >= 256) {
+        n -= 255;
+      }
+
+      return EXP_TABLE[n];
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrPolynomial
+  //---------------------------------------------------------------------
+
+  function qrPolynomial(num, shift) {
+
+    if (typeof num.length == 'undefined') {
+      throw num.length + '/' + shift;
+    }
+
+    var _num = function() {
+      var offset = 0;
+      while (offset < num.length && num[offset] == 0) {
+        offset += 1;
+      }
+      var _num = new Array(num.length - offset + shift);
+      for (var i = 0; i < num.length - offset; i += 1) {
+        _num[i] = num[i + offset];
+      }
+      return _num;
+    }();
+
+    var _this = {};
+
+    _this.getAt = function(index) {
+      return _num[index];
+    };
+
+    _this.getLength = function() {
+      return _num.length;
+    };
+
+    _this.multiply = function(e) {
+
+      var num = new Array(_this.getLength() + e.getLength() - 1);
+
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        for (var j = 0; j < e.getLength(); j += 1) {
+          num[i + j] ^= QRMath.gexp(QRMath.glog(_this.getAt(i) ) + QRMath.glog(e.getAt(j) ) );
+        }
+      }
+
+      return qrPolynomial(num, 0);
+    };
+
+    _this.mod = function(e) {
+
+      if (_this.getLength() - e.getLength() < 0) {
+        return _this;
+      }
+
+      var ratio = QRMath.glog(_this.getAt(0) ) - QRMath.glog(e.getAt(0) );
+
+      var num = new Array(_this.getLength() );
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        num[i] = _this.getAt(i);
+      }
+
+      for (var i = 0; i < e.getLength(); i += 1) {
+        num[i] ^= QRMath.gexp(QRMath.glog(e.getAt(i) ) + ratio);
+      }
+
+      // recursive call
+      return qrPolynomial(num, 0).mod(e);
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // QRRSBlock
+  //---------------------------------------------------------------------
+
+  var QRRSBlock = function() {
+
+    var RS_BLOCK_TABLE = [
+
+      // L
+      // M
+      // Q
+      // H
+
+      // 1
+      [1, 26, 19],
+      [1, 26, 16],
+      [1, 26, 13],
+      [1, 26, 9],
+
+      // 2
+      [1, 44, 34],
+      [1, 44, 28],
+      [1, 44, 22],
+      [1, 44, 16],
+
+      // 3
+      [1, 70, 55],
+      [1, 70, 44],
+      [2, 35, 17],
+      [2, 35, 13],
+
+      // 4
+      [1, 100, 80],
+      [2, 50, 32],
+      [2, 50, 24],
+      [4, 25, 9],
+
+      // 5
+      [1, 134, 108],
+      [2, 67, 43],
+      [2, 33, 15, 2, 34, 16],
+      [2, 33, 11, 2, 34, 12],
+
+      // 6
+      [2, 86, 68],
+      [4, 43, 27],
+      [4, 43, 19],
+      [4, 43, 15],
+
+      // 7
+      [2, 98, 78],
+      [4, 49, 31],
+      [2, 32, 14, 4, 33, 15],
+      [4, 39, 13, 1, 40, 14],
+
+      // 8
+      [2, 121, 97],
+      [2, 60, 38, 2, 61, 39],
+      [4, 40, 18, 2, 41, 19],
+      [4, 40, 14, 2, 41, 15],
+
+      // 9
+      [2, 146, 116],
+      [3, 58, 36, 2, 59, 37],
+      [4, 36, 16, 4, 37, 17],
+      [4, 36, 12, 4, 37, 13],
+
+      // 10
+      [2, 86, 68, 2, 87, 69],
+      [4, 69, 43, 1, 70, 44],
+      [6, 43, 19, 2, 44, 20],
+      [6, 43, 15, 2, 44, 16],
+
+      // 11
+      [4, 101, 81],
+      [1, 80, 50, 4, 81, 51],
+      [4, 50, 22, 4, 51, 23],
+      [3, 36, 12, 8, 37, 13],
+
+      // 12
+      [2, 116, 92, 2, 117, 93],
+      [6, 58, 36, 2, 59, 37],
+      [4, 46, 20, 6, 47, 21],
+      [7, 42, 14, 4, 43, 15],
+
+      // 13
+      [4, 133, 107],
+      [8, 59, 37, 1, 60, 38],
+      [8, 44, 20, 4, 45, 21],
+      [12, 33, 11, 4, 34, 12],
+
+      // 14
+      [3, 145, 115, 1, 146, 116],
+      [4, 64, 40, 5, 65, 41],
+      [11, 36, 16, 5, 37, 17],
+      [11, 36, 12, 5, 37, 13],
+
+      // 15
+      [5, 109, 87, 1, 110, 88],
+      [5, 65, 41, 5, 66, 42],
+      [5, 54, 24, 7, 55, 25],
+      [11, 36, 12, 7, 37, 13],
+
+      // 16
+      [5, 122, 98, 1, 123, 99],
+      [7, 73, 45, 3, 74, 46],
+      [15, 43, 19, 2, 44, 20],
+      [3, 45, 15, 13, 46, 16],
+
+      // 17
+      [1, 135, 107, 5, 136, 108],
+      [10, 74, 46, 1, 75, 47],
+      [1, 50, 22, 15, 51, 23],
+      [2, 42, 14, 17, 43, 15],
+
+      // 18
+      [5, 150, 120, 1, 151, 121],
+      [9, 69, 43, 4, 70, 44],
+      [17, 50, 22, 1, 51, 23],
+      [2, 42, 14, 19, 43, 15],
+
+      // 19
+      [3, 141, 113, 4, 142, 114],
+      [3, 70, 44, 11, 71, 45],
+      [17, 47, 21, 4, 48, 22],
+      [9, 39, 13, 16, 40, 14],
+
+      // 20
+      [3, 135, 107, 5, 136, 108],
+      [3, 67, 41, 13, 68, 42],
+      [15, 54, 24, 5, 55, 25],
+      [15, 43, 15, 10, 44, 16],
+
+      // 21
+      [4, 144, 116, 4, 145, 117],
+      [17, 68, 42],
+      [17, 50, 22, 6, 51, 23],
+      [19, 46, 16, 6, 47, 17],
+
+      // 22
+      [2, 139, 111, 7, 140, 112],
+      [17, 74, 46],
+      [7, 54, 24, 16, 55, 25],
+      [34, 37, 13],
+
+      // 23
+      [4, 151, 121, 5, 152, 122],
+      [4, 75, 47, 14, 76, 48],
+      [11, 54, 24, 14, 55, 25],
+      [16, 45, 15, 14, 46, 16],
+
+      // 24
+      [6, 147, 117, 4, 148, 118],
+      [6, 73, 45, 14, 74, 46],
+      [11, 54, 24, 16, 55, 25],
+      [30, 46, 16, 2, 47, 17],
+
+      // 25
+      [8, 132, 106, 4, 133, 107],
+      [8, 75, 47, 13, 76, 48],
+      [7, 54, 24, 22, 55, 25],
+      [22, 45, 15, 13, 46, 16],
+
+      // 26
+      [10, 142, 114, 2, 143, 115],
+      [19, 74, 46, 4, 75, 47],
+      [28, 50, 22, 6, 51, 23],
+      [33, 46, 16, 4, 47, 17],
+
+      // 27
+      [8, 152, 122, 4, 153, 123],
+      [22, 73, 45, 3, 74, 46],
+      [8, 53, 23, 26, 54, 24],
+      [12, 45, 15, 28, 46, 16],
+
+      // 28
+      [3, 147, 117, 10, 148, 118],
+      [3, 73, 45, 23, 74, 46],
+      [4, 54, 24, 31, 55, 25],
+      [11, 45, 15, 31, 46, 16],
+
+      // 29
+      [7, 146, 116, 7, 147, 117],
+      [21, 73, 45, 7, 74, 46],
+      [1, 53, 23, 37, 54, 24],
+      [19, 45, 15, 26, 46, 16],
+
+      // 30
+      [5, 145, 115, 10, 146, 116],
+      [19, 75, 47, 10, 76, 48],
+      [15, 54, 24, 25, 55, 25],
+      [23, 45, 15, 25, 46, 16],
+
+      // 31
+      [13, 145, 115, 3, 146, 116],
+      [2, 74, 46, 29, 75, 47],
+      [42, 54, 24, 1, 55, 25],
+      [23, 45, 15, 28, 46, 16],
+
+      // 32
+      [17, 145, 115],
+      [10, 74, 46, 23, 75, 47],
+      [10, 54, 24, 35, 55, 25],
+      [19, 45, 15, 35, 46, 16],
+
+      // 33
+      [17, 145, 115, 1, 146, 116],
+      [14, 74, 46, 21, 75, 47],
+      [29, 54, 24, 19, 55, 25],
+      [11, 45, 15, 46, 46, 16],
+
+      // 34
+      [13, 145, 115, 6, 146, 116],
+      [14, 74, 46, 23, 75, 47],
+      [44, 54, 24, 7, 55, 25],
+      [59, 46, 16, 1, 47, 17],
+
+      // 35
+      [12, 151, 121, 7, 152, 122],
+      [12, 75, 47, 26, 76, 48],
+      [39, 54, 24, 14, 55, 25],
+      [22, 45, 15, 41, 46, 16],
+
+      // 36
+      [6, 151, 121, 14, 152, 122],
+      [6, 75, 47, 34, 76, 48],
+      [46, 54, 24, 10, 55, 25],
+      [2, 45, 15, 64, 46, 16],
+
+      // 37
+      [17, 152, 122, 4, 153, 123],
+      [29, 74, 46, 14, 75, 47],
+      [49, 54, 24, 10, 55, 25],
+      [24, 45, 15, 46, 46, 16],
+
+      // 38
+      [4, 152, 122, 18, 153, 123],
+      [13, 74, 46, 32, 75, 47],
+      [48, 54, 24, 14, 55, 25],
+      [42, 45, 15, 32, 46, 16],
+
+      // 39
+      [20, 147, 117, 4, 148, 118],
+      [40, 75, 47, 7, 76, 48],
+      [43, 54, 24, 22, 55, 25],
+      [10, 45, 15, 67, 46, 16],
+
+      // 40
+      [19, 148, 118, 6, 149, 119],
+      [18, 75, 47, 31, 76, 48],
+      [34, 54, 24, 34, 55, 25],
+      [20, 45, 15, 61, 46, 16]
+    ];
+
+    var qrRSBlock = function(totalCount, dataCount) {
+      var _this = {};
+      _this.totalCount = totalCount;
+      _this.dataCount = dataCount;
+      return _this;
+    };
+
+    var _this = {};
+
+    var getRsBlockTable = function(typeNumber, errorCorrectionLevel) {
+
+      switch(errorCorrectionLevel) {
+      case QRErrorCorrectionLevel.L :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+      case QRErrorCorrectionLevel.M :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+      case QRErrorCorrectionLevel.Q :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+      case QRErrorCorrectionLevel.H :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+      default :
+        return undefined;
+      }
+    };
+
+    _this.getRSBlocks = function(typeNumber, errorCorrectionLevel) {
+
+      var rsBlock = getRsBlockTable(typeNumber, errorCorrectionLevel);
+
+      if (typeof rsBlock == 'undefined') {
+        throw 'bad rs block @ typeNumber:' + typeNumber +
+            '/errorCorrectionLevel:' + errorCorrectionLevel;
+      }
+
+      var length = rsBlock.length / 3;
+
+      var list = [];
+
+      for (var i = 0; i < length; i += 1) {
+
+        var count = rsBlock[i * 3 + 0];
+        var totalCount = rsBlock[i * 3 + 1];
+        var dataCount = rsBlock[i * 3 + 2];
+
+        for (var j = 0; j < count; j += 1) {
+          list.push(qrRSBlock(totalCount, dataCount) );
+        }
+      }
+
+      return list;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrBitBuffer
+  //---------------------------------------------------------------------
+
+  var qrBitBuffer = function() {
+
+    var _buffer = [];
+    var _length = 0;
+
+    var _this = {};
+
+    _this.getBuffer = function() {
+      return _buffer;
+    };
+
+    _this.getAt = function(index) {
+      var bufIndex = Math.floor(index / 8);
+      return ( (_buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+    };
+
+    _this.put = function(num, length) {
+      for (var i = 0; i < length; i += 1) {
+        _this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+      }
+    };
+
+    _this.getLengthInBits = function() {
+      return _length;
+    };
+
+    _this.putBit = function(bit) {
+
+      var bufIndex = Math.floor(_length / 8);
+      if (_buffer.length <= bufIndex) {
+        _buffer.push(0);
+      }
+
+      if (bit) {
+        _buffer[bufIndex] |= (0x80 >>> (_length % 8) );
+      }
+
+      _length += 1;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrNumber
+  //---------------------------------------------------------------------
+
+  var qrNumber = function(data) {
+
+    var _mode = QRMode.MODE_NUMBER;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _data;
+
+      var i = 0;
+
+      while (i + 2 < data.length) {
+        buffer.put(strToNum(data.substring(i, i + 3) ), 10);
+        i += 3;
+      }
+
+      if (i < data.length) {
+        if (data.length - i == 1) {
+          buffer.put(strToNum(data.substring(i, i + 1) ), 4);
+        } else if (data.length - i == 2) {
+          buffer.put(strToNum(data.substring(i, i + 2) ), 7);
+        }
+      }
+    };
+
+    var strToNum = function(s) {
+      var num = 0;
+      for (var i = 0; i < s.length; i += 1) {
+        num = num * 10 + chatToNum(s.charAt(i) );
+      }
+      return num;
+    };
+
+    var chatToNum = function(c) {
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      }
+      throw 'illegal char :' + c;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrAlphaNum
+  //---------------------------------------------------------------------
+
+  var qrAlphaNum = function(data) {
+
+    var _mode = QRMode.MODE_ALPHA_NUM;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var s = _data;
+
+      var i = 0;
+
+      while (i + 1 < s.length) {
+        buffer.put(
+          getCode(s.charAt(i) ) * 45 +
+          getCode(s.charAt(i + 1) ), 11);
+        i += 2;
+      }
+
+      if (i < s.length) {
+        buffer.put(getCode(s.charAt(i) ), 6);
+      }
+    };
+
+    var getCode = function(c) {
+
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      } else if ('A' <= c && c <= 'Z') {
+        return c.charCodeAt(0) - 'A'.charCodeAt(0) + 10;
+      } else {
+        switch (c) {
+        case ' ' : return 36;
+        case '$' : return 37;
+        case '%' : return 38;
+        case '*' : return 39;
+        case '+' : return 40;
+        case '-' : return 41;
+        case '.' : return 42;
+        case '/' : return 43;
+        case ':' : return 44;
+        default :
+          throw 'illegal char :' + c;
+        }
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qr8BitByte
+  //---------------------------------------------------------------------
+
+  var qr8BitByte = function(data) {
+
+    var _mode = QRMode.MODE_8BIT_BYTE;
+    var _data = data;
+    var _bytes = qrcode.stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _bytes.length;
+    };
+
+    _this.write = function(buffer) {
+      for (var i = 0; i < _bytes.length; i += 1) {
+        buffer.put(_bytes[i], 8);
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrKanji
+  //---------------------------------------------------------------------
+
+  var qrKanji = function(data) {
+
+    var _mode = QRMode.MODE_KANJI;
+    var _data = data;
+
+    var stringToBytes = qrcode.stringToBytesFuncs['SJIS'];
+    if (!stringToBytes) {
+      throw 'sjis not supported.';
+    }
+    !function(c, code) {
+      // self test for sjis support.
+      var test = stringToBytes(c);
+      if (test.length != 2 || ( (test[0] << 8) | test[1]) != code) {
+        throw 'sjis not supported.';
+      }
+    }('\u53cb', 0x9746);
+
+    var _bytes = stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return ~~(_bytes.length / 2);
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _bytes;
+
+      var i = 0;
+
+      while (i + 1 < data.length) {
+
+        var c = ( (0xff & data[i]) << 8) | (0xff & data[i + 1]);
+
+        if (0x8140 <= c && c <= 0x9FFC) {
+          c -= 0x8140;
+        } else if (0xE040 <= c && c <= 0xEBBF) {
+          c -= 0xC140;
+        } else {
+          throw 'illegal char at ' + (i + 1) + '/' + c;
+        }
+
+        c = ( (c >>> 8) & 0xff) * 0xC0 + (c & 0xff);
+
+        buffer.put(c, 13);
+
+        i += 2;
+      }
+
+      if (i < data.length) {
+        throw 'illegal char at ' + (i + 1);
+      }
+    };
+
+    return _this;
+  };
+
+  //=====================================================================
+  // GIF Support etc.
+  //
+
+  //---------------------------------------------------------------------
+  // byteArrayOutputStream
+  //---------------------------------------------------------------------
+
+  var byteArrayOutputStream = function() {
+
+    var _bytes = [];
+
+    var _this = {};
+
+    _this.writeByte = function(b) {
+      _bytes.push(b & 0xff);
+    };
+
+    _this.writeShort = function(i) {
+      _this.writeByte(i);
+      _this.writeByte(i >>> 8);
+    };
+
+    _this.writeBytes = function(b, off, len) {
+      off = off || 0;
+      len = len || b.length;
+      for (var i = 0; i < len; i += 1) {
+        _this.writeByte(b[i + off]);
+      }
+    };
+
+    _this.writeString = function(s) {
+      for (var i = 0; i < s.length; i += 1) {
+        _this.writeByte(s.charCodeAt(i) );
+      }
+    };
+
+    _this.toByteArray = function() {
+      return _bytes;
+    };
+
+    _this.toString = function() {
+      var s = '';
+      s += '[';
+      for (var i = 0; i < _bytes.length; i += 1) {
+        if (i > 0) {
+          s += ',';
+        }
+        s += _bytes[i];
+      }
+      s += ']';
+      return s;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64EncodeOutputStream
+  //---------------------------------------------------------------------
+
+  var base64EncodeOutputStream = function() {
+
+    var _buffer = 0;
+    var _buflen = 0;
+    var _length = 0;
+    var _base64 = '';
+
+    var _this = {};
+
+    var writeEncoded = function(b) {
+      _base64 += String.fromCharCode(encode(b & 0x3f) );
+    };
+
+    var encode = function(n) {
+      if (n < 0) {
+        // error.
+      } else if (n < 26) {
+        return 0x41 + n;
+      } else if (n < 52) {
+        return 0x61 + (n - 26);
+      } else if (n < 62) {
+        return 0x30 + (n - 52);
+      } else if (n == 62) {
+        return 0x2b;
+      } else if (n == 63) {
+        return 0x2f;
+      }
+      throw 'n:' + n;
+    };
+
+    _this.writeByte = function(n) {
+
+      _buffer = (_buffer << 8) | (n & 0xff);
+      _buflen += 8;
+      _length += 1;
+
+      while (_buflen >= 6) {
+        writeEncoded(_buffer >>> (_buflen - 6) );
+        _buflen -= 6;
+      }
+    };
+
+    _this.flush = function() {
+
+      if (_buflen > 0) {
+        writeEncoded(_buffer << (6 - _buflen) );
+        _buffer = 0;
+        _buflen = 0;
+      }
+
+      if (_length % 3 != 0) {
+        // padding
+        var padlen = 3 - _length % 3;
+        for (var i = 0; i < padlen; i += 1) {
+          _base64 += '=';
+        }
+      }
+    };
+
+    _this.toString = function() {
+      return _base64;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64DecodeInputStream
+  //---------------------------------------------------------------------
+
+  var base64DecodeInputStream = function(str) {
+
+    var _str = str;
+    var _pos = 0;
+    var _buffer = 0;
+    var _buflen = 0;
+
+    var _this = {};
+
+    _this.read = function() {
+
+      while (_buflen < 8) {
+
+        if (_pos >= _str.length) {
+          if (_buflen == 0) {
+            return -1;
+          }
+          throw 'unexpected end of file./' + _buflen;
+        }
+
+        var c = _str.charAt(_pos);
+        _pos += 1;
+
+        if (c == '=') {
+          _buflen = 0;
+          return -1;
+        } else if (c.match(/^\s$/) ) {
+          // ignore if whitespace.
+          continue;
+        }
+
+        _buffer = (_buffer << 6) | decode(c.charCodeAt(0) );
+        _buflen += 6;
+      }
+
+      var n = (_buffer >>> (_buflen - 8) ) & 0xff;
+      _buflen -= 8;
+      return n;
+    };
+
+    var decode = function(c) {
+      if (0x41 <= c && c <= 0x5a) {
+        return c - 0x41;
+      } else if (0x61 <= c && c <= 0x7a) {
+        return c - 0x61 + 26;
+      } else if (0x30 <= c && c <= 0x39) {
+        return c - 0x30 + 52;
+      } else if (c == 0x2b) {
+        return 62;
+      } else if (c == 0x2f) {
+        return 63;
+      } else {
+        throw 'c:' + c;
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // gifImage (B/W)
+  //---------------------------------------------------------------------
+
+  var gifImage = function(width, height) {
+
+    var _width = width;
+    var _height = height;
+    var _data = new Array(width * height);
+
+    var _this = {};
+
+    _this.setPixel = function(x, y, pixel) {
+      _data[y * _width + x] = pixel;
+    };
+
+    _this.write = function(out) {
+
+      //---------------------------------
+      // GIF Signature
+
+      out.writeString('GIF87a');
+
+      //---------------------------------
+      // Screen Descriptor
+
+      out.writeShort(_width);
+      out.writeShort(_height);
+
+      out.writeByte(0x80); // 2bit
+      out.writeByte(0);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Global Color Map
+
+      // black
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+
+      // white
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+
+      //---------------------------------
+      // Image Descriptor
+
+      out.writeString(',');
+      out.writeShort(0);
+      out.writeShort(0);
+      out.writeShort(_width);
+      out.writeShort(_height);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Local Color Map
+
+      //---------------------------------
+      // Raster Data
+
+      var lzwMinCodeSize = 2;
+      var raster = getLZWRaster(lzwMinCodeSize);
+
+      out.writeByte(lzwMinCodeSize);
+
+      var offset = 0;
+
+      while (raster.length - offset > 255) {
+        out.writeByte(255);
+        out.writeBytes(raster, offset, 255);
+        offset += 255;
+      }
+
+      out.writeByte(raster.length - offset);
+      out.writeBytes(raster, offset, raster.length - offset);
+      out.writeByte(0x00);
+
+      //---------------------------------
+      // GIF Terminator
+      out.writeString(';');
+    };
+
+    var bitOutputStream = function(out) {
+
+      var _out = out;
+      var _bitLength = 0;
+      var _bitBuffer = 0;
+
+      var _this = {};
+
+      _this.write = function(data, length) {
+
+        if ( (data >>> length) != 0) {
+          throw 'length over';
+        }
+
+        while (_bitLength + length >= 8) {
+          _out.writeByte(0xff & ( (data << _bitLength) | _bitBuffer) );
+          length -= (8 - _bitLength);
+          data >>>= (8 - _bitLength);
+          _bitBuffer = 0;
+          _bitLength = 0;
+        }
+
+        _bitBuffer = (data << _bitLength) | _bitBuffer;
+        _bitLength = _bitLength + length;
+      };
+
+      _this.flush = function() {
+        if (_bitLength > 0) {
+          _out.writeByte(_bitBuffer);
+        }
+      };
+
+      return _this;
+    };
+
+    var getLZWRaster = function(lzwMinCodeSize) {
+
+      var clearCode = 1 << lzwMinCodeSize;
+      var endCode = (1 << lzwMinCodeSize) + 1;
+      var bitLength = lzwMinCodeSize + 1;
+
+      // Setup LZWTable
+      var table = lzwTable();
+
+      for (var i = 0; i < clearCode; i += 1) {
+        table.add(String.fromCharCode(i) );
+      }
+      table.add(String.fromCharCode(clearCode) );
+      table.add(String.fromCharCode(endCode) );
+
+      var byteOut = byteArrayOutputStream();
+      var bitOut = bitOutputStream(byteOut);
+
+      // clear code
+      bitOut.write(clearCode, bitLength);
+
+      var dataIndex = 0;
+
+      var s = String.fromCharCode(_data[dataIndex]);
+      dataIndex += 1;
+
+      while (dataIndex < _data.length) {
+
+        var c = String.fromCharCode(_data[dataIndex]);
+        dataIndex += 1;
+
+        if (table.contains(s + c) ) {
+
+          s = s + c;
+
+        } else {
+
+          bitOut.write(table.indexOf(s), bitLength);
+
+          if (table.size() < 0xfff) {
+
+            if (table.size() == (1 << bitLength) ) {
+              bitLength += 1;
+            }
+
+            table.add(s + c);
+          }
+
+          s = c;
+        }
+      }
+
+      bitOut.write(table.indexOf(s), bitLength);
+
+      // end code
+      bitOut.write(endCode, bitLength);
+
+      bitOut.flush();
+
+      return byteOut.toByteArray();
+    };
+
+    var lzwTable = function() {
+
+      var _map = {};
+      var _size = 0;
+
+      var _this = {};
+
+      _this.add = function(key) {
+        if (_this.contains(key) ) {
+          throw 'dup key:' + key;
+        }
+        _map[key] = _size;
+        _size += 1;
+      };
+
+      _this.size = function() {
+        return _size;
+      };
+
+      _this.indexOf = function(key) {
+        return _map[key];
+      };
+
+      _this.contains = function(key) {
+        return typeof _map[key] != 'undefined';
+      };
+
+      return _this;
+    };
+
+    return _this;
+  };
+
+  var createDataURL = function(width, height, getPixel) {
+    var gif = gifImage(width, height);
+    for (var y = 0; y < height; y += 1) {
+      for (var x = 0; x < width; x += 1) {
+        gif.setPixel(x, y, getPixel(x, y) );
+      }
+    }
+
+    var b = byteArrayOutputStream();
+    gif.write(b);
+
+    var base64 = base64EncodeOutputStream();
+    var bytes = b.toByteArray();
+    for (var i = 0; i < bytes.length; i += 1) {
+      base64.writeByte(bytes[i]);
+    }
+    base64.flush();
+
+    return 'data:image/gif;base64,' + base64;
+  };
+
+  //---------------------------------------------------------------------
+  // returns qrcode function.
+
+  return qrcode;
+}();
+
+// multibyte support
+!function() {
+
+  qrcode.stringToBytesFuncs['UTF-8'] = function(s) {
+    // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+    function toUTF8Array(str) {
+      var utf8 = [];
+      for (var i=0; i < str.length; i++) {
+        var charcode = str.charCodeAt(i);
+        if (charcode < 0x80) utf8.push(charcode);
+        else if (charcode < 0x800) {
+          utf8.push(0xc0 | (charcode >> 6),
+              0x80 | (charcode & 0x3f));
+        }
+        else if (charcode < 0xd800 || charcode >= 0xe000) {
+          utf8.push(0xe0 | (charcode >> 12),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+        // surrogate pair
+        else {
+          i++;
+          // UTF-16 encodes 0x10000-0x10FFFF by
+          // subtracting 0x10000 and splitting the
+          // 20 bits of 0x0-0xFFFFF into two halves
+          charcode = 0x10000 + (((charcode & 0x3ff)<<10)
+            | (str.charCodeAt(i) & 0x3ff));
+          utf8.push(0xf0 | (charcode >>18),
+              0x80 | ((charcode>>12) & 0x3f),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+      }
+      return utf8;
+    }
+    return toUTF8Array(s);
+  };
+
+}();
+
+(function (factory) {
+  if (typeof define === 'function' && define.amd) {
+      define([], factory);
+  } else if (typeof exports === 'object') {
+      module.exports = factory();
+  }
+}(function () {
+    return qrcode;
+}));
+
+</script>
+<script>
+var T={en:{
+ title:'Material gate pass',newPass:'New gate pass',how:'How it works',how1:'Fill in the details and take 4 photos of the vehicle.',how2:'Print the pass and collect 4 signatures: driver, IC rep, EcoOils rep, Site Lead.',how3:'Upload a photo of the signed pass here.',how4:'Security checks the vehicle and releases it.',
+ mine:'My passes',noneMine:'No passes on this phone yet.',find:'Find a pass',refresh:'Refresh',admin:'Admin',back:'Back',next:'Next',close:'Close',cancelBtn:'Cancel',loading:'Loading...',
+ stepOf:'Step {a} of {b}',s1:'Details',s2:'Items',s3:'Photos',s4:'Review',
+ purposeLbl:'This non-returnable gate pass is used for',purA:'Sending back rejected items to supplier',purB:"Sending back contractor's own material",
+ company:'Company',companyPick:'Select company',companyOther:'Company name',other:'Other',vehicle:'Vehicle number',vehicleHelp:'As on the number plate, for example BK 1234 XY',
+ carrier:'Person taking the material out (driver)',icNo:'I/C (ID card) number',purposeText:'Purpose of taking the items out',dept:'EcoOils department checking',deptPick:'Select department',icRep:'IC responsible person (lead / store in charge)',icPos:'Position',
+ items:'Items',itemName:'Item description',qty:'Qty',unit:'Unit',unitPh:'pcs, kg, m...',addItem:'Add item',remove:'Remove',itemsMax:'Maximum 15 items per pass.',
+ ph_front:'Front view',ph_top:'Top view',ph_left:'Left side',ph_right:'Right side',photoHelp:'Take all 4 photos now with the camera. Each photo is stamped with the date and time.',topHint:'Top view: take it from a safe position. Do not climb on the vehicle or the load.',take:'Take photo',retake:'Tap to retake',
+ reviewHelp:'Check everything. After you submit, the details are locked and a unique reference number is created.',submit:'Submit and create pass',sending:'Sending... please wait',
+ doneTitle:'Pass created',refLbl:'Reference number',doneNext:'Next: print the pass, collect the 4 signatures, then upload the signed copy here.',printNow:'Print pass',openPass:'Open pass',
+ stWait:'Awaiting signatures',stPend:'Pending release',stRel:'Released',stRej:'Rejected',stCan:'Cancelled',stExp:'Expired',
+ gWait:'Print the pass and collect the signatures: Driver, IC rep, EcoOils rep, then Site Lead. Then upload a photo of the signed pass.',gPend:'Signed copy received. Security will check the vehicle against the paper original and release it. Keep the signed paper with the driver.',gRel:'The vehicle has been released.',gRej:'Security rejected this pass. Create a new pass after fixing the reason.',gCan:'This pass was cancelled.',gExp:'This pass has expired. Create a new pass.',
+ upload:'Upload signed copy',replaceSigned:'Replace signed copy',signedHelp:'Take a clear photo of the whole signed pass (up to 2 pages).',addPage:'Add photo',sendSigned:'Send signed copy',cancelPass:'Cancel this pass',cancelWhy:'Reason for cancelling',cancelConfirm:'Cancel this pass? This cannot be undone.',
+ validUntil:'Valid until',releasedBy:'Released by',rejReason:'Reason',date:'Date',purposeShort:'Purpose',driver:'Person taking out',ecoDept:'EcoOils dept',icRepShort:'IC rep',vehShort:'Vehicle',compShort:'Company',printAgain:'Print pass',signedSent:'Signed copy sent. The pass is now waiting for security.',
+ findHelp:'Lost your phone or using a new one? Enter the reference number and the vehicle number printed on the pass.',refPh:'MGP-2610-0001',findGo:'Find pass',
+ v_ready:'READY FOR SECURITY CHECK',v_ready2:'The signed copy is uploaded. Security releases the vehicle only after a physical check, inside the Patroli app.',v_wait:'NOT READY',v_wait2:'The signed copy has not been uploaded yet. Do not release.',v_rel:'RELEASED',v_rej:'REJECTED',v_can:'CANCELLED',v_exp:'EXPIRED',v_nf:'NOT A VALID PASS',v_nf2:'This reference is not in the system. Do not release.',openApp:'Open the Gate Pass app',
+ pin:'Admin PIN',login:'Log in',search:'Search',all:'All',csv:'Download CSV',logout:'Log out',auditLog:'Audit trail',links:'Photos and signed copy (Google Drive)',adminCancel:'Cancel pass (admin)',
+ notConf:'Not configured yet: the app has no server address.',
+ err_server:'Server error. Try again.',err_net:'No connection. Your entries are kept. Try again.',err_pin:'Wrong PIN or locked. Try again later.',err_notfound:'Not found.',err_busy:'Too many requests. Wait a few minutes.',err_daily_cap:'Daily limit for this company reached.',err_locked:'Too many wrong tries. Wait 10 minutes.',err_not_open:'This pass can no longer be changed.',err_bad_photo:'A photo is missing or not valid.',err_auth:'Not allowed.',
+ f_purpose:'Choose A or B.',f_company:'Select the company.',f_vehicle:'Enter the vehicle number.',f_carrier:'Enter the name of the person taking the material out.',f_icNo:'Enter the I/C number.',f_purposeText:'Describe the purpose.',f_dept:'Select the EcoOils department.',f_icRep:'Enter the IC responsible person.',f_items:'Add at least one item with a quantity.',f_photos:'Take all 4 photos.',f_signed:'Take a photo of the signed pass first.'
+},id:{
+ title:'Surat jalan material',newPass:'Surat jalan baru',how:'Cara kerja',how1:'Isi data dan ambil 4 foto kendaraan.',how2:'Cetak surat dan kumpulkan 4 tanda tangan: pengemudi, perwakilan IC, perwakilan EcoOils, Site Lead.',how3:'Unggah foto surat yang sudah ditandatangani di sini.',how4:'Security memeriksa kendaraan lalu melepasnya.',
+ mine:'Surat saya',noneMine:'Belum ada surat di ponsel ini.',find:'Cari surat',refresh:'Segarkan',admin:'Admin',back:'Kembali',next:'Lanjut',close:'Tutup',cancelBtn:'Batal',loading:'Memuat...',
+ stepOf:'Langkah {a} dari {b}',s1:'Data',s2:'Barang',s3:'Foto',s4:'Periksa',
+ purposeLbl:'Surat jalan tidak kembali ini digunakan untuk',purA:'Mengirim kembali barang yang ditolak ke pemasok',purB:'Mengirim kembali material milik kontraktor sendiri',
+ company:'Perusahaan',companyPick:'Pilih perusahaan',companyOther:'Nama perusahaan',other:'Lainnya',vehicle:'Nomor kendaraan',vehicleHelp:'Sesuai plat nomor, contoh BK 1234 XY',
+ carrier:'Orang yang membawa material keluar (pengemudi)',icNo:'Nomor KTP / identitas',purposeText:'Tujuan membawa barang keluar',dept:'Departemen EcoOils yang memeriksa',deptPick:'Pilih departemen',icRep:'Penanggung jawab IC (lead / penanggung jawab gudang)',icPos:'Jabatan',
+ items:'Barang',itemName:'Uraian barang',qty:'Jumlah',unit:'Satuan',unitPh:'pcs, kg, m...',addItem:'Tambah barang',remove:'Hapus',itemsMax:'Maksimum 15 barang per surat.',
+ ph_front:'Tampak depan',ph_top:'Tampak atas',ph_left:'Sisi kiri',ph_right:'Sisi kanan',photoHelp:'Ambil 4 foto sekarang dengan kamera. Setiap foto diberi cap tanggal dan jam.',topHint:'Tampak atas: ambil dari posisi yang aman. Jangan naik ke kendaraan atau muatan.',take:'Ambil foto',retake:'Ketuk untuk ulangi',
+ reviewHelp:'Periksa semuanya. Setelah dikirim, data terkunci dan nomor referensi unik dibuat.',submit:'Kirim dan buat surat',sending:'Mengirim... mohon tunggu',
+ doneTitle:'Surat dibuat',refLbl:'Nomor referensi',doneNext:'Berikutnya: cetak surat, kumpulkan 4 tanda tangan, lalu unggah salinan yang sudah ditandatangani di sini.',printNow:'Cetak surat',openPass:'Buka surat',
+ stWait:'Menunggu tanda tangan',stPend:'Menunggu pelepasan',stRel:'Sudah dilepas',stRej:'Ditolak',stCan:'Dibatalkan',stExp:'Kedaluwarsa',
+ gWait:'Cetak surat dan kumpulkan tanda tangan: pengemudi, perwakilan IC, perwakilan EcoOils, lalu Site Lead. Setelah itu unggah foto surat yang sudah ditandatangani.',gPend:'Salinan bertanda tangan diterima. Security akan memeriksa kendaraan dengan surat asli lalu melepasnya. Simpan surat asli bersama pengemudi.',gRel:'Kendaraan sudah dilepas.',gRej:'Security menolak surat ini. Buat surat baru setelah alasannya diperbaiki.',gCan:'Surat ini dibatalkan.',gExp:'Surat ini kedaluwarsa. Buat surat baru.',
+ upload:'Unggah salinan bertanda tangan',replaceSigned:'Ganti salinan bertanda tangan',signedHelp:'Foto seluruh surat yang sudah ditandatangani dengan jelas (maksimum 2 halaman).',addPage:'Tambah foto',sendSigned:'Kirim salinan bertanda tangan',cancelPass:'Batalkan surat ini',cancelWhy:'Alasan pembatalan',cancelConfirm:'Batalkan surat ini? Tidak dapat dibatalkan kembali.',
+ validUntil:'Berlaku sampai',releasedBy:'Dilepas oleh',rejReason:'Alasan',date:'Tanggal',purposeShort:'Tujuan',driver:'Pembawa',ecoDept:'Dept EcoOils',icRepShort:'Perwakilan IC',vehShort:'Kendaraan',compShort:'Perusahaan',printAgain:'Cetak surat',signedSent:'Salinan terkirim. Surat sekarang menunggu security.',
+ findHelp:'Ponsel hilang atau ganti ponsel? Masukkan nomor referensi dan nomor kendaraan yang tercetak di surat.',refPh:'MGP-2610-0001',findGo:'Cari surat',
+ v_ready:'SIAP DIPERIKSA SECURITY',v_ready2:'Salinan bertanda tangan sudah diunggah. Security melepas kendaraan hanya setelah pemeriksaan fisik, di dalam aplikasi Patroli.',v_wait:'BELUM SIAP',v_wait2:'Salinan bertanda tangan belum diunggah. Jangan dilepas.',v_rel:'SUDAH DILEPAS',v_rej:'DITOLAK',v_can:'DIBATALKAN',v_exp:'KEDALUWARSA',v_nf:'SURAT TIDAK VALID',v_nf2:'Nomor ini tidak ada di sistem. Jangan dilepas.',openApp:'Buka aplikasi Surat Jalan',
+ pin:'PIN Admin',login:'Masuk',search:'Cari',all:'Semua',csv:'Unduh CSV',logout:'Keluar',auditLog:'Jejak audit',links:'Foto dan salinan bertanda tangan (Google Drive)',adminCancel:'Batalkan surat (admin)',
+ notConf:'Belum dikonfigurasi: aplikasi belum memiliki alamat server.',
+ err_server:'Kesalahan server. Coba lagi.',err_net:'Tidak ada koneksi. Isian Anda tersimpan. Coba lagi.',err_pin:'PIN salah atau terkunci. Coba lagi nanti.',err_notfound:'Tidak ditemukan.',err_busy:'Terlalu banyak permintaan. Tunggu beberapa menit.',err_daily_cap:'Batas harian perusahaan ini tercapai.',err_locked:'Terlalu banyak salah. Tunggu 10 menit.',err_not_open:'Surat ini tidak dapat diubah lagi.',err_bad_photo:'Ada foto yang hilang atau tidak valid.',err_auth:'Tidak diizinkan.',
+ f_purpose:'Pilih A atau B.',f_company:'Pilih perusahaan.',f_vehicle:'Isi nomor kendaraan.',f_carrier:'Isi nama orang yang membawa material keluar.',f_icNo:'Isi nomor identitas.',f_purposeText:'Jelaskan tujuannya.',f_dept:'Pilih departemen EcoOils.',f_icRep:'Isi penanggung jawab IC.',f_items:'Tambahkan minimal satu barang beserta jumlahnya.',f_photos:'Ambil semua 4 foto.',f_signed:'Foto dulu surat yang sudah ditandatangani.'
+},ms:{
+ title:'Pas pintu bahan',newPass:'Pas pintu baharu',how:'Cara ia berfungsi',how1:'Isi butiran dan ambil 4 foto kenderaan.',how2:'Cetak pas dan kumpulkan 4 tandatangan: pemandu, wakil IC, wakil EcoOils, Site Lead.',how3:'Muat naik foto pas yang telah ditandatangani di sini.',how4:'Keselamatan memeriksa kenderaan dan melepaskannya.',
+ mine:'Pas saya',noneMine:'Belum ada pas pada telefon ini.',find:'Cari pas',refresh:'Segar semula',admin:'Admin',back:'Kembali',next:'Seterusnya',close:'Tutup',cancelBtn:'Batal',loading:'Memuatkan...',
+ stepOf:'Langkah {a} daripada {b}',s1:'Butiran',s2:'Barang',s3:'Foto',s4:'Semak',
+ purposeLbl:'Pas pintu tidak boleh dipulangkan ini digunakan untuk',purA:'Menghantar semula barang yang ditolak kepada pembekal',purB:'Menghantar semula bahan milik kontraktor sendiri',
+ company:'Syarikat',companyPick:'Pilih syarikat',companyOther:'Nama syarikat',other:'Lain-lain',vehicle:'Nombor kenderaan',vehicleHelp:'Seperti pada plat nombor, contoh BK 1234 XY',
+ carrier:'Orang yang membawa bahan keluar (pemandu)',icNo:'Nombor I/C (kad pengenalan)',purposeText:'Tujuan membawa barang keluar',dept:'Jabatan EcoOils yang menyemak',deptPick:'Pilih jabatan',icRep:'Orang bertanggungjawab IC (lead / penyelia stor)',icPos:'Jawatan',
+ items:'Barang',itemName:'Huraian barang',qty:'Kuantiti',unit:'Unit',unitPh:'pcs, kg, m...',addItem:'Tambah barang',remove:'Buang',itemsMax:'Maksimum 15 barang bagi setiap pas.',
+ ph_front:'Pandangan hadapan',ph_top:'Pandangan atas',ph_left:'Sisi kiri',ph_right:'Sisi kanan',photoHelp:'Ambil 4 foto sekarang dengan kamera. Setiap foto dicop dengan tarikh dan masa.',topHint:'Pandangan atas: ambil dari kedudukan yang selamat. Jangan panjat kenderaan atau muatan.',take:'Ambil foto',retake:'Ketik untuk ambil semula',
+ reviewHelp:'Semak semuanya. Selepas dihantar, butiran dikunci dan nombor rujukan unik dijana.',submit:'Hantar dan cipta pas',sending:'Menghantar... sila tunggu',
+ doneTitle:'Pas dicipta',refLbl:'Nombor rujukan',doneNext:'Seterusnya: cetak pas, kumpulkan 4 tandatangan, kemudian muat naik salinan yang ditandatangani di sini.',printNow:'Cetak pas',openPass:'Buka pas',
+ stWait:'Menunggu tandatangan',stPend:'Menunggu pelepasan',stRel:'Telah dilepaskan',stRej:'Ditolak',stCan:'Dibatalkan',stExp:'Tamat tempoh',
+ gWait:'Cetak pas dan kumpulkan tandatangan: pemandu, wakil IC, wakil EcoOils, kemudian Site Lead. Selepas itu muat naik foto pas yang telah ditandatangani.',gPend:'Salinan bertandatangan diterima. Keselamatan akan memeriksa kenderaan dengan kertas asal dan melepaskannya. Simpan kertas asal bersama pemandu.',gRel:'Kenderaan telah dilepaskan.',gRej:'Keselamatan menolak pas ini. Cipta pas baharu selepas sebabnya dibetulkan.',gCan:'Pas ini telah dibatalkan.',gExp:'Pas ini telah tamat tempoh. Cipta pas baharu.',
+ upload:'Muat naik salinan bertandatangan',replaceSigned:'Ganti salinan bertandatangan',signedHelp:'Ambil foto jelas keseluruhan pas yang ditandatangani (sehingga 2 muka surat).',addPage:'Tambah foto',sendSigned:'Hantar salinan bertandatangan',cancelPass:'Batalkan pas ini',cancelWhy:'Sebab pembatalan',cancelConfirm:'Batalkan pas ini? Ini tidak boleh dibuat asal.',
+ validUntil:'Sah sehingga',releasedBy:'Dilepaskan oleh',rejReason:'Sebab',date:'Tarikh',purposeShort:'Tujuan',driver:'Pembawa',ecoDept:'Jabatan EcoOils',icRepShort:'Wakil IC',vehShort:'Kenderaan',compShort:'Syarikat',printAgain:'Cetak pas',signedSent:'Salinan dihantar. Pas kini menunggu keselamatan.',
+ findHelp:'Telefon hilang atau guna telefon baharu? Masukkan nombor rujukan dan nombor kenderaan yang dicetak pada pas.',refPh:'MGP-2610-0001',findGo:'Cari pas',
+ v_ready:'SEDIA UNTUK SEMAKAN KESELAMATAN',v_ready2:'Salinan bertandatangan telah dimuat naik. Keselamatan melepaskan kenderaan hanya selepas pemeriksaan fizikal, dalam aplikasi Patroli.',v_wait:'BELUM SEDIA',v_wait2:'Salinan bertandatangan belum dimuat naik. Jangan lepaskan.',v_rel:'TELAH DILEPASKAN',v_rej:'DITOLAK',v_can:'DIBATALKAN',v_exp:'TAMAT TEMPOH',v_nf:'PAS TIDAK SAH',v_nf2:'Rujukan ini tiada dalam sistem. Jangan lepaskan.',openApp:'Buka aplikasi Pas Pintu',
+ pin:'PIN Admin',login:'Log masuk',search:'Cari',all:'Semua',csv:'Muat turun CSV',logout:'Log keluar',auditLog:'Jejak audit',links:'Foto dan salinan bertandatangan (Google Drive)',adminCancel:'Batalkan pas (admin)',
+ notConf:'Belum dikonfigurasi: aplikasi belum mempunyai alamat pelayan.',
+ err_server:'Ralat pelayan. Cuba lagi.',err_net:'Tiada sambungan. Isian anda disimpan. Cuba lagi.',err_pin:'PIN salah atau dikunci. Cuba lagi nanti.',err_notfound:'Tidak ditemui.',err_busy:'Terlalu banyak permintaan. Tunggu beberapa minit.',err_daily_cap:'Had harian syarikat ini dicapai.',err_locked:'Terlalu banyak salah. Tunggu 10 minit.',err_not_open:'Pas ini tidak boleh diubah lagi.',err_bad_photo:'Ada foto yang hilang atau tidak sah.',err_auth:'Tidak dibenarkan.',
+ f_purpose:'Pilih A atau B.',f_company:'Pilih syarikat.',f_vehicle:'Masukkan nombor kenderaan.',f_carrier:'Masukkan nama orang yang membawa bahan keluar.',f_icNo:'Masukkan nombor I/C.',f_purposeText:'Huraikan tujuan.',f_dept:'Pilih jabatan EcoOils.',f_icRep:'Masukkan orang bertanggungjawab IC.',f_items:'Tambah sekurang-kurangnya satu barang dengan kuantiti.',f_photos:'Ambil kesemua 4 foto.',f_signed:'Ambil foto pas yang ditandatangani dahulu.'
+}};
+
+var VERSION='v1.0';
+var APP_URL='https://iggifernandes.github.io/EcoOils-Project-Material-Gate-Pass/';
+var API_URL='https://script.google.com/macros/s/AKfycbxULvNJReaniGRTFWKY507I0AZD5YLP3mBBjAyFFA-7z4nI0-LPncZbPZTajS89Jp0Z/exec';
+var lang='en';
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v);}catch(e){}return null;}
+(function(){var l=ls('gp_lang');if(l&&T[l])lang=l;else{var n=(navigator.language||'').toLowerCase();lang=/^id/.test(n)?'id':/^ms/.test(n)?'ms':'en';}})();
+function tr(k){return (T[lang]&&T[lang][k])||T.en[k]||k;}
+var $=function(id){return document.getElementById(id);};
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function pad(n){return (n<10?'0':'')+n;}
+var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var SRVOFF=0;function nowMs(){return Date.now()+SRVOFF;}
+function fmtDT(ms){var d=new Date(ms+7*3600000);return pad(d.getUTCDate())+' '+MON[d.getUTCMonth()]+' '+pad(d.getUTCHours())+':'+pad(d.getUTCMinutes())+' WIB';}
+function fmtD(iso){var m=/^(\d{4})-(\d\d)-(\d\d)/.exec(String(iso));return m?(+m[3])+' '+MON[+m[2]-1]+' '+m[1]:String(iso||'');}
+function stampTime(){var d=new Date(nowMs()+7*3600000);return pad(d.getUTCDate())+' '+MON[d.getUTCMonth()]+' '+d.getUTCFullYear()+'  '+pad(d.getUTCHours())+':'+pad(d.getUTCMinutes())+':'+pad(d.getUTCSeconds())+' WIB';}
+function errText(c){var k='err_'+c;return (T[lang]&&T[lang][k])||T.en[k]||String(c||'');}
+var ST={'Awaiting signatures':['stWait','wait','gWait'],'Pending release':['stPend','pend','gPend'],'Released':['stRel','rel','gRel'],'Rejected':['stRej','bad','gRej'],'Cancelled':['stCan','off','gCan'],'Expired':['stExp','off','gExp']};
+function chip(st){var x=ST[st]||['stWait','wait','gWait'];return '<span class="chip '+x[1]+'">'+esc(tr(x[0]))+'</span>';}
+
+/* ===== server ===== */
+function api(body,ms){
+  if(!API_URL)return Promise.reject(new Error('conf'));
+  var ctl=window.AbortController?new AbortController():null,t=ctl?setTimeout(function(){ctl.abort();},ms||30000):null;
+  return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body),redirect:'follow',signal:ctl?ctl.signal:undefined})
+    .then(function(r){return r.json();}).then(function(j){if(t)clearTimeout(t);if(j&&j.now)SRVOFF=j.now-Date.now();return j;},function(e){if(t)clearTimeout(t);throw e;});
+}
+
+/* ===== state ===== */
+var CFG={companies:['GSB','WEN','KKS','PBS'],depts:['Project Eng','Discipline Eng','HSSE','Stores'],validHours:48,maxItems:15,siteLead:''};
+try{var c0=JSON.parse(ls('gp_cfg')||'null');if(c0&&c0.companies)CFG=c0;}catch(e){}
+var MINE=[];try{MINE=JSON.parse(ls('gp_mine')||'[]');if(!Array.isArray(MINE))MINE=[];}catch(e){MINE=[];}
+function saveMine(){ls('gp_mine',JSON.stringify(MINE.slice(0,60)));}
+var SUM={};var CUR=null;var PASS=null;var LAST=null;
+var D=newDraft();
+function newDraft(){return {purpose:'',company:'',companyOther:'',vehicle:'',carrier:'',icNo:'',purposeText:'',dept:'',icRep:'',icPos:'',items:[{item:'',qty:'',unit:''}],photos:{},cid:Date.now().toString(36)+Math.random().toString(36).slice(2,10),step:1};}
+function saveDraft(){var o={};Object.keys(D).forEach(function(k){if(k!=='photos')o[k]=D[k];});ls('gp_draft',JSON.stringify(o));}
+try{var d0=JSON.parse(ls('gp_draft')||'null');if(d0&&d0.items){D=Object.assign(newDraft(),d0);D.photos={};}}catch(e){}
+
+/* ===== views ===== */
+var VIEWS=['vHome','vNew','vDone','vPass','vFind','vVerify','vAdmin'];
+function show(id){VIEWS.forEach(function(v){$(v).classList.toggle('hidden',v!==id);});window.scrollTo(0,0);}
+function h1(t){return '<h1>'+esc(t)+'</h1>';}
+function applyLang(){
+  document.documentElement.lang=lang;['EN','ID','MS'].forEach(function(l){$('l'+l).classList.toggle('on',lang===l.toLowerCase());});
+  $('ver').textContent=VERSION;$('banner').innerHTML=API_URL?'':'<div class="banner">'+esc(tr('notConf'))+'</div>';
+  rerender();
+}
+function setLang(l){lang=l;ls('gp_lang',l);applyLang();}
+function rerender(){
+  if(!$('vHome').classList.contains('hidden'))homeDraw();
+  else if(!$('vNew').classList.contains('hidden'))newDraw(true);
+  else if(!$('vDone').classList.contains('hidden'))doneDraw();
+  else if(!$('vPass').classList.contains('hidden'))passDraw();
+  else if(!$('vFind').classList.contains('hidden'))findDraw();
+  else if(!$('vVerify').classList.contains('hidden'))verifyDraw();
+  else if(!$('vAdmin').classList.contains('hidden'))adminDraw();
+}
+['EN','ID','MS'].forEach(function(l){$('l'+l).addEventListener('click',function(){setLang(l.toLowerCase());});});
+
+/* ===== home ===== */
+function homeOpen(){show('vHome');homeDraw();homeLoad();}
+function homeDraw(){
+  var h=h1(tr('title'))+'<button class="btn" id="hNew" type="button">'+esc(tr('newPass'))+'</button>';
+  h+='<div class="card"><b>'+esc(tr('how'))+'</b><ol style="margin:8px 0 0;padding-left:20px"><li>'+esc(tr('how1'))+'</li><li>'+esc(tr('how2'))+'</li><li>'+esc(tr('how3'))+'</li><li>'+esc(tr('how4'))+'</li></ol></div>';
+  h+='<h2>'+esc(tr('mine'))+'</h2>';
+  if(!MINE.length)h+='<p class="note">'+esc(tr('noneMine'))+'</p>';
+  MINE.slice(0,30).forEach(function(m){var s=SUM[m.ref];h+='<button class="pas" type="button" data-open="'+esc(m.ref)+'"><span><b>'+esc(m.ref)+'</b><small>'+esc((m.company||'')+' · '+(m.vehicle||''))+'</small></span>'+(s&&!s.gone?chip(s.status):'')+'</button>';});
+  h+='<div class="links"><button id="hRefresh" type="button">'+esc(tr('refresh'))+'</button> · <button id="hFind" type="button">'+esc(tr('find'))+'</button> · <button id="hAdmin" type="button">'+esc(tr('admin'))+'</button></div>';
+  $('vHome').innerHTML=h;
+}
+function homeLoad(){
+  if(!API_URL)return;
+  api({action:'config'}).then(function(r){if(r&&r.ok){CFG={companies:r.companies,depts:r.depts,validHours:r.validHours,maxItems:r.maxItems||15,siteLead:r.siteLead||''};ls('gp_cfg',JSON.stringify(CFG));}},function(){});
+  if(!MINE.length)return;
+  api({action:'mine',list:MINE.slice(0,40).map(function(m){return {ref:m.ref,token:m.token};})}).then(function(r){
+    if(!r||!r.ok)return;r.list.forEach(function(s){SUM[s.ref]=s;});if(!$('vHome').classList.contains('hidden'))homeDraw();
+  },function(){});
+}
+$('vHome').addEventListener('click',function(e){
+  var t=e.target.closest('button');if(!t)return;
+  if(t.id==='hNew'){newOpen();}
+  else if(t.id==='hRefresh'){homeLoad();}
+  else if(t.id==='hFind'){findOpen();}
+  else if(t.id==='hAdmin'){adminOpen();}
+  else if(t.getAttribute('data-open')){passOpen(t.getAttribute('data-open'));}
+});
+
+/* ===== new pass wizard ===== */
+function newOpen(){if(D.done){D=newDraft();}D.step=D.step||1;show('vNew');newDraw();}
+function opt(sel,k,b,txt){return '<button type="button" class="opt'+(sel?' sel':'')+'" data-purpose="'+k+'"><b>'+b+'</b><span>'+esc(txt)+'</span></button>';}
+function newDraw(keep){
+  var st=D.step,sc=window.pageYOffset,h='';
+  h+=h1(tr('newPass'));
+  h+='<div class="steps">'+[1,2,3,4].map(function(i){return '<i class="'+(i<=st?'on':'')+'"></i>';}).join('')+'</div><div class="stepl">'+esc(tr('stepOf').replace('{a}',st).replace('{b}',4))+' · '+esc(tr('s'+st))+'</div>';
+  if(st===1){
+    h+='<label>'+esc(tr('purposeLbl'))+'</label>'+opt(D.purpose==='A','A','A.',tr('purA'))+opt(D.purpose==='B','B','B.',tr('purB'));
+    h+='<label for="fCompany">'+esc(tr('company'))+'</label><select id="fCompany" data-f="company"><option value="">'+esc(tr('companyPick'))+'</option>'+CFG.companies.map(function(c){return '<option value="'+esc(c)+'"'+(D.company===c?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'<option value="__other"'+(D.company==='__other'?' selected':'')+'>'+esc(tr('other'))+'</option></select>';
+    if(D.company==='__other')h+='<label for="fCompanyOther">'+esc(tr('companyOther'))+'</label><input id="fCompanyOther" data-f="companyOther" maxlength="60" value="'+esc(D.companyOther)+'">';
+    h+='<label for="fVehicle">'+esc(tr('vehicle'))+'</label><input id="fVehicle" data-f="vehicle" maxlength="20" autocapitalize="characters" autocomplete="off" value="'+esc(D.vehicle)+'"><div class="note">'+esc(tr('vehicleHelp'))+'</div>';
+    h+='<label for="fCarrier">'+esc(tr('carrier'))+'</label><input id="fCarrier" data-f="carrier" maxlength="60" autocomplete="off" value="'+esc(D.carrier)+'">';
+    h+='<label for="fIcNo">'+esc(tr('icNo'))+'</label><input id="fIcNo" data-f="icNo" maxlength="30" autocomplete="off" value="'+esc(D.icNo)+'">';
+    h+='<label for="fPT">'+esc(tr('purposeText'))+'</label><textarea id="fPT" data-f="purposeText" maxlength="300">'+esc(D.purposeText)+'</textarea>';
+    h+='<label for="fDept">'+esc(tr('dept'))+'</label><select id="fDept" data-f="dept"><option value="">'+esc(tr('deptPick'))+'</option>'+CFG.depts.map(function(c){return '<option value="'+esc(c)+'"'+(D.dept===c?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select>';
+    h+='<label for="fRep">'+esc(tr('icRep'))+'</label><input id="fRep" data-f="icRep" maxlength="60" autocomplete="off" value="'+esc(D.icRep)+'">';
+    h+='<label for="fPos">'+esc(tr('icPos'))+'</label><input id="fPos" data-f="icPos" maxlength="40" autocomplete="off" value="'+esc(D.icPos)+'">';
+  }else if(st===2){
+    D.items.forEach(function(it,i){
+      h+='<div class="irow"><label style="margin-top:0">'+(i+1)+'. '+esc(tr('itemName'))+'</label><input data-i="'+i+'" data-k="item" maxlength="80" value="'+esc(it.item)+'" autocomplete="off"><div class="row3"><div><label style="margin-top:0">'+esc(tr('qty'))+'</label><input data-i="'+i+'" data-k="qty" inputmode="decimal" maxlength="8" value="'+esc(it.qty)+'"></div><div><label style="margin-top:0">'+esc(tr('unit'))+'</label><input data-i="'+i+'" data-k="unit" maxlength="12" placeholder="'+esc(tr('unitPh'))+'" value="'+esc(it.unit)+'"></div></div>'+(D.items.length>1?'<button class="btn danger sm" type="button" data-rm="'+i+'">'+esc(tr('remove'))+'</button>':'')+'</div>';
+    });
+    h+=D.items.length<CFG.maxItems?'<button class="btn ghost" id="addItem" type="button">+ '+esc(tr('addItem'))+'</button>':'<div class="note">'+esc(tr('itemsMax'))+'</div>';
+  }else if(st===3){
+    h+='<p class="note">'+esc(tr('photoHelp'))+'</p><div class="banner">'+esc(tr('topHint'))+'</div><div class="tiles">';
+    ['front','top','left','right'].forEach(function(v){h+=tileHtml(v);});
+    h+='</div>';
+  }else{
+    var co=D.company==='__other'?D.companyOther:D.company;
+    h+='<p class="note">'+esc(tr('reviewHelp'))+'</p><div class="card"><div class="kv"><span>'+esc(tr('purposeShort'))+'</span><span>'+esc(D.purpose+'. '+(D.purpose==='A'?tr('purA'):tr('purB')))+'</span><span>'+esc(tr('compShort'))+'</span><span>'+esc(co)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(D.vehicle.toUpperCase())+'</span><span>'+esc(tr('driver'))+'</span><span>'+esc(D.carrier)+' ('+esc(D.icNo)+')</span><span>'+esc(tr('ecoDept'))+'</span><span>'+esc(D.dept)+'</span><span>'+esc(tr('icRepShort'))+'</span><span>'+esc(D.icRep+(D.icPos?', '+D.icPos:''))+'</span><span>'+esc(tr('purposeText'))+'</span><span>'+esc(D.purposeText)+'</span></div>';
+    h+='<table class="it"><tr><th>#</th><th>'+esc(tr('itemName'))+'</th><th>'+esc(tr('qty'))+'</th></tr>'+validItems().map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(it.item)+'</td><td>'+esc(it.qty+(it.unit?' '+it.unit:''))+'</td></tr>';}).join('')+'</table>';
+    h+='<div class="row2" style="margin-top:10px">'+['front','top','left','right'].map(function(v){return '<div class="pv"><small class="note">'+esc(tr('ph_'+v))+'</small><img alt="" src="data:image/jpeg;base64,'+D.photos[v]+'"></div>';}).join('')+'</div></div>';
+  }
+  h+='<div class="err" id="nErr"></div>';
+  if(st<4)h+='<button class="btn" id="nNext" type="button">'+esc(tr('next'))+'</button>';else h+='<button class="btn amber" id="nSubmit" type="button">'+esc(tr('submit'))+'</button>';
+  h+='<button class="btn ghost" id="nBack" type="button">'+esc(st>1?tr('back'):tr('close'))+'</button>';
+  $('vNew').innerHTML=h;
+  if(keep)window.scrollTo(0,sc);
+}
+function tileHtml(v){var p=D.photos[v];return '<label class="tile'+(p?' on':' ph')+'" style="margin:0" data-tile="'+v+'">'+(p?'<img alt="" src="data:image/jpeg;base64,'+p+'"><span class="ck">&#10003;</span>':'')+'<span>'+esc(tr('ph_'+v))+'</span><small>'+esc(p?tr('retake'):tr('take'))+'</small><input type="file" accept="image/*" capture="environment" data-view="'+v+'"></label>';}
+function validItems(){return D.items.filter(function(it){return String(it.item).trim().length>=2&&Number(String(it.qty).replace(',','.'))>0;}).map(function(it){return {item:String(it.item).trim(),qty:Number(String(it.qty).replace(',','.')),unit:String(it.unit||'').trim()};});}
+function nerr(k,field){var e=$('nErr');if(e)e.textContent=tr(k);if(field){var f=document.querySelector(field);if(f){f.classList.add('bad');try{f.scrollIntoView({block:'center'});}catch(x){}}}}
+function stepOk(){
+  var s=D.step,co=D.company==='__other'?D.companyOther:D.company;
+  if(s===1){
+    if(D.purpose!=='A'&&D.purpose!=='B'){nerr('f_purpose');return false;}
+    if(!co||String(co).trim().length<2){nerr('f_company',D.company==='__other'?'#fCompanyOther':'#fCompany');return false;}
+    if(D.vehicle.trim().length<2){nerr('f_vehicle','#fVehicle');return false;}
+    if(D.carrier.trim().length<2){nerr('f_carrier','#fCarrier');return false;}
+    if(D.icNo.trim().length<3){nerr('f_icNo','#fIcNo');return false;}
+    if(D.purposeText.trim().length<3){nerr('f_purposeText','#fPT');return false;}
+    if(!D.dept){nerr('f_dept','#fDept');return false;}
+    if(D.icRep.trim().length<2){nerr('f_icRep','#fRep');return false;}
+  }else if(s===2){if(!validItems().length){nerr('f_items');return false;}}
+  else if(s===3){if(!['front','top','left','right'].every(function(v){return D.photos[v];})){nerr('f_photos');return false;}}
+  return true;
+}
+$('vNew').addEventListener('input',function(e){
+  var t=e.target,f=t.getAttribute('data-f'),i=t.getAttribute('data-i');
+  if(f){D[f]=t.value;t.classList.remove('bad');saveDraft();}
+  else if(i!==null){D.items[+i][t.getAttribute('data-k')]=t.value;saveDraft();}
+});
+$('vNew').addEventListener('change',function(e){
+  var t=e.target,f=t.getAttribute('data-f');
+  if(f==='company'){D.company=t.value;saveDraft();newDraw(true);}
+  if(t.getAttribute('data-view')){
+    var f0=t.files&&t.files[0],v=t.getAttribute('data-view');if(!f0)return;
+    var co=D.company==='__other'?D.companyOther:D.company;
+    shrink(f0,[stampTime(),tr('ph_'+v)+' | '+(D.vehicle||'').toUpperCase()+' | '+co],1100,0.6).then(function(p){D.photos[v]=p;var el=document.querySelector('[data-tile="'+v+'"]');if(el)el.outerHTML=tileHtml(v);var er0=$('nErr');if(er0)er0.textContent='';},function(){var er=$('nErr');if(er)er.textContent=tr('err_bad_photo');});
+  }
+});
+$('vNew').addEventListener('click',function(e){
+  var t=e.target.closest('button');if(!t)return;
+  if(t.getAttribute('data-purpose')){D.purpose=t.getAttribute('data-purpose');saveDraft();newDraw(true);}
+  else if(t.getAttribute('data-rm')!==null){D.items.splice(+t.getAttribute('data-rm'),1);saveDraft();newDraw(true);}
+  else if(t.id==='addItem'){D.items.push({item:'',qty:'',unit:''});saveDraft();newDraw(true);}
+  else if(t.id==='nNext'){if(stepOk()){D.step++;saveDraft();newDraw();window.scrollTo(0,0);}}
+  else if(t.id==='nBack'){if(D.step>1){D.step--;saveDraft();newDraw();window.scrollTo(0,0);}else homeOpen();}
+  else if(t.id==='nSubmit'){submit();}
+});
+function shrink(file,lines,max,q){
+  return new Promise(function(res,rej){
+    var u=URL.createObjectURL(file),im=new Image();
+    im.onload=function(){
+      var k=Math.min(1,(max||1100)/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');
+      c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);var x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);
+      if(lines&&lines.length){
+        var fs=Math.max(15,Math.round(c.width/24)),pd=Math.round(fs*0.45),bh=lines.length*Math.round(fs*1.25)+pd*2;
+        x.fillStyle='rgba(0,0,0,0.62)';x.fillRect(0,c.height-bh,c.width,bh);x.fillStyle='#fff';x.textBaseline='top';
+        lines.forEach(function(t,i){x.font=(i===0?'bold ':'')+fs+'px Arial,Helvetica,sans-serif';var s=t;while(s.length>4&&x.measureText(s).width>c.width-pd*2)s=s.slice(0,-2);if(s!==t)s=s.replace(/\s+$/,'')+'...';x.fillText(s,pd,c.height-bh+pd+i*Math.round(fs*1.25));});
+      }
+      res(c.toDataURL('image/jpeg',q||0.6).split(',')[1]);
+    };
+    im.onerror=function(){URL.revokeObjectURL(u);rej();};im.src=u;
+  });
+}
+var BUSY=false;
+function submit(){
+  if(BUSY)return;if(!stepOk())return;BUSY=true;
+  var co=D.company==='__other'?D.companyOther:D.company,its=validItems();
+  var body={action:'create',cid:D.cid,hp:'',purpose:D.purpose,company:co.trim(),vehicle:D.vehicle.trim(),carrier:D.carrier.trim(),icNo:D.icNo.trim(),purposeText:D.purposeText.trim(),dept:D.dept,icRep:D.icRep.trim(),icPos:D.icPos.trim(),items:its,photos:D.photos};
+  $('nSubmit').disabled=true;$('nErr').innerHTML='<span class="sp"></span>'+esc(tr('sending'));
+  api(body,120000).then(function(r){return r;},function(){return null;}).then(function(r){
+    BUSY=false;
+    if(!r){var e1=$('nErr');if(e1)e1.textContent=tr('err_net');var b=$('nSubmit');if(b)b.disabled=false;return;}
+    if(!r.ok){var e2=$('nErr');if(e2)e2.textContent=errText(r.err);var b2=$('nSubmit');if(b2)b2.disabled=false;return;}
+    LAST={ref:r.ref,date:r.date,purpose:D.purpose,carrier:body.carrier,icNo:body.icNo,company:body.company,vehicle:body.vehicle.toUpperCase(),purposeText:body.purposeText,dept:body.dept,icRep:body.icRep,icPos:body.icPos,items:its,siteLead:CFG.siteLead};
+    MINE.unshift({ref:r.ref,token:r.token,vehicle:LAST.vehicle,company:LAST.company,ts:Date.now()});saveMine();
+    SUM[r.ref]={ref:r.ref,status:'Awaiting signatures'};
+    D=newDraft();ls('gp_draft',null);
+    doneOpen();
+  });
+}
+
+/* ===== done ===== */
+function doneOpen(){show('vDone');doneDraw();}
+function doneDraw(){
+  if(!LAST){homeOpen();return;}
+  var h=h1(tr('doneTitle'))+'<div class="note" style="text-align:center">'+esc(tr('refLbl'))+'</div><div class="ref">'+esc(LAST.ref)+'</div>'+'<div class="qr">'+qrSvg(verifyUrl(LAST.ref))+'</div>';
+  h+='<p>'+esc(tr('doneNext'))+'</p><button class="btn amber" id="dPrint" type="button">'+esc(tr('printNow'))+'</button><button class="btn ghost" id="dOpen" type="button">'+esc(tr('openPass'))+'</button>';
+  $('vDone').innerHTML=h;
+}
+$('vDone').addEventListener('click',function(e){var t=e.target.closest('button');if(!t)return;if(t.id==='dPrint')printPass(LAST);else if(t.id==='dOpen')passOpen(LAST.ref);});
+
+/* ===== QR and print ===== */
+function verifyUrl(ref){return APP_URL+'?v='+encodeURIComponent(ref);}
+function qrSvg(text){
+  try{var q=qrcode(0,'M');q.addData(text);q.make();var n=q.getModuleCount(),p='';
+    for(var r=0;r<n;r++)for(var c=0;c<n;c++)if(q.isDark(r,c))p+='M'+c+' '+r+'h1v1h-1z';
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 '+(n+4)+' '+(n+4)+'" shape-rendering="crispEdges"><rect x="-2" y="-2" width="'+(n+4)+'" height="'+(n+4)+'" fill="#fff"/><path d="'+p+'" fill="#000"/></svg>';
+  }catch(e){return '';}
+}
+var LOGO=document.querySelector('.brand img').getAttribute('src');
+function printPass(p){
+  if(!p)return;
+  var rows='',n=Math.max(6,p.items.length);
+  for(var i=0;i<n;i++){var it=p.items[i];rows+='<tr><td style="text-align:center;width:9%">'+(it?(i+1):'')+'</td><td>'+(it?esc(it.item):'')+'</td><td style="text-align:center;width:17%">'+(it?esc(it.qty+(it.unit?' '+it.unit:'')):'')+'</td></tr>';}
+  var h='<div class="pg'+(p.items.length>8?' cmp':'')+'"><table class="hd"><tr><td class="lg" rowspan="3"><img alt="" src="'+LOGO+'"></td><td class="k">Item</td><td class="v">: EOSM-HSSE-FM003</td></tr><tr><td class="k">Revision No</td><td class="v">: Initial Issue</td></tr><tr><td class="k">Date</td><td class="v">: February, 3rd 2026</td></tr></table>';
+  h+='<div class="addr">PT EcoOils Jaya Indonesia, Jl Kelapa Sawit II,<br>Kav 6 Kawasan Ekonomi Khusus<br>Sei Mangkei &ndash; Bosar Maligas<br>Simalungun 21183</div>';
+  h+='<div class="ttl">MATERIAL GATE PASS</div>';
+  h+='<div class="top"><div><div class="ln">SR NO: <span class="u" style="min-width:48mm">'+esc(p.ref)+'</span></div><div class="ln">DATE: <span class="u" style="min-width:48mm">'+esc(fmtD(p.date))+'</span></div>';
+  h+='<div class="ln" style="margin-top:3mm">THIS NON-RETURNABLE GATE PASS IS USED FOR</div><div class="ln" style="margin-left:6mm"><span class="chk">'+(p.purpose==='A'?'X':'')+'</span>A.&nbsp; SENDING BACK REJECTED ITEMS TO SUPPLIER</div><div class="ln" style="margin-left:6mm"><span class="chk">'+(p.purpose==='B'?'X':'')+'</span>B.&nbsp; SENDING BACK CONTRACTOR&rsquo;S OWN MATERIAL</div></div><div>'+qrSvg(verifyUrl(p.ref))+'</div></div>';
+  h+='<div class="ln" style="margin-top:3mm">TO: SECURITY</div><div class="ln">PLEASE ALLOWS MR/MISS: <span class="u" style="min-width:70mm">'+esc(p.carrier)+'</span> &nbsp;I/C NO: <span class="u" style="min-width:42mm">'+esc(p.icNo)+'</span></div>';
+  h+='<div class="ln">COMPANY NAME: <span class="u" style="min-width:140mm">'+esc(p.company)+'</span></div><div class="ln">VEHICLE NO: <span class="u" style="min-width:140mm">'+esc(p.vehicle)+'</span></div>';
+  h+='<div class="ln">PURPOSE OF TAKING THE ITEM OUT: <span class="u" style="display:block;margin-top:1mm;min-width:0;font-weight:600">'+esc(p.purposeText)+'</span></div>';
+  h+='<table class="items" style="margin-top:4mm"><tr><th>S/NO</th><th>ITEM</th><th>QTY.</th></tr>'+rows+'</table>';
+  h+='<div class="sig"><div><b>CARRIED BY:</b><div class="l"></div><small>(Person taking the material out)</small><div style="font-size:9pt">'+esc(p.carrier)+'</div></div><div><b>CHECKED BY:</b><div class="l"></div><small>(IC responsible Person- Lead/Store in charge)</small><div style="font-size:9pt">'+esc(p.icRep+(p.icPos?', '+p.icPos:''))+'</div></div></div>';
+  h+='<div class="sig" style="margin-top:4mm"><div><b>EcoOils Rep:</b><div class="l"></div><small>(Proj/Eng, Discipline Eng, HSSE, Stores)</small><div style="font-size:9pt">'+esc(p.dept)+'</div></div><div><b>Approval By:</b><div class="l"></div><small>(EcoOils Site Lead)</small><div style="font-size:9pt">'+esc(p.siteLead||'')+'</div></div></div>';
+  h+='<div class="ft"><span>COPY: <i>SECURITY / CARRIER / STORES</i></span><span class="vf">'+esc(p.ref)+' &middot; '+esc(APP_URL)+'</span></div></div>';
+  $('printArea').innerHTML=h;
+  var old=document.title;document.title=p.ref;
+  var back=function(){document.title=old;window.removeEventListener('afterprint',back);};window.addEventListener('afterprint',back);
+  setTimeout(function(){window.print();},120);
+}
+
+/* ===== pass detail ===== */
+var SG=[];
+function tokenOf(ref){for(var i=0;i<MINE.length;i++)if(MINE[i].ref===ref)return MINE[i].token;return '';}
+function passOpen(ref){CUR=ref;PASS=null;SG=[];show('vPass');$('vPass').innerHTML=h1(ref)+'<p><span class="sp"></span>'+esc(tr('loading'))+'</p>';passLoad();}
+function passLoad(){
+  api({action:'get',ref:CUR,token:tokenOf(CUR)}).then(function(r){
+    if(!r||!r.ok){$('vPass').innerHTML=h1(CUR)+'<p class="err">'+esc(r?errText(r.err):tr('err_net'))+'</p><button class="btn ghost" id="pBack" type="button">'+esc(tr('back'))+'</button>';return;}
+    PASS=r.pass;SUM[PASS.ref]=PASS;passDraw();
+  },function(){$('vPass').innerHTML=h1(CUR)+'<p class="err">'+esc(tr('err_net'))+'</p><button class="btn ghost" id="pBack" type="button">'+esc(tr('back'))+'</button>';});
+}
+function passDraw(){
+  var p=PASS;if(!p)return;var x=ST[p.status]||ST['Awaiting signatures'],h=h1(p.ref);
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'+chip(p.status)+'<span class="note">'+esc(fmtD(p.date))+'</span></div><p>'+esc(tr(x[2]))+'</p>';
+  if((p.status==='Awaiting signatures'||p.status==='Pending release')&&p.validUntil)h+='<div class="note">'+esc(tr('validUntil'))+': '+esc(fmtDT(p.validUntil))+'</div>';
+  if(p.status==='Released')h+='<div class="card"><b>'+esc(tr('releasedBy'))+'</b>: '+esc(p.decidedBy)+'<br><span class="note">'+esc(p.decidedAt)+' WIB</span></div>';
+  if(p.status==='Rejected')h+='<div class="card"><b>'+esc(tr('rejReason'))+'</b>: '+esc(p.note)+'<br><span class="note">'+esc(p.decidedBy)+' · '+esc(p.decidedAt)+' WIB</span></div>';
+  if(p.status==='Cancelled'&&p.cancelReason)h+='<div class="card">'+esc(p.cancelReason)+'</div>';
+  if(p.status==='Awaiting signatures'||p.status==='Pending release'){
+    h+='<button class="btn amber" id="pPrint" type="button">'+esc(tr('printAgain'))+'</button>';
+    h+='<h2>'+esc(p.status==='Pending release'?tr('replaceSigned'):tr('upload'))+'</h2><p class="note">'+esc(tr('signedHelp'))+'</p>';
+    h+='<div class="tiles">'+SG.map(function(s,i){return '<div class="tile on" style="cursor:default"><img alt="" src="data:image/jpeg;base64,'+s+'"><button class="btn danger sm" type="button" data-sgrm="'+i+'">'+esc(tr('remove'))+'</button></div>';}).join('')+(SG.length<2?'<label class="tile ph" style="margin:0"><span>'+esc(tr('addPage'))+'</span><input type="file" accept="image/*" capture="environment" id="sgIn"></label>':'')+'</div>';
+    h+='<div class="err" id="pErr"></div>'+(SG.length?'<button class="btn" id="pSend" type="button">'+esc(tr('sendSigned'))+'</button>':'');
+  }else h+='<button class="btn ghost" id="pPrint" type="button">'+esc(tr('printAgain'))+'</button>';
+  h+='<h2>'+esc(tr('items'))+'</h2><div class="card"><div class="kv"><span>'+esc(tr('compShort'))+'</span><span>'+esc(p.company)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(p.vehicle)+'</span><span>'+esc(tr('driver'))+'</span><span>'+esc(p.carrier)+'</span><span>'+esc(tr('purposeText'))+'</span><span>'+esc(p.purposeText)+'</span></div><table class="it"><tr><th>#</th><th>'+esc(tr('itemName'))+'</th><th>'+esc(tr('qty'))+'</th></tr>'+p.items.map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(it.item)+'</td><td>'+esc(it.qty+(it.unit?' '+it.unit:''))+'</td></tr>';}).join('')+'</table></div>';
+  if(p.status==='Awaiting signatures'||p.status==='Pending release')h+='<button class="btn danger" id="pCancel" type="button">'+esc(tr('cancelPass'))+'</button>';
+  if(p.status==='Rejected'||p.status==='Expired'||p.status==='Cancelled')h+='<button class="btn" id="pNew" type="button">'+esc(tr('newPass'))+'</button>';
+  h+='<button class="btn ghost" id="pBack" type="button">'+esc(tr('back'))+'</button>';
+  $('vPass').innerHTML=h;
+}
+$('vPass').addEventListener('change',function(e){
+  if(e.target.id==='sgIn'){var f=e.target.files&&e.target.files[0];if(!f)return;shrink(f,null,1600,0.7).then(function(p){SG.push(p);passDraw();},function(){var er=$('pErr');if(er)er.textContent=tr('err_bad_photo');});}
+});
+$('vPass').addEventListener('click',function(e){
+  var t=e.target.closest('button');if(!t)return;
+  if(t.id==='pBack'){homeOpen();}
+  else if(t.getAttribute('data-sgrm')!==null){SG.splice(+t.getAttribute('data-sgrm'),1);passDraw();}
+  else if(t.id==='pPrint'){if(PASS){PASS.siteLead=PASS.siteLead||CFG.siteLead;printPass(PASS);}}
+  else if(t.id==='pNew'){D=newDraft();newOpen();}
+  else if(t.id==='pSend'){
+    if(!SG.length){var e0=$('pErr');if(e0)e0.textContent=tr('f_signed');return;}
+    if(BUSY)return;BUSY=true;t.disabled=true;$('pErr').innerHTML='<span class="sp"></span>'+esc(tr('sending'));
+    api({action:'signed',ref:CUR,token:tokenOf(CUR),photos:SG},120000).then(function(r){return r;},function(){return null;}).then(function(r){
+      BUSY=false;
+      if(!r){$('pErr').textContent=tr('err_net');t.disabled=false;return;}
+      if(!r.ok){$('pErr').textContent=errText(r.err);t.disabled=false;return;}
+      SG=[];passLoad();
+    });
+  }
+  else if(t.id==='pCancel'){
+    var why=window.prompt(tr('cancelWhy'),'');if(why===null)return;if(!window.confirm(tr('cancelConfirm')))return;
+    api({action:'cancel',ref:CUR,token:tokenOf(CUR),reason:why}).then(function(r){if(r&&r.ok)passLoad();else{var er=$('pErr');alert(errText(r&&r.err));}},function(){alert(tr('err_net'));});
+  }
+});
+
+/* ===== find a pass ===== */
+function findOpen(){show('vFind');findDraw();}
+function findDraw(){
+  $('vFind').innerHTML=h1(tr('find'))+'<p class="note">'+esc(tr('findHelp'))+'</p><label for="fdRef">'+esc(tr('refLbl'))+'</label><input id="fdRef" placeholder="'+esc(tr('refPh'))+'" autocapitalize="characters" autocomplete="off"><label for="fdVeh">'+esc(tr('vehicle'))+'</label><input id="fdVeh" autocapitalize="characters" autocomplete="off"><div class="err" id="fdErr"></div><button class="btn" id="fdGo" type="button">'+esc(tr('findGo'))+'</button><button class="btn ghost" id="fdBack" type="button">'+esc(tr('back'))+'</button>';
+}
+$('vFind').addEventListener('click',function(e){
+  var t=e.target.closest('button');if(!t)return;
+  if(t.id==='fdBack')homeOpen();
+  if(t.id==='fdGo'){
+    var ref=$('fdRef').value.trim().toUpperCase(),veh=$('fdVeh').value.trim();
+    api({action:'find',ref:ref,vehicle:veh}).then(function(r){
+      if(!r||!r.ok){$('fdErr').textContent=errText(r&&r.err);return;}
+      MINE=MINE.filter(function(m){return m.ref!==r.ref;});MINE.unshift({ref:r.ref,token:r.token,vehicle:r.pass.vehicle,company:r.pass.company,ts:Date.now()});saveMine();passOpen(r.ref);
+    },function(){$('fdErr').textContent=tr('err_net');});
+  }
+});
+
+/* ===== public verify (QR from a phone camera) ===== */
+var VREF='',VRES=null;
+function verifyOpen(ref){VREF=ref;VRES=null;show('vVerify');verifyDraw();api({action:'verify',ref:ref}).then(function(r){VRES=r||{ok:false};verifyDraw();},function(){VRES={ok:false,err:'net'};verifyDraw();});}
+function verifyDraw(){
+  var h=h1(tr('title'))+'<div class="ref" style="font-size:24px">'+esc(VREF)+'</div>';
+  if(!VRES)h+='<p style="text-align:center"><span class="sp"></span>'+esc(tr('loading'))+'</p>';
+  else if(!VRES.ok)h+='<div class="vbox bad"><div class="big">'+esc(errText(VRES.err||'server'))+'</div></div>';
+  else if(!VRES.found)h+='<div class="vbox bad"><div class="big">'+esc(tr('v_nf'))+'</div><div>'+esc(tr('v_nf2'))+'</div></div>';
+  else{
+    var s=VRES.status,cls=s==='Pending release'?'ok':s==='Released'?'ok':s==='Awaiting signatures'?'wait':'bad';
+    var k=s==='Pending release'?['v_ready','v_ready2']:s==='Released'?['v_rel','']:s==='Awaiting signatures'?['v_wait','v_wait2']:s==='Rejected'?['v_rej','']:s==='Cancelled'?['v_can','']:['v_exp',''];
+    h+='<div class="vbox '+cls+'"><div class="big">'+esc(tr(k[0]))+'</div>'+(k[1]?'<div>'+esc(tr(k[1]))+'</div>':'')+(s==='Released'&&VRES.decidedAt?'<div>'+esc(VRES.decidedAt)+' WIB</div>':'')+'</div>';
+    h+='<div class="card"><div class="kv"><span>'+esc(tr('date'))+'</span><span>'+esc(fmtD(VRES.date))+'</span><span>'+esc(tr('compShort'))+'</span><span>'+esc(VRES.company)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(VRES.vehicle)+'</span><span>'+esc(tr('items'))+'</span><span>'+esc(VRES.items)+'</span></div></div>';
+  }
+  h+='<a class="btn ghost" href="'+esc(APP_URL)+'">'+esc(tr('openApp'))+'</a>';
+  $('vVerify').innerHTML=h;
+}
+
+/* ===== admin ===== */
+var AD={pin:ls('gp_apin')||'',list:null,counts:{},q:'',st:'',sel:null};
+function adminOpen(){show('vAdmin');if(AD.pin)adminLoad();else adminDraw();}
+function adminLoad(){
+  api({action:'a_list',pin:AD.pin,q:AD.q,status:AD.st}).then(function(r){
+    if(!r||!r.ok){if(r&&r.err==='pin'){AD.pin='';ls('gp_apin',null);}AD.err=r?errText(r.err):tr('err_net');adminDraw();return;}
+    AD.list=r.list;AD.counts=r.counts;AD.err='';adminDraw();
+  },function(){AD.err=tr('err_net');adminDraw();});
+}
+function adminDraw(){
+  var h=h1(tr('admin'));
+  if(!AD.pin){h+='<label for="adPin">'+esc(tr('pin'))+'</label><input id="adPin" type="password" inputmode="numeric" autocomplete="off" maxlength="12"><div class="err">'+esc(AD.err||'')+'</div><button class="btn" id="adGo" type="button">'+esc(tr('login'))+'</button><button class="btn ghost" id="adBack" type="button">'+esc(tr('back'))+'</button>';$('vAdmin').innerHTML=h;return;}
+  if(AD.sel){adminDetailDraw(h);return;}
+  h+='<div class="row2"><input id="adQ" placeholder="'+esc(tr('search'))+'" value="'+esc(AD.q)+'"><select id="adSt"><option value="">'+esc(tr('all'))+'</option>'+Object.keys(ST).map(function(s){return '<option value="'+esc(s)+'"'+(AD.st===s?' selected':'')+'>'+esc(tr(ST[s][0]))+' ('+(AD.counts[s]||0)+')</option>';}).join('')+'</select></div>';
+  h+='<div class="err">'+esc(AD.err||'')+'</div>';
+  (AD.list||[]).forEach(function(s){h+='<button class="pas" type="button" data-adopen="'+esc(s.ref)+'"><span><b>'+esc(s.ref)+'</b><small>'+esc(s.company+' · '+s.vehicle+' · '+s.carrier)+'<br>'+esc(s.createdAt)+'</small></span>'+chip(s.status)+'</button>';});
+  h+='<button class="btn ghost" id="adCsv" type="button">'+esc(tr('csv'))+'</button><button class="btn ghost" id="adOut" type="button">'+esc(tr('logout'))+'</button><button class="btn ghost" id="adBack" type="button">'+esc(tr('back'))+'</button>';
+  $('vAdmin').innerHTML=h;
+}
+function adminDetailDraw(h){
+  var d=AD.sel,p=d.pass;
+  h+='<div class="ref" style="font-size:24px">'+esc(p.ref)+'</div><div>'+chip(p.status)+'</div><div class="card"><div class="kv"><span>'+esc(tr('compShort'))+'</span><span>'+esc(p.company)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(p.vehicle)+'</span><span>'+esc(tr('driver'))+'</span><span>'+esc(p.carrier+' ('+p.icNo+')')+'</span><span>'+esc(tr('ecoDept'))+'</span><span>'+esc(p.dept)+'</span><span>'+esc(tr('icRepShort'))+'</span><span>'+esc(p.icRep+' '+p.icPos)+'</span><span>'+esc(tr('purposeText'))+'</span><span>'+esc(p.purposeText)+'</span>'+(p.decidedBy?'<span>'+esc(tr('releasedBy'))+'</span><span>'+esc(p.decidedBy+' · '+p.decidedAt)+(p.note?' · '+esc(p.note):'')+'</span>':'')+(d.lat!==''&&d.lat!=null?'<span>GPS</span><span>'+esc(d.lat+', '+d.lng)+'</span>':'')+'</div>';
+  h+='<table class="it"><tr><th>#</th><th>'+esc(tr('itemName'))+'</th><th>'+esc(tr('qty'))+'</th></tr>'+p.items.map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(it.item)+'</td><td>'+esc(it.qty+(it.unit?' '+it.unit:''))+'</td></tr>';}).join('')+'</table></div>';
+  h+='<h2>'+esc(tr('links'))+'</h2><div>'+['front','top','left','right'].map(function(v){return '<a class="btn ghost sm" target="_blank" rel="noopener" href="'+esc(d.links[v])+'">'+esc(tr('ph_'+v))+'</a>';}).join('')+d.links.signed.map(function(u,i){return '<a class="btn sm" target="_blank" rel="noopener" href="'+esc(u)+'">'+esc(tr('upload'))+' '+(i+1)+'</a>';}).join('')+'</div>';
+  h+='<h2>'+esc(tr('auditLog'))+'</h2><table class="it adm"><tr><th>Time</th><th>Event</th><th>By</th><th>Detail</th></tr>'+d.log.map(function(l){return '<tr><td>'+esc(l.t)+'</td><td>'+esc(l.ev)+'</td><td>'+esc(l.by)+'</td><td>'+esc(l.d)+'</td></tr>';}).join('')+'</table>';
+  if(p.status==='Awaiting signatures'||p.status==='Pending release')h+='<button class="btn danger" id="adCancel" type="button">'+esc(tr('adminCancel'))+'</button>';
+  h+='<button class="btn" id="adPrint" type="button">'+esc(tr('printAgain'))+'</button><button class="btn ghost" id="adList" type="button">'+esc(tr('back'))+'</button>';
+  $('vAdmin').innerHTML=h;
+}
+$('vAdmin').addEventListener('input',function(e){if(e.target.id==='adQ'){AD.q=e.target.value;clearTimeout(AD.tm);AD.tm=setTimeout(adminLoad,400);}});
+$('vAdmin').addEventListener('change',function(e){if(e.target.id==='adSt'){AD.st=e.target.value;adminLoad();}});
+$('vAdmin').addEventListener('click',function(e){
+  var t=e.target.closest('button');if(!t)return;
+  if(t.id==='adBack')homeOpen();
+  else if(t.id==='adGo'){AD.pin=$('adPin').value.trim();ls('gp_apin',AD.pin);adminLoad();}
+  else if(t.id==='adOut'){AD.pin='';AD.list=null;ls('gp_apin',null);adminDraw();}
+  else if(t.id==='adList'){AD.sel=null;adminDraw();}
+  else if(t.getAttribute('data-adopen')){api({action:'a_get',pin:AD.pin,ref:t.getAttribute('data-adopen')}).then(function(r){if(r&&r.ok){AD.sel=r;adminDraw();}else{AD.err=errText(r&&r.err);adminDraw();}});}
+  else if(t.id==='adCancel'){var why=window.prompt(tr('cancelWhy'),'');if(why===null)return;api({action:'a_cancel',pin:AD.pin,ref:AD.sel.pass.ref,reason:why}).then(function(r){AD.sel=null;adminLoad();});}
+  else if(t.id==='adPrint'){var p=AD.sel.pass;p.siteLead=p.siteLead||CFG.siteLead;printPass(p);}
+  else if(t.id==='adCsv'){csv();}
+});
+function csv(){
+  var rows=[['Ref','Date','Company','Vehicle','Carrier','Items','Status','Created','Signed','Decided by','Decided at','Note']].concat((AD.list||[]).map(function(s){return [s.ref,s.date,s.company,s.vehicle,s.carrier,s.items,s.status,s.createdAt,s.signedAt,s.decidedBy,s.decidedAt,s.note];}));
+  var txt=rows.map(function(r){return r.map(function(c){return '"'+String(c==null?'':c).replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+txt],{type:'text/csv'}));a.download='material-gate-passes.csv';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);
+}
+
+/* ===== start ===== */
+(function(){
+  applyLang();
+  var m=/[?&]v=([^&#]+)/.exec(location.search);
+  if(m){verifyOpen(decodeURIComponent(m[1]).toUpperCase());return;}
+  homeOpen();
+})();
+setInterval(function(){if(!document.hidden&&!$('vHome').classList.contains('hidden'))homeLoad();},60000);
+
+</script>
+</body></html>
