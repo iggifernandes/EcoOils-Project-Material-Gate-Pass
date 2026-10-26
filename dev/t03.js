@@ -1,0 +1,14 @@
+const m=require('./mock.js')();
+let fails=0;const ok=(c,t)=>{console.log((c?'PASS ':'FAIL ')+t);if(!c)fails++};
+const jpg=Buffer.concat([Buffer.from([255,216,255,224]),Buffer.alloc(3000,7)]).toString('base64');
+const photos={front:jpg,top:jpg,left:jpg,right:jpg};
+const mk=(co,cid)=>({action:'create',purpose:'B',carrier:'Budi',icNo:'KTP 1271012345678901',company:co,vehicle:'BK 1 XY',purposeText:'Own scaffold tubes',dept:'Stores',icRep:'Andi',icPos:'Supervisor',items:[{item:'Tube 6m',qty:10,unit:'pcs'}],photos,cid,hp:''});
+const a=m.call(mk('GSB','c1')),b=m.call(mk('GSB','c2')),c=m.call(mk('WEN','c3'));
+const ym=a.ref.split('-')[2];
+ok(/^MGP-GSB-\d{4}-0001$/.test(a.ref)&&b.ref.endsWith('-0002'),'GSB serials run 0001, 0002: '+a.ref+' '+b.ref);
+ok(c.ref===`MGP-WEN-${ym}-0001`,'WEN has its own serial: '+c.ref);
+ok((m.folders[a.ref]||[]).length===4&&(m.folders[c.ref]||[]).length===4,'each pass has its own folder with 4 photos');
+ok(m.call({action:'verify',ref:a.ref}).found===true,'verify works with the new reference');
+const bad=m.call({...mk('GSB','c9'),icNo:'KTP 12345'}),bad2=m.call({...mk('GSB','c10'),icNo:'1271012345678901'}),sim=m.call({...mk('GSB','c11'),icNo:'SIM 123456789012'});
+ok(!bad.ok&&bad.err==='bad_icno'&&!bad2.ok&&sim.ok,'server accepts KTP 16 digits / SIM 12 digits only, with the document type');
+console.log(fails?'FAILURES '+fails:'ALL PASSED');process.exit(fails?1:0);
