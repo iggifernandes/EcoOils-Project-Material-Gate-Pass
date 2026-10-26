@@ -1,8 +1,8 @@
 const m=require('./mock.js')();
 let fails=0;const ok=(c,t)=>{console.log((c?'PASS ':'FAIL ')+t);if(!c)fails++};
 const jpg=Buffer.concat([Buffer.from([255,216,255,224]),Buffer.alloc(3000,7)]).toString('base64');
-const photos={front:jpg,top:jpg,left:jpg,right:jpg};
-const base={action:'create',purpose:'A',carrier:'Budi Santoso',icNo:'KTP 1271012345678901',company:'GSB',vehicle:'bk 1234 xy',purposeText:'Return rejected pipes to supplier',dept:'Stores',icRep:'Andi Wijaya',icPos:'Store lead',items:[{item:'Carbon steel pipe 6in',qty:12,unit:'pcs'},{item:'Gasket',qty:40,unit:''}],photos,hp:''};
+const photos={front:jpg,load:jpg};
+const base={action:'create',purpose:'A',carrier:'Budi Santoso',icNo:'KTP 1271012345678901',company:'GSB',vehicle:'bk 1234 xy',purposeText:'Return rejected pipes to supplier',dept:'Stores',icRep:'Andi Wijaya',icPos:'Store lead',icPhone:'+62 812 3456 7890',items:[{item:'Carbon steel pipe 6in',qty:12,unit:'pcs'},{item:'Gasket',qty:40,unit:'pcs'}],photos,hp:''};
 const cfg=m.call({action:'config'});
 ok(cfg.ok&&cfg.companies.join()==='GSB,WEN,KKS,PBS'&&cfg.depts.length===4&&cfg.maxItems===15,'config lists companies and departments');
 ok(m.props.ADMIN_PIN&&/^\d{6}$/.test(m.props.ADMIN_PIN)&&m.props.BRIDGE_SECRET.length>=32,'setup made ADMIN_PIN and BRIDGE_SECRET');
@@ -12,14 +12,14 @@ const r2=m.call(base);
 ok(r2.ok&&r2.ref.endsWith('-0002'),'second pass gets the next serial '+r2.ref);
 ok(m.sheets.Passes.rows[1][7]==='BK 1234 XY'&&m.sheets.Passes.rows[1][13]==='Awaiting signatures'&&m.sheets.Passes.rows[1][14]!==r1.token,'vehicle upper-cased, status Awaiting signatures, token stored hashed only');
 ok(m.sheets.Items.rows.length===1+4&&m.sheets.Items.rows[1][2]==='Carbon steel pipe 6in','items stored');
-ok(Object.keys(m.files).length===8,'4 photos per pass saved to Drive');
+ok(Object.keys(m.files).length===4,'2 photos per pass saved to Drive');
 // validation
 ok(m.call({...base,hp:'x'}).err==='bad','honeypot refused');
 ok(m.call({...base,vehicle:''}).err==='bad_vehicle','vehicle required');
 ok(m.call({...base,items:[]}).err==='bad_items','items required');
 ok(m.call({...base,items:Array(16).fill({item:'x1',qty:1})}).err==='bad_items','max 15 items');
 ok(m.call({...base,items:[{item:'ab',qty:-1}]}).err==='bad_items','qty must be positive');
-ok(m.call({...base,photos:{...photos,top:'AAAA'}}).err==='bad_photo','4 real jpeg photos required');
+ok(m.call({...base,photos:{...photos,load:'AAAA'}}).err==='bad_photo','2 real jpeg photos required');
 ok(m.call({...base,dept:'Kitchen'}).err==='bad_dept','department must be on the list');
 ok(m.call({...base,purpose:'C'}).err==='bad_purpose','purpose A or B');
 // token protection
@@ -40,11 +40,11 @@ ok(rel.err==='not_ready','cannot release without signed copy');
 ok(m.call({action:'signed',ref:r1.ref,token:'bad',photos:[jpg]}).err==='notfound','signed upload needs the token');
 ok(m.call({action:'signed',ref:r1.ref,token:r1.token,photos:['AAAA']}).err==='bad_photo','signed copy must be an image');
 const s=m.call({action:'signed',ref:r1.ref,token:r1.token,photos:[jpg,jpg]});
-ok(s.ok&&s.status==='Pending release'&&s.validUntil>Date.now(),'signed copy uploaded, pending release');
+ok(s.ok&&s.status==='Pending release','signed copy uploaded, pending release');
 const pl=m.call({action:'b_list',secret:sec});
 ok(pl.n===1&&pl.list[0].ref===r1.ref,'pending list shows the pass');
 const bg=m.call({action:'b_get',secret:sec,ref:r1.ref});
-ok(bg.ok&&bg.ready&&bg.images.front.startsWith('data:image/jpeg;base64,')&&bg.images.signed.length===2&&bg.pass.carrier==='Budi Santoso','guard get returns pass, 4 views and signed copy images');
+ok(bg.ok&&bg.ready&&bg.images.front.startsWith('data:image/jpeg;base64,')&&bg.images.signed.length===2&&bg.pass.carrier==='Budi Santoso','guard get returns pass, 2 views and signed copy images');
 // reject needs reason, release logs guard
 ok(m.call({action:'b_release',secret:sec,ref:r1.ref,by:'Dedi',decision:'reject'}).err==='need_reason','reject needs a reason');
 rel=m.call({action:'b_release',secret:sec,ref:r1.ref,by:'Dedi',role:'Security Guard',decision:'release',lat:3.13,lng:99.35,acc:9,checks:{plate:true}});
@@ -64,8 +64,8 @@ const rj=m.call({action:'b_release',secret:sec,ref:r3.ref,by:'Rian',decision:'re
 ok(rj.ok&&rj.status==='Rejected'&&m.call({action:'verify',ref:r3.ref}).status==='Rejected','guard can reject with a reason');
 // expiry
 const r4=m.call(base);m.call({action:'signed',ref:r4.ref,token:r4.token,photos:[jpg]});
-const real=Date.now.bind(Date);Date.now=()=>real()+49*3600000;
-ok(m.call({action:'verify',ref:r4.ref}).status==='Expired'&&m.call({action:'b_list',secret:sec}).n===0,'pass expires 48 h after the signed copy and leaves the pending list');
+const real=Date.now.bind(Date);Date.now=()=>real()+26*3600000;
+ok(m.call({action:'verify',ref:r4.ref}).status==='Expired'&&m.call({action:'b_list',secret:sec}).n===0,'pass is valid only on the day it was issued; next day it expires and leaves the pending list');
 ok(m.call({action:'b_release',secret:sec,ref:r4.ref,by:'Dedi',decision:'release'}).err==='expired','expired pass cannot be released');
 Date.now=real;
 // mine + find

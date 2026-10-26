@@ -77,13 +77,30 @@ table.it{border-collapse:collapse;width:100%;font-size:14px;margin-top:6px}table
 .scroll{overflow-x:auto}
 .adm td,.adm th{font-size:13px}
 #printArea{display:none}
+.ovl{position:fixed;inset:0;z-index:50;background:#000;color:#fff;display:flex;flex-direction:column}
+.ovl.hidden{display:none}
+.ovbar{position:absolute;top:0;left:0;right:0;display:flex;gap:8px;justify-content:flex-end;align-items:center;padding:10px;z-index:3;background:linear-gradient(#000a,#0000)}
+.ovbar button{min-width:46px;min-height:46px;border-radius:999px;border:1px solid #fff8;background:#0008;color:#fff;font:600 22px Jost,Arial,sans-serif;cursor:pointer}
+.zmst{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none}
+.zmst img{max-width:100%;max-height:100%;transform-origin:center;user-select:none;-webkit-user-drag:none}
+#scn video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#scF{position:absolute;border:3px solid #fff;border-radius:6px;box-shadow:0 0 0 100vmax #0009;z-index:2;pointer-events:none}
+#scT{margin-right:auto;font-weight:300;letter-spacing:.14em;text-transform:uppercase;color:#fff;padding-left:6px}
+#scMsg{position:absolute;left:12px;right:12px;bottom:112px;text-align:center;font-size:14px;z-index:3;text-shadow:0 1px 3px #000}
+#scP{position:absolute;inset:56px 0 120px;margin:auto;max-width:100%;max-height:calc(100% - 176px);background:#fff;z-index:2}
+.scbt{position:absolute;left:0;right:0;bottom:0;display:flex;gap:12px;justify-content:center;align-items:center;padding:14px;z-index:3;background:linear-gradient(#0000,#000b)}
+.scbt .btn{width:auto;margin:0;padding:0 18px}
+#scShot{width:68px;height:68px;border-radius:50%;border:5px solid #fff;background:#fff3;cursor:pointer}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+img[data-zoom]{cursor:zoom-in}
 @media print{
- @page{size:A4;margin:9mm 10mm}
+ @page{size:A4;margin:0}
  html,body{background:#fff!important;margin:0!important}
  body>*:not(#printArea){display:none!important}
  #printArea{display:block!important;color:#000}
 }
-#printArea .pg{font-family:Jost,Arial,Helvetica,sans-serif;font-size:10pt;color:#000;width:100%;line-height:1.3}
+#printArea .pg{font-family:Jost,Arial,Helvetica,sans-serif;font-size:10pt;color:#000;width:100%;line-height:1.3;box-sizing:border-box;padding:8mm 10mm 6mm;height:296mm;display:flex;flex-direction:column;overflow:hidden}
+#printArea .pg>.ft{margin-top:auto}
 #printArea table{border-collapse:collapse;width:100%}
 #printArea .hd td{border:1px solid #000;padding:2px 6px;font-size:9pt;vertical-align:middle}
 #printArea .hd td.lg{width:48%;border-right:0;border-top:0;border-left:0;border-bottom:0}
@@ -99,11 +116,13 @@ table.it{border-collapse:collapse;width:100%;font-size:14px;margin-top:6px}table
 #printArea .chk{display:inline-block;width:3.6mm;height:3.6mm;border:1px solid #000;margin-right:6px;vertical-align:-0.5mm;text-align:center;line-height:3.4mm;font-size:9pt;font-weight:700}
 #printArea .items th,#printArea .items td{border:1px solid #000;padding:2px 6px;font-size:9.5pt;height:6.2mm}
 #printArea .items th{font-weight:700;text-align:center}
-#printArea .sig{display:flex;gap:10mm;margin-top:8mm}
-#printArea .sig>div{flex:1;min-height:23mm}
-#printArea .sig .l{border-bottom:1px solid #000;height:13mm;margin-bottom:2px}
+#printArea .sig{display:flex;gap:10mm;margin-top:5mm}
+#printArea .sig>div{flex:1;min-height:21mm}
+#printArea .sig .l{border-bottom:1px solid #000;height:11mm;margin-bottom:2px}
 #printArea .sig small{font-size:8.5pt;font-style:italic;display:block}
-#printArea .ft{margin-top:5mm;font-size:9pt;display:flex;justify-content:space-between}
+#printArea .ft{margin-top:3mm;font-size:9pt;display:flex;justify-content:space-between;align-items:flex-end}
+#printArea .ph2{display:flex;gap:6mm;margin-top:3mm}#printArea .ph2>div{flex:1}#printArea .ph2 .pi{height:40mm;border:1px solid #000;overflow:hidden;display:flex;align-items:center;justify-content:center}#printArea .ph2 img{width:100%;height:100%;object-fit:cover;display:block}#printArea .ph2 small{font-size:8pt;font-style:italic;display:block;text-align:center}
+#printArea .pg.cmp .ph2 .pi{height:30mm}
 #printArea .pg.cmp{font-size:9pt}
 #printArea .pg.cmp .items th,#printArea .pg.cmp .items td{font-size:8pt;padding:1px 4px;height:4.9mm;line-height:1.15}
 #printArea .pg.cmp .hd td.lg img{height:12mm}
@@ -114,10 +133,10 @@ table.it{border-collapse:collapse;width:100%;font-size:14px;margin-top:6px}table
 #printArea .pg.cmp .sig{margin-top:4mm}
 #printArea .pg.cmp .sig>div{min-height:19mm}
 #printArea .pg.cmp .sig .l{height:9mm}
-#printArea .vf{font-size:7.5pt;color:#333;margin-top:2mm}
+#printArea .pn{font-size:9pt}
 </style></head><body>
 <header><div class="brand" role="img" aria-label="EcoOils Mentari"><img src="%%LOGO%%" alt=""></div>
-<div class="right"><span id="ver">v1.0</span><div class="lang" role="group" aria-label="Language"><button id="lEN" type="button">EN</button><button id="lID" type="button">ID</button><button id="lMS" type="button">MS</button></div></div></header>
+<div class="right"><span id="ver">v1.3</span><div class="lang" role="group" aria-label="Language"><button id="lEN" type="button">EN</button><button id="lID" type="button">ID</button><button id="lMS" type="button">MS</button></div></div></header>
 <main>
 <div id="banner"></div>
 <section id="vHome" class="hidden"></section>

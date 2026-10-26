@@ -9,13 +9,13 @@ Replaces the handwritten Material Gate Pass (form EOSM-HSSE-FM003) for non-retur
 • dev/build.py rebuilds index.html from index.src.html + app.js + app.i18n.js (+ the QR library and the logo). If you only edit index.html by hand (for example to paste API_URL) you do not need it.
 
 ## How it works
-1. The IC (anyone with the link) fills the form on a phone and takes 4 photos of the vehicle (front, top, left, right). The server creates the reference number (MGP-YYMM-0001) when the pass is submitted.
+1. The IC (anyone with the link) fills the form on a phone and takes 2 photos (front of the vehicle, and the material in the truck). The server creates the reference number (MGP-YYMM-0001) when the pass is submitted.
 2. The IC prints the pass (one A4 page, QR code, signature blocks) and collects 4 physical signatures: driver, IC rep, EcoOils rep, Site Lead.
 3. The IC uploads a photo of the signed pass. The pass becomes "Pending release".
-4. A guard opens Gate pass in the Patroli app, scans the QR (or types the reference), compares the signed copy and the 4 photos with the paper original and the vehicle, ticks the four checks and releases. The release is recorded under the guard's own PIN name, with time and phone location.
+4. A guard opens Gate pass in the Patroli app, scans the QR (or types the reference), compares the signed copy and the 2 photos, and checks the KTP or SIM number against the card, with the paper original and the vehicle, ticks the four checks and releases. The release is recorded under the guard's own PIN name, with time and phone location.
 5. A normal phone camera scanning the QR opens a read-only status page (no names, no ID numbers, no photos).
 
-Validity: Awaiting signatures for 72 h, then Expired. After the signed copy is uploaded, 48 h to release, then Expired (Config sheet: SIGN_WINDOW_HOURS, VALID_HOURS).
+Validity: a pass is valid only on the day it was issued (Jakarta date). After that it reads Expired. The validity is not printed or shown anywhere. Units for quantities come from Config UNITS (default Pcs, Units, Kgs, Ton, Liters, Meters, Sets, Rolls, Drums, Bags, Boxes, Pallets, Lots).
 
 ## Deploy (first time)
 1. Personal Gmail: create a Google Sheet "EcoOils Gate Pass Log". Extensions > Apps Script. Replace the code with Code.gs. Save.

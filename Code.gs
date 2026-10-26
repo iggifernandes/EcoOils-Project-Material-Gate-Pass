@@ -6,11 +6,11 @@
    - Public QR check: action 'verify' returns status only (no names, no ID numbers, no photos).
    - Patroli (guards): actions b_list / b_get / b_release, protected by the shared secret BRIDGE_SECRET (script property). The guard's name comes from Patroli's PIN login.
    - Admin (you): actions a_*, protected by the script property ADMIN_PIN. */
-var VERSION = 'v1.2';
+var VERSION = 'v1.3';
 var OFF = 7 * 3600000;      // Jakarta (WIB), no daylight saving
 var TZ = 'Asia/Jakarta';
 var P_HEAD = ['Ref', 'Created (WIB)', 'Date', 'Purpose', 'Carrier name', 'Carrier I/C no', 'Company', 'Vehicle no', 'Purpose of taking out', 'EcoOils dept', 'IC rep name', 'IC rep position', 'Items', 'Status', 'Token hash',
-  'Photo front', 'Photo top', 'Photo left', 'Photo right', 'Photo IDs', 'Signed copy links', 'Signed IDs', 'Signed at (WIB)', 'Decided by', 'Decided at (WIB)', 'Decision note', 'Dec lat', 'Dec lng', 'Dec acc', 'Checklist', 'Created ms', 'Signed ms', 'Decided ms', 'Cancelled reason', 'Decider role', 'Client id'];
+  'Photo front', 'Photo load', 'Photo left (old)', 'Photo right (old)', 'Photo IDs', 'Signed copy links', 'Signed IDs', 'Signed at (WIB)', 'Decided by', 'Decided at (WIB)', 'Decision note', 'Dec lat', 'Dec lng', 'Dec acc', 'Checklist', 'Created ms', 'Signed ms', 'Decided ms', 'Cancelled reason', 'Decider role', 'Client id', 'IC rep phone'];
 var PC = {}; P_HEAD.forEach(function (h, i) { PC[h] = i; });
 var HEAD = {
   Passes: P_HEAD,
@@ -18,7 +18,10 @@ var HEAD = {
   Log: ['Time (WIB)', 'Ref', 'Event', 'By', 'Detail'],
   Config: ['Key', 'Value']
 };
-var VIEWS = ['front', 'top', 'left', 'right'];
+var UNITS_DEF = 'Pcs,Units,Kgs,Ton,Liters,Meters,Sets,Rolls,Drums,Bags,Boxes,Pallets,Lots';
+var VIEWS = ['front', 'load'];          /* v1.3: 2 photos. Passes made before v1.3 hold 4 (front, top, left, right) and are read by photo count. */
+var OLD_VIEWS = ['front', 'top', 'left', 'right'];
+function viewsOf_(ids) { return ids.length >= 4 ? OLD_VIEWS : VIEWS; }
 var ST_WAIT = 'Awaiting signatures', ST_PEND = 'Pending release', ST_REL = 'Released', ST_REJ = 'Rejected', ST_CAN = 'Cancelled', ST_EXP = 'Expired';
 
 /* ---------- one-time setup (run from the editor) ---------- */
@@ -30,6 +33,8 @@ function setup() {
       sh.appendRow(HEAD[n]);
       sh.setFrozenRows(1);
       sh.getRange(1, 1, 1, HEAD[n].length).setFontWeight('bold');
+    } else if (n === 'Passes') {
+      sh.getRange(1, 1, 1, HEAD[n].length).setValues([HEAD[n]]).setFontWeight('bold');   /* adds new columns at the end, never moves old ones */
     }
   });
   var d = s.getSheetByName('Sheet1');
@@ -121,19 +126,13 @@ function itemsOf_(ref) {
   out.sort(function (a, b) { return a.no - b.no; });
   return out;
 }
-/* Status now: Awaiting signatures expires after SIGN_WINDOW_HOURS from creation; Pending release expires VALID_HOURS after the signed copy was uploaded. */
+/* Status now (v1.3): a pass is valid only on the day it was issued (Jakarta date). After that, anything not yet Released/Rejected/Cancelled reads Expired. */
 function statusNow_(v, now) {
   var st = String(v[PC['Status']]);
-  if (st === ST_WAIT && now - Number(v[PC['Created ms']]) > cfgNum_('SIGN_WINDOW_HOURS', 72) * 3600000) return ST_EXP;
-  if (st === ST_PEND && now - Number(v[PC['Signed ms']]) > cfgNum_('VALID_HOURS', 48) * 3600000) return ST_EXP;
+  if ((st === ST_WAIT || st === ST_PEND) && ymd_(now) > String(v[PC['Date']])) return ST_EXP;
   return st;
 }
-function validUntil_(v) {
-  var st = String(v[PC['Status']]);
-  if (st === ST_PEND) return Number(v[PC['Signed ms']]) + cfgNum_('VALID_HOURS', 48) * 3600000;
-  if (st === ST_WAIT) return Number(v[PC['Created ms']]) + cfgNum_('SIGN_WINDOW_HOURS', 72) * 3600000;
-  return 0;
-}
+function validUntil_(v) { return 0; }   /* validity is not shown anywhere any more */
 function summary_(v, now) {
   var st = statusNow_(v, now);
   return {ref: String(v[0]), date: String(v[PC['Date']]), company: String(v[PC['Company']]), vehicle: String(v[PC['Vehicle no']]), carrier: String(v[PC['Carrier name']]), items: Number(v[PC['Items']]) || 0, status: st,
@@ -142,7 +141,7 @@ function summary_(v, now) {
 function full_(v, now) {
   var o = summary_(v, now);
   o.icNo = String(v[PC['Carrier I/C no']]); o.purposeText = String(v[PC['Purpose of taking out']]); o.dept = String(v[PC['EcoOils dept']]);
-  o.icRep = String(v[PC['IC rep name']]); o.icPos = String(v[PC['IC rep position']]); o.items = itemsOf_(o.ref); o.itemCount = o.items.length; o.decidedRole = String(v[PC['Decider role']] || '');
+  o.icRep = String(v[PC['IC rep name']]); o.icPos = String(v[PC['IC rep position']]); o.icPhone = String(v[PC['IC rep phone']] || ''); o.items = itemsOf_(o.ref); o.itemCount = o.items.length; o.decidedRole = String(v[PC['Decider role']] || '');
   o.cancelReason = String(v[PC['Cancelled reason']] || ''); o.siteLead = cfg_('SITE_LEAD_NAME', '');
   return o;
 }
@@ -166,6 +165,7 @@ function route_(b) {
   if (a === 'create') return create_(b);
   if (a === 'mine') return mine_(b);
   if (a === 'get') return get_(b);
+  if (a === 'photos') return photos_(b);
   if (a === 'find') return find_(b);
   if (a === 'signed') return signed_(b);
   if (a === 'cancel') return cancel_(b);
@@ -175,7 +175,7 @@ function route_(b) {
   return {ok: false, err: 'action'};
 }
 function config_() {
-  return {ok: true, version: VERSION, companies: cfgList_('COMPANIES', 'GSB,WEN,KKS,PBS'), depts: cfgList_('DEPTS', 'Project Eng,Discipline Eng,HSSE,Stores'), validHours: cfgNum_('VALID_HOURS', 48), signHours: cfgNum_('SIGN_WINDOW_HOURS', 72), maxItems: 15, siteLead: cfg_('SITE_LEAD_NAME', ''), now: Date.now()};
+  return {ok: true, version: VERSION, units: cfgList_('UNITS', UNITS_DEF), companies: cfgList_('COMPANIES', 'GSB,WEN,KKS,PBS'), depts: cfgList_('DEPTS', 'Project Eng,Discipline Eng,HSSE,Stores'), validHours: cfgNum_('VALID_HOURS', 48), signHours: cfgNum_('SIGN_WINDOW_HOURS', 72), maxItems: 15, siteLead: cfg_('SITE_LEAD_NAME', ''), now: Date.now()};
 }
 function coCode_(company) { var c = String(company || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); return c || 'XXX'; }
 function nextRef_(now, company) {
@@ -205,20 +205,22 @@ function create_(b) {
   var cl = cfgList_('COMPANIES', 'GSB,WEN,KKS,PBS'), purpose = String(b.purpose || '').toUpperCase();
   if (purpose !== 'A' && purpose !== 'B') return {ok: false, err: 'bad_purpose'};
   var carrier = clean_(b.carrier, 60), icNo = clean_(b.icNo, 30), company = clean_(b.company, 60), vehicle = clean_(b.vehicle, 20).toUpperCase(), ptxt = clean_(b.purposeText, 300), dept = clean_(b.dept, 40);
-  var icRep = clean_(b.icRep, 60), icPos = clean_(b.icPos, 40);
+  var icRep = clean_(b.icRep, 60), icPos = clean_(b.icPos, 40), icPhone = clean_(b.icPhone, 20);
   if (carrier.length < 2) return {ok: false, err: 'bad_carrier'};
   if (!/^(KTP \d{16}|SIM \d{12})$/.test(icNo)) return {ok: false, err: 'bad_icno'};
   if (company.length < 2) return {ok: false, err: 'bad_company'};
   if (vehicle.length < 2) return {ok: false, err: 'bad_vehicle'};
   if (ptxt.length < 3) return {ok: false, err: 'bad_purposetext'};
   if (icRep.length < 2) return {ok: false, err: 'bad_icrep'};
+  if (!/^\+?[0-9][0-9 \-]{6,18}$/.test(icPhone) || icPhone.replace(/\D/g, '').length < 8 || icPhone.replace(/\D/g, '').length > 15) return {ok: false, err: 'bad_icphone'};
   if (cfgList_('DEPTS', 'Project Eng,Discipline Eng,HSSE,Stores').indexOf(dept) < 0) return {ok: false, err: 'bad_dept'};
   var its = b.items;
   if (!Array.isArray(its) || its.length < 1 || its.length > 15) return {ok: false, err: 'bad_items'};
   var items = [];
   for (var i = 0; i < its.length; i++) {
     var it = clean_(its[i] && its[i].item, 80), q = Number(its[i] && its[i].qty), un = clean_(its[i] && its[i].unit, 12);
-    if (it.length < 2 || !isFinite(q) || q <= 0 || q > 99999) return {ok: false, err: 'bad_items'};
+    var uok = cfgList_('UNITS', UNITS_DEF).some(function (u) { return u.toLowerCase() === un.toLowerCase(); });
+    if (it.length < 2 || !isFinite(q) || q <= 0 || q > 99999 || !uok) return {ok: false, err: 'bad_items'};
     items.push([i + 1, it, q, un]);
   }
   var ph = b.photos || {};
@@ -249,7 +251,7 @@ function create_(b) {
     row[0] = ref; row[PC['Created (WIB)']] = ymdhms_(now); row[PC['Date']] = today; row[PC['Purpose']] = purpose; row[PC['Carrier name']] = carrier; row[PC['Carrier I/C no']] = icNo;
     row[PC['Company']] = company; row[PC['Vehicle no']] = vehicle; row[PC['Purpose of taking out']] = ptxt; row[PC['EcoOils dept']] = dept; row[PC['IC rep name']] = icRep; row[PC['IC rep position']] = icPos;
     row[PC['Items']] = items.length; row[PC['Status']] = ST_WAIT; row[PC['Token hash']] = hash_(token);
-    row[PC['Photo front']] = saved.front.url; row[PC['Photo top']] = saved.top.url; row[PC['Photo left']] = saved.left.url; row[PC['Photo right']] = saved.right.url;
+    row[PC['Photo front']] = saved.front.url; row[PC['Photo load']] = saved.load.url; row[PC['IC rep phone']] = icPhone;
     row[PC['Photo IDs']] = VIEWS.map(function (v) { return saved[v].id; }).join(','); row[PC['Created ms']] = now; row[PC['Client id']] = cid;
     sh_('Passes').appendRow(row);
     var ish = sh_('Items');
@@ -267,6 +269,15 @@ function mine_(b) {
     out.push(summary_(hit.v, now));
   });
   return {ok: true, list: out, now: now};
+}
+/* The pass owner's own photos (needs the pass token), used to print the pass with its pictures and to zoom them. */
+function photos_(b) {
+  if (!hits_('photos', 90, 600)) return {ok: false, err: 'busy'};
+  var hit = rowOf_(b.ref);
+  if (!hit || !(tokenOk_(hit, b.token) || (b.pin && adminOk_(b.pin)))) return {ok: false, err: 'notfound'};
+  var ids = String(hit.v[PC['Photo IDs']] || '').split(','), vs = viewsOf_(ids), imgs = {};
+  vs.forEach(function (v, i) { imgs[v] = img_(ids[i]); });
+  return {ok: true, ref: String(hit.v[0]), images: imgs};
 }
 function get_(b) {
   var hit = rowOf_(b.ref);
@@ -306,7 +317,7 @@ function signed_(b) {
     setCell_(hit.row, 'Status', ST_PEND);
     log_(ref, st === ST_PEND ? 'SIGNED_REPLACED' : 'SIGNED_UPLOADED', String(hit.v[PC['Carrier name']]), imgs.length + ' page(s)');
     ROWS_ = null;
-    return {ok: true, ref: ref, status: ST_PEND, signedAt: ymdhms_(now), validUntil: now + cfgNum_('VALID_HOURS', 48) * 3600000};
+    return {ok: true, ref: ref, status: ST_PEND, signedAt: ymdhms_(now), validUntil: 0};
   } finally { lock.releaseLock(); }
 }
 function cancel_(b) {
@@ -353,7 +364,7 @@ function admin_(a, b) {
     if (!hit) return {ok: false, err: 'notfound'};
     var p = full_(hit.v, now), lg = [], ls = sh_('Log'), n = ls.getLastRow();
     if (n > 1) ls.getRange(2, 1, n - 1, 5).getValues().forEach(function (r) { if (String(r[1]) === p.ref) lg.push({t: String(r[0]), ev: String(r[2]), by: String(r[3]), d: String(r[4])}); });
-    return {ok: true, pass: p, log: lg, links: {front: String(hit.v[PC['Photo front']]), top: String(hit.v[PC['Photo top']]), left: String(hit.v[PC['Photo left']]), right: String(hit.v[PC['Photo right']]), signed: String(hit.v[PC['Signed copy links']] || '').split(' ').filter(function (x) { return x; })}, checklist: String(hit.v[PC['Checklist']] || ''), lat: hit.v[PC['Dec lat']], lng: hit.v[PC['Dec lng']]};
+    return {ok: true, pass: p, log: lg, links: {front: String(hit.v[PC['Photo front']]), load: String(hit.v[PC['Photo load']]), old: [hit.v[PC['Photo load']], hit.v[PC['Photo left (old)']], hit.v[PC['Photo right (old)']]].map(String), signed: String(hit.v[PC['Signed copy links']] || '').split(' ').filter(function (x) { return x; })}, checklist: String(hit.v[PC['Checklist']] || ''), lat: hit.v[PC['Dec lat']], lng: hit.v[PC['Dec lng']]};
   }
   if (a === 'a_cancel') {
     var h2 = rowOf_(b.ref);
@@ -385,7 +396,7 @@ function bridge_(a, b) {
     var hit = rowOf_(b.ref);
     if (!hit) return {ok: false, err: 'notfound'};
     var p = full_(hit.v, now), imgs = {}, ids = String(hit.v[PC['Photo IDs']] || '').split(',');
-    VIEWS.forEach(function (v, i) { imgs[v] = img_(ids[i]); });
+    viewsOf_(ids).forEach(function (v, i) { imgs[v] = img_(ids[i]); });
     imgs.signed = String(hit.v[PC['Signed IDs']] || '').split(',').filter(function (x) { return x; }).map(img_);
     var why = '';
     if (p.status !== ST_PEND) why = p.status === ST_WAIT ? 'no_signed_copy' : p.status === ST_REL ? 'already_released' : p.status === ST_EXP ? 'expired' : p.status === ST_REJ ? 'rejected' : 'cancelled';
