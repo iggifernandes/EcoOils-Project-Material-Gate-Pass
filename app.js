@@ -1,4 +1,4 @@
-var VERSION='v1.4';
+var VERSION='v1.5';
 var PHV=['front','load'];
 var APP_URL='https://iggifernandes.github.io/EcoOils-Project-Material-Gate-Pass/';
 var API_URL='https://script.google.com/macros/s/AKfycbxULvNJReaniGRTFWKY507I0AZD5YLP3mBBjAyFFA-7z4nI0-LPncZbPZTajS89Jp0Z/exec';
@@ -174,7 +174,7 @@ $('vNew').addEventListener('change',function(e){
   if(t.getAttribute('data-view')){
     var f0=t.files&&t.files[0],v=t.getAttribute('data-view');if(!f0)return;
     var co=D.company==='__other'?D.companyOther:D.company;
-    shrink(f0,[stampTime(),tr('ph_'+v)+' | '+(D.vehicle||'').toUpperCase()+' | '+co],1100,0.6).then(function(p){D.photos[v]=p;var el=document.querySelector('[data-tile="'+v+'"]');if(el)el.outerHTML=tileHtml(v);var er0=$('nErr');if(er0)er0.textContent='';},function(){var er=$('nErr');if(er)er.textContent=tr('err_bad_photo');});
+    shrink(f0,[stampTime(),tr('ph_'+v)+' | '+(D.vehicle||'').toUpperCase()+' | '+co],1100,0.6,true).then(function(p){D.photos[v]=p;var el=document.querySelector('[data-tile="'+v+'"]');if(el)el.outerHTML=tileHtml(v);var zb=document.querySelector('.tiles+.row2');if(zb)zb.outerHTML=tilesZoomBar();var er0=$('nErr');if(er0)er0.textContent='';},function(why){var er=$('nErr');if(er)er.textContent=why==='portrait'?tr('err_portrait'):tr('err_bad_photo');});
   }
 });
 $('vNew').addEventListener('click',function(e){
@@ -187,10 +187,11 @@ $('vNew').addEventListener('click',function(e){
   else if(t.id==='nBack'){if(D.step>1){D.step--;saveDraft();newDraw();window.scrollTo(0,0);}else homeOpen();}
   else if(t.id==='nSubmit'){submit();}
 });
-function shrink(file,lines,max,q){
+function shrink(file,lines,max,q,landscape){
   return new Promise(function(res,rej){
     var u=URL.createObjectURL(file),im=new Image();
     im.onload=function(){
+      if(landscape&&im.naturalHeight>im.naturalWidth){URL.revokeObjectURL(u);rej('portrait');return;}
       var k=Math.min(1,(max||1100)/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');
       c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);var x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);
       if(lines&&lines.length){
@@ -226,10 +227,10 @@ function doneOpen(){show('vDone');doneDraw();}
 function doneDraw(){
   if(!LAST){homeOpen();return;}
   var h=h1(tr('doneTitle'))+'<div class="note" style="text-align:center">'+esc(tr('refLbl'))+'</div><div class="ref">'+esc(LAST.ref)+'</div>'+'<div class="qr">'+qrSvg(verifyUrl(LAST.ref))+'</div>';
-  h+='<p>'+esc(tr('doneNext'))+'</p><button class="btn amber" id="dPrint" type="button">'+esc(tr('printNow'))+'</button><button class="btn ghost" id="dOpen" type="button">'+esc(tr('openPass'))+'</button>';
+  h+='<p>'+esc(tr('doneNext'))+'</p><button class="btn amber" id="dPrint" type="button">'+esc(tr('printBoth'))+'</button><button class="btn ghost" id="dPrint1" type="button">'+esc(tr('printOne'))+'</button><div class="note">'+esc(tr('printHint'))+'</div><button class="btn ghost" id="dOpen" type="button">'+esc(tr('openPass'))+'</button>';
   $('vDone').innerHTML=h;
 }
-$('vDone').addEventListener('click',function(e){var t=e.target.closest('button');if(!t)return;if(t.id==='dPrint')printPass(LAST);else if(t.id==='dOpen')passOpen(LAST.ref);});
+$('vDone').addEventListener('click',function(e){var t=e.target.closest('button');if(!t)return;if(t.id==='dPrint')printPass(LAST);else if(t.id==='dPrint1')printPass(LAST,true);else if(t.id==='dOpen')passOpen(LAST.ref);});
 
 /* ===== QR and print ===== */
 function verifyUrl(ref){return APP_URL+'?v='+encodeURIComponent(ref);}
@@ -252,12 +253,11 @@ function getPhotos(p){
     },function(){res(null);});
   });
 }
-function printPass(p){
+function printPass(p,one){
   if(!p)return;
-  var busy=document.querySelector('#dPrint,#pPrint,#adPrint');
-  getPhotos(p).then(function(ph){printPassNow(p,ph);});
+  getPhotos(p).then(function(ph){printPassNow(p,ph,!!one);});
 }
-function printPassNow(p,ph){
+function printPassNow(p,ph,one){
   var rows='',n=Math.max(6,p.items.length);
   for(var i=0;i<n;i++){var it=p.items[i];rows+='<tr><td style="text-align:center;width:9%">'+(it?(i+1):'')+'</td><td>'+(it?esc(it.item):'')+'</td><td style="text-align:center;width:10%">'+(it?esc(it.qty):'')+'</td><td style="text-align:center;width:13%">'+(it?esc(String(it.unit||'').toUpperCase()):'')+'</td></tr>';}
   var h='<div class="pg'+(p.items.length>8?' cmp':'')+'"><table class="hd"><tr><td class="lg" rowspan="3"><img alt="" src="'+LOGO+'"></td><td class="k">Item</td><td class="v">: EOSM-HSSE-FM003</td></tr><tr><td class="k">Revision No</td><td class="v">: Initial Issue</td></tr><tr><td class="k">Date</td><td class="v">: February, 3rd 2026</td></tr></table>';
@@ -269,10 +269,18 @@ function printPassNow(p,ph){
   h+='<div class="ln">COMPANY NAME: <span class="u" style="min-width:140mm">'+esc(p.company)+'</span></div><div class="ln">VEHICLE NO: <span class="u" style="min-width:140mm">'+esc(p.vehicle)+'</span></div>';
   h+='<div class="ln">PURPOSE OF TAKING THE ITEM OUT: <span class="u" style="display:block;margin-top:1mm;min-width:0;font-weight:600">'+esc(p.purposeText)+'</span></div>';
   h+='<table class="items" style="margin-top:3mm"><tr><th>S/NO</th><th>ITEM</th><th>QTY.</th><th>UNIT</th></tr>'+rows+'</table>';
-  h+='<div class="ph2"><div><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>FRONT VIEW OF THE VEHICLE</small></div><div><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>MATERIAL LOADED IN THE TRUCK</small></div></div>';
+  if(one)h+='<div class="ph2"><div><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>FRONT VIEW OF THE VEHICLE</small></div><div><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>MATERIAL LOADED IN THE TRUCK</small></div></div>';
   h+='<div class="sig"><div><b>CARRIED BY:</b><div class="l"></div><small>(Person taking the material out)</small><div style="font-size:9pt">'+esc(p.carrier)+'</div></div><div><b>CHECKED BY:</b><div class="l"></div><small>(IC responsible Person- Lead/Store in charge)</small><div style="font-size:9pt">'+esc(p.icRep+(p.icPos?', '+p.icPos:''))+(p.icPhone?'<br>Tel: '+esc(p.icPhone):'')+'</div></div></div>';
   h+='<div class="sig" style="margin-top:3mm"><div><b>EcoOils Rep:</b><div class="l"></div><small>(Proj/Eng, Discipline Eng, HSSE, Stores)</small><div style="font-size:9pt">'+esc(p.dept)+'</div></div><div><b>Approval By:</b><div class="l"></div><small>(EcoOils Site Lead)</small><div style="font-size:9pt">'+esc(p.siteLead||'')+'</div></div></div>';
-  h+='<div class="ft"><span>COPY: <i>SECURITY / CARRIER / STORES</i></span><span class="pn">Page 1 of 1</span></div></div>';
+  h+='<div class="ft"><span>COPY: <i>SECURITY / CARRIER / STORES</i></span><span class="pn">Page 1 of '+(one?1:2)+'</span></div></div>';
+  if(!one){
+    h+='<div class="pg pg2"><table class="hd"><tr><td class="lg" rowspan="3"><img alt="" src="'+LOGO+'"></td><td class="k">Item</td><td class="v">: EOSM-HSSE-FM003</td></tr><tr><td class="k">SR NO</td><td class="v">: '+esc(p.ref)+'</td></tr><tr><td class="k">Date</td><td class="v">: '+esc(fmtD(p.date))+'</td></tr></table>';
+    h+='<div class="ttl">MATERIAL GATE PASS &ndash; VEHICLE AND MATERIAL PHOTOS</div>';
+    h+='<div class="top"><div><div class="ln">COMPANY: <b>'+esc(p.company)+'</b></div><div class="ln">VEHICLE NO: <b>'+esc(p.vehicle)+'</b></div><div class="ln">CARRIED BY: <b>'+esc(p.carrier)+'</b></div></div><div>'+qrSvg(verifyUrl(p.ref))+'</div></div>';
+    h+='<div class="bigph"><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>FRONT VIEW OF THE VEHICLE</small></div>';
+    h+='<div class="bigph"><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>MATERIAL LOADED IN THE TRUCK</small></div>';
+    h+='<div class="ft"><span>'+esc(p.ref)+'</span><span class="pn">Page 2 of 2</span></div></div>';
+  }
   $('printArea').innerHTML=h;
   var old=document.title;document.title=' ';
   var back=function(){document.title=old;window.removeEventListener('afterprint',back);};window.addEventListener('afterprint',back);
@@ -297,7 +305,7 @@ function passDraw(){
   if(p.status==='Rejected')h+='<div class="card"><b>'+esc(tr('rejReason'))+'</b>: '+esc(p.note)+'<br><span class="note">'+esc(p.decidedBy)+' · '+esc(p.decidedAt)+' WIB</span></div>';
   if(p.status==='Cancelled'&&p.cancelReason)h+='<div class="card">'+esc(p.cancelReason)+'</div>';
   if(p.status==='Awaiting signatures'||p.status==='Pending release'){
-    h+='<button class="btn amber" id="pPrint" type="button">'+esc(tr('printAgain'))+'</button>';
+    h+='<button class="btn amber" id="pPrint" type="button">'+esc(tr('printBoth'))+'</button><button class="btn ghost" id="pPrint1" type="button">'+esc(tr('printOne'))+'</button>';
     h+='<h2>'+esc(p.status==='Pending release'?tr('replaceSigned'):tr('upload'))+'</h2><p class="note">'+esc(tr('signedHelp'))+'</p>';
     h+='<div class="tiles">'+SG.map(function(s,i){return '<div class="tile on" style="cursor:default"><img alt="" data-zoom="data:image/jpeg;base64,'+s+'" src="data:image/jpeg;base64,'+s+'"><button class="btn danger sm" type="button" data-sgrm="'+i+'">'+esc(tr('remove'))+'</button></div>';}).join('')+(SG.length<2?'<button type="button" class="tile ph" style="margin:0;font:inherit;color:inherit" data-scan="1"><span style="font-size:28px">&#128247;</span><span>'+esc(SG.length?tr('scanNext'):tr('scanBtn'))+'</span></button>':'')+'</div><input type="file" accept="image/*" id="sgIn" class="hidden">';
     if(SG.length<2)h+='<button class="btn ghost sm" type="button" id="sgFile">'+esc(tr('scanFile'))+'</button>';
@@ -321,7 +329,7 @@ $('vPass').addEventListener('click',function(e){
   if(t.id==='sgFile'){var fi=$('sgIn');if(fi)fi.click();return;}
   if(t.id==='pBack'){homeOpen();}
   else if(t.getAttribute('data-sgrm')!==null){SG.splice(+t.getAttribute('data-sgrm'),1);passDraw();}
-  else if(t.id==='pPrint'){if(PASS){PASS.siteLead=PASS.siteLead||CFG.siteLead;printPass(PASS);}}
+  else if(t.id==='pPrint'||t.id==='pPrint1'){if(PASS){PASS.siteLead=PASS.siteLead||CFG.siteLead;printPass(PASS,t.id==='pPrint1');}}
   else if(t.id==='pNew'){D=newDraft();newOpen();}
   else if(t.id==='pSend'){
     if(!SG.length){var e0=$('pErr');if(e0)e0.textContent=tr('f_signed');return;}

@@ -13,6 +13,6 @@ await page.goto('https://gp.test/');await page.evaluate(([ref,tok])=>{localStora
 await page.reload();await page.click('[data-open]');await page.waitForSelector('#pPrint');
 await page.evaluate(()=>{window.print=function(){}});await page.click('#pPrint');await page.waitForTimeout(1500);
 await page.emulateMedia({media:'print'});await page.pdf({path:'/tmp/gp_print15.pdf',format:'A4',printBackground:true,preferCSSPageSize:true,margin:{top:'0',bottom:'0',left:'0',right:'0'}});
-const d=fs.readFileSync('/tmp/gp_print15.pdf');console.log('pages',(d.toString('latin1').match(/\/Type\s*\/Page[^s]/g)||[]).length);
+const d=fs.readFileSync('/tmp/gp_print15.pdf');console.log('pages (both sides, expect 2)',(d.toString('latin1').match(/\/Type\s*\/Page[^s]/g)||[]).length);
 await page.emulateMedia({media:'screen'});await page.screenshot({path:'/tmp/gp_pass15.png',fullPage:true});
 await br.close();})();

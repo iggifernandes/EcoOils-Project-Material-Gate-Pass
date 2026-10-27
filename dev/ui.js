@@ -46,6 +46,8 @@ await page.reload();await page.waitForSelector('#hNew');await page.click('#hNew'
 ok((await page.textContent('.stepl')).includes('2')&&(await page.inputValue('[data-i="1"][data-k=item]'))==='Gasket','draft survives a reload');
 await page.click('#nNext');
 await page.click('#nNext');ok((await page.textContent('#nErr')).length>3,'step 3 needs both photos');
+const pgp=await ctx.newPage();await pgp.goto('about:blank');const pb=await pgp.evaluate(()=>{const c=document.createElement('canvas');c.width=600;c.height=800;const x=c.getContext('2d');x.fillStyle='#aa8888';x.fillRect(0,0,600,800);return c.toDataURL('image/jpeg',0.8).split(',')[1];});fs.writeFileSync('/tmp/gp_portrait.jpg',Buffer.from(pb,'base64'));await pgp.close();
+await page.setInputFiles('input[data-view=front]','/tmp/gp_portrait.jpg');await page.waitForFunction(()=>/landscape/i.test(document.querySelector('#nErr').textContent),null,{timeout:5000});ok(true,'a portrait photo is refused: turn the phone sideways');
 await page.setInputFiles('input[data-view=front]',jpgPath);
 await page.click('#nNext');ok((await page.textContent('#nErr')).length>3,'1 photo is not enough');
 await page.setInputFiles('input[data-view=load]',jpgPath);
@@ -68,13 +70,18 @@ const f0=Object.values(m.files)[0];ok(f0.getBytes().length<400000&&f0.getBytes()
 await page.evaluate(()=>{window.__printed=0;window.print=function(){window.__printed++}});
 await page.click('#dPrint');await page.waitForFunction(()=>window.__printed===1);
 const pt=await page.textContent('#printArea');
-ok(pt.includes('UNIT')&&pt.includes('KGS')&&pt.includes('PCS')&&pt.includes('FRONT VIEW OF THE VEHICLE')&&pt.includes('MATERIAL LOADED IN THE TRUCK')&&pt.includes('Tel: +62 812 3456 7890')&&pt.includes('Page 1 of 1'),'print has separate QTY and UNIT columns, both photos, IC phone and a page number');
-ok(!/http|github|script\.google/i.test(pt)&&(await page.locator('#printArea img').count())===3,'print shows no URL anywhere (3 images: logo + 2 photos)');
+ok(pt.includes('UNIT')&&pt.includes('KGS')&&pt.includes('PCS')&&pt.includes('FRONT VIEW OF THE VEHICLE')&&pt.includes('MATERIAL LOADED IN THE TRUCK')&&pt.includes('Tel: +62 812 3456 7890')&&pt.includes('Page 1 of 2')&&pt.includes('Page 2 of 2'),'print has separate QTY and UNIT columns, both photos, IC phone and page numbers');
+ok(!/http|github|script\.google/i.test(pt)&&(await page.locator('#printArea img').count())===4,'print shows no URL anywhere (2 logos + 2 photos)');
 ok(pt.includes('MATERIAL GATE PASS')&&pt.includes('EOSM-HSSE-FM003')&&pt.includes(ref)&&pt.includes('Budi Santoso')&&pt.includes('SENDING BACK REJECTED ITEMS TO SUPPLIER')&&pt.includes('COPY: SECURITY / CARRIER / STORES')&&pt.includes('Approval By'),'print layout follows FM003');
 ok(await page.evaluate(()=>document.querySelector('#printArea .chk').textContent==='X'),'purpose A is ticked');
 await page.emulateMedia({media:'print'});
-await page.pdf({path:'/tmp/gp_print.pdf',format:'A4',printBackground:true,preferCSSPageSize:true,margin:{top:'0',bottom:'0',left:'0',right:'0'}});ok((fs.readFileSync('/tmp/gp_print.pdf','latin1').match(/\/Type\s*\/Page[^s]/g)||[]).length===1,'printout with photos is exactly one page');
+await page.pdf({path:'/tmp/gp_print.pdf',format:'A4',printBackground:true,preferCSSPageSize:true,margin:{top:'0',bottom:'0',left:'0',right:'0'}});ok((fs.readFileSync('/tmp/gp_print.pdf','latin1').match(/\/Type\s*\/Page[^s]/g)||[]).length===2,'both-sides print is exactly 2 pages (1 sheet, double-sided)');
+const hmm=await page.evaluate(()=>{const r=document.querySelector('#printArea .bigph img').getBoundingClientRect();return r.height/3.7795;});ok(Math.abs(hmm-80)<1.5,'each big photo is 8 cm high ('+hmm.toFixed(1)+' mm)');
+const wmm=await page.evaluate(()=>{const r=document.querySelector('#printArea .bigph img').getBoundingClientRect();return r.width/3.7795;});ok(wmm>80,'big photos are landscape ('+wmm.toFixed(0)+' x 80 mm)');
 await page.emulateMedia({media:'screen'});
+await page.click('#dPrint1');await page.waitForFunction(()=>window.__printed===2);await page.emulateMedia({media:'print'});
+await page.pdf({path:'/tmp/gp_print1.pdf',format:'A4',printBackground:true,preferCSSPageSize:true,margin:{top:'0',bottom:'0',left:'0',right:'0'}});await page.emulateMedia({media:'screen'});
+ok((fs.readFileSync('/tmp/gp_print1.pdf','latin1').match(/\/Type\s*\/Page[^s]/g)||[]).length===1&&(await page.textContent('#printArea')).includes('Page 1 of 1'),'one-side print is a single page with small photos');
 // ----- pass detail + signed upload
 await page.click('#dOpen');await page.waitForTimeout(1500);console.log('ERRS',JSON.stringify(errs),(await page.textContent('#vPass')).slice(0,200));await page.waitForSelector('[data-scan]');
 ok((await page.textContent('#vPass')).includes('Awaiting signatures')&&!/valid until/i.test(await page.textContent('#vPass')),'detail shows Awaiting signatures, no validity date');
