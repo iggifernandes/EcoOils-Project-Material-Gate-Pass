@@ -1,4 +1,4 @@
-var VERSION='v1.9';
+var VERSION='v1.10';
 var PHV=['front','load'];
 var APP_URL='https://iggifernandes.github.io/EcoOils-Project-Material-Gate-Pass/';
 var API_URL='https://script.google.com/macros/s/AKfycbxULvNJReaniGRTFWKY507I0AZD5YLP3mBBjAyFFA-7z4nI0-LPncZbPZTajS89Jp0Z/exec';
@@ -27,7 +27,7 @@ function api(body,ms){
 }
 
 /* ===== state ===== */
-var CFG={units:['Pcs','Units','Kgs','Ton','Liters','Meters','Sets','Rolls','Drums','Bags','Boxes','Pallets','Lots'],companies:['GSB','WEN','KKS','PBS'],depts:['Project Eng','Discipline Eng','HSSE','Stores'],validHours:48,maxItems:15,siteLead:''};
+var CFG={units:['Pcs','Units','Kgs','Ton','Liters','Meters','Sets','Rolls','Drums','Bags','Boxes','Pallets','Lots'],companies:['GSB','WEN','KKS','PBS','EcoOils (Project)','EcoOils (Operations)'],depts:['Project Eng','Discipline Eng','HSSE','Stores'],validHours:48,maxItems:15,siteLead:''};
 try{var c0=JSON.parse(ls('gp_cfg')||'null');if(c0&&c0.companies)CFG=c0;}catch(e){}
 var MINE=[];try{MINE=JSON.parse(ls('gp_mine')||'[]');if(!Array.isArray(MINE))MINE=[];}catch(e){MINE=[];}
 function saveMine(){ls('gp_mine',JSON.stringify(MINE.slice(0,60)));}

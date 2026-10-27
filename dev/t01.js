@@ -4,7 +4,7 @@ const jpg=Buffer.concat([Buffer.from([255,216,255,224]),Buffer.alloc(3000,7)]).t
 const photos={front:jpg,load:jpg};
 const base={action:'create',purpose:'A',carrier:'Budi Santoso',icNo:'KTP 1271012345678901',company:'GSB',vehicle:'bk 1234 xy',purposeText:'Return rejected pipes to supplier',dept:'Stores',icRep:'Andi Wijaya',icPos:'Store lead',icPhone:'+62 812 3456 7890',items:[{item:'Carbon steel pipe 6in',qty:12,unit:'pcs'},{item:'Gasket',qty:40,unit:'pcs'}],photos,hp:''};
 const cfg=m.call({action:'config'});
-ok(cfg.ok&&cfg.companies.join()==='GSB,WEN,KKS,PBS'&&cfg.depts.length===4&&cfg.maxItems===15,'config lists companies and departments');
+ok(cfg.ok&&cfg.companies.join()==='GSB,WEN,KKS,PBS,EcoOils (Project),EcoOils (Operations)'&&cfg.depts.length===4&&cfg.maxItems===15,'config lists companies and departments');
 ok(m.props.ADMIN_PIN&&/^\d{6}$/.test(m.props.ADMIN_PIN)&&m.props.BRIDGE_SECRET.length>=32,'setup made ADMIN_PIN and BRIDGE_SECRET');
 const r1=m.call(base);
 ok(r1.ok&&/^MGP-[A-Z0-9]+-\d{4}-0001$/.test(r1.ref)&&r1.token.length===32,'create returns server serial '+r1.ref);
@@ -115,3 +115,7 @@ ok(m.call({action:'signed',ref:q1.ref,k:'bad',photos:[jpg]}).err==='notfound','w
 const qs=m.call({action:'signed',ref:q1.ref,k:q1.qk,photos:[jpg]});
 ok(qs.ok&&qs.status==='Pending release'&&m.call({action:'a_get',pin:m.props.ADMIN_PIN,ref:q1.ref}).log.some(l=>l.ev==='SIGNED_UPLOADED'&&/via QR scan/.test(l.d)),'scan + key uploads the signed copy and the audit trail says via QR scan');
 ok(m.call({action:'signed',ref:q1.ref,k:q1.qk,photos:[jpg]}).err==='not_open'&&m.call({action:'verify',ref:q1.ref,k:q1.qk}).upload===false,'the QR key cannot replace a signed copy that is already there');
+// EcoOils company entries (v1.7)
+m.sheets.Config.rows.forEach(r=>{if(r[0]==='COMPANY_DAILY_CAP')r[1]='40'});
+const ep=m.call({...base,company:'EcoOils (Project)'}),eo=m.call({...base,company:'EcoOils (Operations)'});
+ok(ep.ok&&/^MGP-EOP-\d{4}-0001$/.test(ep.ref)&&eo.ok&&/^MGP-EOO-\d{4}-0001$/.test(eo.ref),'EcoOils (Project) and (Operations) get their own codes and numbering: '+ep.ref+' '+eo.ref);

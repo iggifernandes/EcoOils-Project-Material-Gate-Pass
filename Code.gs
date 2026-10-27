@@ -6,7 +6,7 @@
    - Public QR check: action 'verify' returns status only (no names, no ID numbers, no photos).
    - Patroli (guards): actions b_list / b_get / b_release, protected by the shared secret BRIDGE_SECRET (script property). The guard's name comes from Patroli's PIN login.
    - Admin (you): actions a_*, protected by the script property ADMIN_PIN. */
-var VERSION = 'v1.6';
+var VERSION = 'v1.7';
 var OFF = 7 * 3600000;      // Jakarta (WIB), no daylight saving
 var TZ = 'Asia/Jakarta';
 var P_HEAD = ['Ref', 'Created (WIB)', 'Date', 'Purpose', 'Carrier name', 'Carrier I/C no', 'Company', 'Vehicle no', 'Purpose of taking out', 'EcoOils dept', 'IC rep name', 'IC rep position', 'Items', 'Status', 'Token hash',
@@ -176,11 +176,23 @@ function route_(b) {
   return {ok: false, err: 'action'};
 }
 function config_() {
-  return {ok: true, version: VERSION, units: cfgList_('UNITS', UNITS_DEF), companies: cfgList_('COMPANIES', 'GSB,WEN,KKS,PBS'), depts: cfgList_('DEPTS', 'Project Eng,Discipline Eng,HSSE,Stores'), validHours: cfgNum_('VALID_HOURS', 48), signHours: cfgNum_('SIGN_WINDOW_HOURS', 72), maxItems: 15, siteLead: cfg_('SITE_LEAD_NAME', ''), now: Date.now()};
+  return {ok: true, version: VERSION, units: cfgList_('UNITS', UNITS_DEF), companies: companies_(), depts: cfgList_('DEPTS', 'Project Eng,Discipline Eng,HSSE,Stores'), validHours: cfgNum_('VALID_HOURS', 48), signHours: cfgNum_('SIGN_WINDOW_HOURS', 72), maxItems: 15, siteLead: cfg_('SITE_LEAD_NAME', ''), now: Date.now()};
 }
 /* Short key printed inside the pass QR. Whoever scans the paper QR may upload the signed copy of a pass that is still Awaiting signatures; nothing else. */
 function key_(ref) { return hash_('QK|' + String(ref).toUpperCase()).slice(0, 12); }
-function coCode_(company) { var c = String(company || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); return c || 'XXX'; }
+/* The four contractors come from Config COMPANIES; the two EcoOils entries are always offered after them. */
+var CO_EXTRA = ['EcoOils (Project)', 'EcoOils (Operations)'];
+function companies_() {
+  var l = cfgList_('COMPANIES', 'GSB,WEN,KKS,PBS').filter(function (c) { return !/^ecooils\b/i.test(c); });
+  return l.concat(CO_EXTRA);
+}
+function coCode_(company) {
+  var u = String(company || '').toUpperCase();
+  if (/^ECOOILS\s*\(?\s*PROJECT/.test(u)) return 'EOP';        /* EcoOils (Project)    -> MGP-EOP-... */
+  if (/^ECOOILS\s*\(?\s*OPERATION/.test(u)) return 'EOO';      /* EcoOils (Operations) -> MGP-EOO-... */
+  return coCode0_(company);
+}
+function coCode0_(company) { var c = String(company || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); return c || 'XXX'; }
 function nextRef_(now, company) {
   var cc = coCode_(company), iso = new Date(now + OFF).toISOString(), ym = iso.slice(2, 4) + iso.slice(5, 7), pre = 'MGP-' + cc + '-' + ym + '-', max = 0;
   rows_().forEach(function (r) { var s = String(r[0]); if (s.indexOf(pre) === 0) { var n = parseInt(s.slice(pre.length), 10); if (n > max) max = n; } });
