@@ -87,3 +87,21 @@ ok(m.call({...base,company:'WEN'}).ok&&m.call({...base,company:'WEN'}).ok&&m.cal
 const before=m.sheets.Passes.rows.length;
 const c1=m.call({...base,company:'KKS',cid:'abc123'}),c2=m.call({...base,company:'KKS',cid:'abc123'});
 ok(c1.ok&&c2.ok&&c2.dup&&c1.ref===c2.ref&&m.sheets.Passes.rows.length===before+1&&m.call({action:'get',ref:c2.ref,token:c2.token}).ok,'same client id = same pass (lost reply retry), fresh token');
+// lookup (v1.4)
+const lk1=m.call({action:'lookup',q:r1.ref.toLowerCase()});
+ok(lk1.ok&&lk1.list.length===1&&lk1.list[0].ref===r1.ref&&!JSON.stringify(lk1).match(/Budi|KTP|SIM|photo/i),'lookup by pass number returns status-level facts only');
+const lk2=m.call({action:'lookup',q:'https://x.test/app/?v='+r1.ref});
+ok(lk2.ok&&lk2.list.length===1,'lookup accepts the QR text (URL with the reference)');
+const idRow=m.sheets.Passes.rows.find(r=>String(r[0])===r1.ref);const idDigits=String(idRow[5]).replace(/\D/g,'');
+const lk3=m.call({action:'lookup',q:idDigits.replace(/(\d{4})/g,'$1 ')});
+ok(lk3.ok&&lk3.list.some(x=>x.ref===r1.ref)&&!JSON.stringify(lk3).includes(idDigits),'lookup by KTP/SIM number (spaces ignored) finds the pass and never returns the number');
+ok(m.call({action:'lookup',q:'12345'}).err==='bad_query'&&m.call({action:'lookup',q:'MGP-ZZZ-2610-9999'}).list.length===0,'lookup rejects junk and says nothing for an unknown pass');
+// admin delete (v1.4)
+ok(m.call({action:'a_delete',pin:'000000',refs:[r1.ref]}).err==='pin','delete needs the Admin PIN');
+const nPass=m.sheets.Passes.rows.length,nItems=m.sheets.Items.rows.length;
+const dl=m.call({action:'a_delete',pin:m.props.ADMIN_PIN,refs:[r2.ref,r3.ref]});
+ok(dl.ok&&dl.deleted.length===2&&m.sheets.Passes.rows.length===nPass-2&&m.sheets.Items.rows.length<nItems&&!m.sheets.Items.rows.slice(1).some(r=>r[0]===r2.ref||r[0]===r3.ref),'admin delete removes the pass rows and their item rows');
+ok(m.trashed.includes(r2.ref)&&m.call({action:'verify',ref:r2.ref}).found===false&&m.call({action:'a_log',pin:m.props.ADMIN_PIN}).log.some(l=>l.ev==='DELETED_ADMIN'&&l.ref===r2.ref),'Drive folder goes to Trash, pass is gone, deletion is in the audit log');
+m.sheets.Config.rows.forEach(r=>{if(r[0]==='COMPANY_DAILY_CAP')r[1]='40'});
+const nx=m.call({...base,company:'GSB'});
+ok(nx.ok&&!nx.ref.endsWith('-0002')&&!nx.ref.endsWith('-0003'),'a deleted number is never reused: '+nx.ref);

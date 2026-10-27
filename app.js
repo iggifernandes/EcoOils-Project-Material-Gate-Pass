@@ -1,4 +1,4 @@
-var VERSION='v1.6';
+var VERSION='v1.7';
 var PHV=['front','load'];
 var APP_URL='https://iggifernandes.github.io/EcoOils-Project-Material-Gate-Pass/';
 var API_URL='https://script.google.com/macros/s/AKfycbxULvNJReaniGRTFWKY507I0AZD5YLP3mBBjAyFFA-7z4nI0-LPncZbPZTajS89Jp0Z/exec';
@@ -230,10 +230,10 @@ function doneOpen(){show('vDone');doneDraw();}
 function doneDraw(){
   if(!LAST){homeOpen();return;}
   var h=h1(tr('doneTitle'))+'<div class="note" style="text-align:center">'+esc(tr('refLbl'))+'</div><div class="ref">'+esc(LAST.ref)+'</div>'+'<div class="qr">'+qrSvg(verifyUrl(LAST.ref))+'</div>';
-  h+='<p>'+esc(tr('doneNext'))+'</p><button class="btn amber" id="dPrint" type="button">'+esc(tr('printBoth'))+'</button><button class="btn ghost" id="dPrint1" type="button">'+esc(tr('printOne'))+'</button><div class="note">'+esc(tr('printHint'))+'</div><button class="btn ghost" id="dOpen" type="button">'+esc(tr('openPass'))+'</button>';
+  h+='<p>'+esc(tr('doneNext'))+'</p><button class="btn amber" id="dPrint" type="button">'+esc(tr('printBoth'))+'</button><button class="btn ghost" id="dPrint1" type="button">'+esc(tr('printOne'))+'</button><button class="btn ghost" id="dPdf" type="button">'+esc(tr('dlPdf'))+'</button><div class="note">'+esc(tr('printHint'))+'</div><button class="btn ghost" id="dOpen" type="button">'+esc(tr('openPass'))+'</button>';
   $('vDone').innerHTML=h;
 }
-$('vDone').addEventListener('click',function(e){var t=e.target.closest('button');if(!t)return;if(t.id==='dPrint')printPass(LAST);else if(t.id==='dPrint1')printPass(LAST,true);else if(t.id==='dOpen')passOpen(LAST.ref);});
+$('vDone').addEventListener('click',function(e){var t=e.target.closest('button');if(!t)return;if(t.id==='dPrint')printPass(LAST);else if(t.id==='dPrint1')printPass(LAST,true);else if(t.id==='dPdf')pdfPass(LAST,t);else if(t.id==='dOpen')passOpen(LAST.ref);});
 
 /* ===== QR and print ===== */
 function verifyUrl(ref){return APP_URL+'?v='+encodeURIComponent(ref);}
@@ -260,7 +260,12 @@ function printPass(p,one){
   if(!p)return;
   getPhotos(p).then(function(ph){printPassNow(p,ph,!!one);});
 }
-function printPassNow(p,ph,one){
+function stampNow(){
+  var d=new Date(Date.now()+7*3600000),M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],z=function(n){return (n<10?'0':'')+n;};
+  return {txt:z(d.getUTCDate())+' '+M[d.getUTCMonth()]+' '+d.getUTCFullYear()+' '+z(d.getUTCHours())+':'+z(d.getUTCMinutes())+' WIB',file:d.getUTCFullYear()+'-'+z(d.getUTCMonth()+1)+'-'+z(d.getUTCDate())+'_'+z(d.getUTCHours())+'-'+z(d.getUTCMinutes())};
+}
+function fileBase(p,st){return String(p.ref).replace(/[^A-Za-z0-9_-]/g,'')+'_'+st.file;}
+function passHtml(p,ph,one,st){
   var rows='',n=Math.max(6,p.items.length);
   for(var i=0;i<n;i++){var it=p.items[i];rows+='<tr><td style="text-align:center;width:9%">'+(it?(i+1):'')+'</td><td>'+(it?esc(it.item):'')+'</td><td style="text-align:center;width:10%">'+(it?esc(it.qty):'')+'</td><td style="text-align:center;width:13%">'+(it?esc(String(it.unit||'').toUpperCase()):'')+'</td></tr>';}
   var h='<div class="pg'+(p.items.length>8?' cmp':'')+'"><table class="hd"><tr><td class="lg" rowspan="3"><img alt="" src="'+LOGO+'"></td><td class="k">Item</td><td class="v">: EOSM-HSSE-FM003</td></tr><tr><td class="k">Revision No</td><td class="v">: Initial Issue</td></tr><tr><td class="k">Date</td><td class="v">: February, 3rd 2026</td></tr></table>';
@@ -275,20 +280,107 @@ function printPassNow(p,ph,one){
   if(one)h+='<div class="ph2"><div><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>FRONT VIEW OF THE VEHICLE</small></div><div><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>MATERIAL LOADED IN THE TRUCK</small></div></div>';
   h+='<div class="sig"><div><b>CARRIED BY:</b><div class="l"></div><small>(Person taking the material out)</small><div style="font-size:9pt">'+esc(p.carrier)+'</div></div><div><b>CHECKED BY:</b><div class="l"></div><small>(IC responsible Person- Lead/Store in charge)</small><div style="font-size:9pt">'+esc(p.icRep+(p.icPos?', '+p.icPos:''))+(p.icPhone?'<br>Tel: '+esc(p.icPhone):'')+'</div></div></div>';
   h+='<div class="sig" style="margin-top:3mm"><div><b>EcoOils Rep:</b><div class="l"></div><small>(Proj/Eng, Discipline Eng, HSSE, Stores)</small><div style="font-size:9pt">'+esc(p.dept)+'</div></div><div><b>Approval By:</b><div class="l"></div><small>(EcoOils Site Lead)</small><div style="font-size:9pt">'+esc(p.siteLead||'')+'</div></div></div>';
-  h+='<div class="ft"><span>COPY: <i>SECURITY / CARRIER / STORES</i></span><span class="pn">Page 1 of '+(one?1:2)+'</span></div></div>';
+  h+='<div class="ft"><span>COPY: <i>SECURITY / CARRIER / STORES</i></span><span class="pn">'+esc(tr('printedAt'))+' '+esc(st.txt)+' &middot; Page 1 of '+(one?1:2)+'</span></div></div>';
   if(!one){
     h+='<div class="pg pg2"><table class="hd"><tr><td class="lg" rowspan="3"><img alt="" src="'+LOGO+'"></td><td class="k">Item</td><td class="v">: EOSM-HSSE-FM003</td></tr><tr><td class="k">SR NO</td><td class="v">: '+esc(p.ref)+'</td></tr><tr><td class="k">Date</td><td class="v">: '+esc(fmtD(p.date))+'</td></tr></table>';
     h+='<div class="ttl">MATERIAL GATE PASS &ndash; VEHICLE AND MATERIAL PHOTOS</div>';
     h+='<div class="top"><div><div class="ln">COMPANY: <b>'+esc(p.company)+'</b></div><div class="ln">VEHICLE NO: <b>'+esc(p.vehicle)+'</b></div><div class="ln">CARRIED BY: <b>'+esc(p.carrier)+'</b></div></div><div>'+qrSvg(verifyUrl(p.ref))+'</div></div>';
     h+='<div class="bigph"><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>FRONT VIEW OF THE VEHICLE</small></div>';
     h+='<div class="bigph"><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>MATERIAL LOADED IN THE TRUCK</small></div>';
-    h+='<div class="ft"><span>'+esc(p.ref)+'</span><span class="pn">Page 2 of 2</span></div></div>';
+    h+='<div class="ft"><span>'+esc(p.ref)+'</span><span class="pn">'+esc(tr('printedAt'))+' '+esc(st.txt)+' &middot; Page 2 of 2</span></div></div>';
   }
-  $('printArea').innerHTML=h;
-  var old=document.title;document.title=' ';
+  return h;
+}
+function printPassNow(p,ph,one){
+  var st=stampNow();
+  $('printArea').innerHTML=passHtml(p,ph,one,st);
+  /* margin 0 hides the browser header, so the tab title is free to become the file name when the person saves as PDF */
+  var old=document.title;document.title=fileBase(p,st);
   var back=function(){document.title=old;window.removeEventListener('afterprint',back);};window.addEventListener('afterprint',back);
   var imgs=$('printArea').querySelectorAll('img'),left=imgs.length,go=function(){if(--left<=0)setTimeout(function(){window.print();},120);};
   if(!left)go();else Array.prototype.forEach.call(imgs,function(im){if(im.complete)go();else{im.onload=go;im.onerror=go;}});
+}
+
+/* ===== Download PDF: the same pages as the print, drawn to pictures and packed into a PDF (no library, no paid service) ===== */
+function printCss(){
+  var o='';
+  Array.prototype.forEach.call(document.styleSheets,function(ss){try{Array.prototype.forEach.call(ss.cssRules,function(r){
+    if(r.type===4){if(/print/.test(r.media.mediaText))Array.prototype.forEach.call(r.cssRules,function(q){if(q.selectorText&&q.selectorText.indexOf('#printArea')===0)o+=q.cssText;});}
+    else if(r.selectorText&&r.selectorText.indexOf('#printArea')===0&&r.cssText.indexOf('display: none')<0)o+=r.cssText;
+  });}catch(e){}});
+  return o;
+}
+/* Jost for the PDF pictures (a picture cannot use web fonts by link, so the font file is fetched once and embedded); falls back to Arial when offline */
+var JOST=null;
+function jostCss(){
+  if(JOST!==null)return Promise.resolve(JOST);
+  return new Promise(function(res){
+    var fin=function(v){if(JOST===null){JOST=v||'';res(JOST);}};setTimeout(function(){fin('');},6000);
+    var l=document.querySelector('link[href*="fonts.googleapis.com/css2"]');if(!l||!window.fetch)return fin('');
+    fetch(l.href).then(function(r){return r.text();}).then(function(css){
+      var parts=css.split(/\/\*\s*/).filter(function(x){return /^latin\s*\*\//.test(x);});
+      return Promise.all(parts.map(function(b){
+        var m=b.match(/url\((https:[^)]+)\)/);if(!m)return '';
+        return fetch(m[1]).then(function(r){return r.arrayBuffer();}).then(function(buf){
+          var u=new Uint8Array(buf),bin='';for(var i=0;i<u.length;i+=8192)bin+=String.fromCharCode.apply(null,u.subarray(i,i+8192));
+          return b.replace(/^latin\s*\*\//,'').replace(m[0],'url(data:font/woff2;base64,'+btoa(bin)+')');
+        });
+      }));
+    }).then(function(a){fin(a.join('\n'));},function(){fin('');});
+  });
+}
+function pageJpeg(pgHtml,css){
+  return new Promise(function(res,rej){
+    var W=794,H=1123,box=document.createElement('div');
+    box.innerHTML='<style>'+css+'</style><div id="printArea" style="display:block;width:'+W+'px;height:'+H+'px;background:#fff;color:#000;overflow:hidden">'+pgHtml+'</div>';
+    var xml=new XMLSerializer().serializeToString(box);
+    var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'"><foreignObject x="0" y="0" width="'+W+'" height="'+H+'">'+xml+'</foreignObject></svg>';
+    var im=new Image();
+    im.onload=function(){try{
+      var c=document.createElement('canvas');c.width=W*2;c.height=H*2;var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
+      var b=atob(c.toDataURL('image/jpeg',0.9).split(',')[1]),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);
+      res({jpg:u,w:c.width,h:c.height});
+    }catch(e){rej(e);}};
+    im.onerror=function(){rej(new Error('render'));};
+    im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+  });
+}
+function mkPdf(pages,title){
+  var parts=[],len=0,offs=[];
+  var put=function(x){var u=typeof x==='string'?(function(){var a=new Uint8Array(x.length);for(var i=0;i<x.length;i++)a[i]=x.charCodeAt(i)&255;return a;})():x;parts.push(u);len+=u.length;};
+  var N=pages.length*3+4;
+  put('%PDF-1.4\n');
+  var obj=function(n,body){offs[n]=len;put(n+' 0 obj\n'+body+'\nendobj\n');};
+  obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2,'<< /Type /Pages /Count '+pages.length+' /Kids ['+pages.map(function(_,i){return (3+i*3)+' 0 R';}).join(' ')+'] >>');
+  pages.forEach(function(pg,i){
+    var a=3+i*3;
+    obj(a,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 '+(a+2)+' 0 R >> >> /Contents '+(a+1)+' 0 R >>');
+    var cs='q 595.28 0 0 841.89 0 0 cm /Im0 Do Q';
+    obj(a+1,'<< /Length '+cs.length+' >>\nstream\n'+cs+'\nendstream');
+    offs[a+2]=len;put((a+2)+' 0 obj\n<< /Type /XObject /Subtype /Image /Width '+pg.w+' /Height '+pg.h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+pg.jpg.length+' >>\nstream\n');put(pg.jpg);put('\nendstream\nendobj\n');
+  });
+  obj(N-1,'<< /Title ('+String(title).replace(/[()\\]/g,'')+') /Producer (EcoOils Material Gate Pass) >>');
+  var xr=len;put('xref\n0 '+N+'\n0000000000 65535 f \n');
+  for(var k=1;k<N;k++)put(('0000000000'+offs[k]).slice(-10)+' 00000 n \n');
+  put('trailer\n<< /Size '+N+' /Root 1 0 R /Info '+(N-1)+' 0 R >>\nstartxref\n'+xr+'\n%%EOF\n');
+  return new Blob(parts,{type:'application/pdf'});
+}
+function saveBlob(blob,name){
+  var a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(u);a.remove();},5000);
+}
+function pdfPass(p,btn){
+  if(!p)return;
+  var lbl=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent=tr('pdfWait');}
+  var done=function(){if(btn){btn.disabled=false;btn.textContent=lbl;}};
+  Promise.all([getPhotos(p),jostCss()]).then(function(a){
+    var st=stampNow(),box=document.createElement('div');box.innerHTML=passHtml(p,a[0],false,st);
+    var css=printCss()+a[1],pgs=Array.prototype.slice.call(box.querySelectorAll('.pg')),list=[];
+    return pgs.reduce(function(pr,pg){return pr.then(function(){return pageJpeg(pg.outerHTML,css).then(function(j){list.push(j);});});},Promise.resolve()).then(function(){
+      saveBlob(mkPdf(list,fileBase(p,st)),fileBase(p,st)+'.pdf');
+    });
+  }).then(done,function(){done();alert(tr('pdfFail'));});
 }
 
 /* ===== pass detail ===== */
@@ -308,12 +400,12 @@ function passDraw(){
   if(p.status==='Rejected')h+='<div class="card"><b>'+esc(tr('rejReason'))+'</b>: '+esc(p.note)+'<br><span class="note">'+esc(p.decidedBy)+' · '+esc(p.decidedAt)+' WIB</span></div>';
   if(p.status==='Cancelled'&&p.cancelReason)h+='<div class="card">'+esc(p.cancelReason)+'</div>';
   if(p.status==='Awaiting signatures'||p.status==='Pending release'){
-    h+='<button class="btn amber" id="pPrint" type="button">'+esc(tr('printBoth'))+'</button><button class="btn ghost" id="pPrint1" type="button">'+esc(tr('printOne'))+'</button>';
+    h+='<button class="btn amber" id="pPrint" type="button">'+esc(tr('printBoth'))+'</button><button class="btn ghost" id="pPrint1" type="button">'+esc(tr('printOne'))+'</button><button class="btn ghost" id="pPdf" type="button">'+esc(tr('dlPdf'))+'</button>';
     h+='<h2>'+esc(p.status==='Pending release'?tr('replaceSigned'):tr('upload'))+'</h2><p class="note">'+esc(tr('signedHelp'))+'</p>';
     h+='<div class="tiles">'+SG.map(function(s,i){return '<div class="tile on" style="cursor:default"><img alt="" data-zoom="data:image/jpeg;base64,'+s+'" src="data:image/jpeg;base64,'+s+'"><button class="btn danger sm" type="button" data-sgrm="'+i+'">'+esc(tr('remove'))+'</button></div>';}).join('')+(SG.length<2?'<button type="button" class="tile ph" style="margin:0;font:inherit;color:inherit" data-scan="1"><span style="font-size:28px">&#128247;</span><span>'+esc(SG.length?tr('scanNext'):tr('scanBtn'))+'</span></button>':'')+'</div><input type="file" accept="image/*" id="sgIn" class="hidden">';
     if(SG.length<2)h+='<button class="btn ghost sm" type="button" id="sgFile">'+esc(tr('scanFile'))+'</button>';
     h+='<div class="err" id="pErr"></div>'+(SG.length?'<button class="btn" id="pSend" type="button">'+esc(tr('sendSigned'))+'</button>':'');
-  }else h+='<button class="btn ghost" id="pPrint" type="button">'+esc(tr('printAgain'))+'</button>';
+  }else h+='<button class="btn ghost" id="pPrint" type="button">'+esc(tr('printAgain'))+'</button><button class="btn ghost" id="pPdf" type="button">'+esc(tr('dlPdf'))+'</button>';
   h+='<h2>'+esc(tr('photosTitle'))+'</h2><div class="row2" id="pPhotos">'+(PHC[p.ref]?PHV.map(function(v){return '<div class="pv"><small class="note">'+esc(tr('ph_'+v))+'</small><img alt="" data-zoom="'+PHC[p.ref][v]+'" src="'+PHC[p.ref][v]+'"></div>';}).join(''):'<div class="note"><span class="sp"></span></div>')+'</div>';
   h+='<h2>'+esc(tr('items'))+'</h2><div class="card"><div class="kv"><span>'+esc(tr('compShort'))+'</span><span>'+esc(p.company)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(p.vehicle)+'</span><span>'+esc(tr('driver'))+'</span><span>'+esc(p.carrier)+'</span><span>'+esc(tr('purposeText'))+'</span><span>'+esc(p.purposeText)+'</span></div><table class="it"><tr><th>#</th><th>'+esc(tr('itemName'))+'</th><th>'+esc(tr('qty'))+'</th><th>'+esc(tr('unit'))+'</th></tr>'+p.items.map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(it.item)+'</td><td>'+esc(it.qty)+'</td><td>'+esc(it.unit)+'</td></tr>';}).join('')+'</table></div>';
   if(p.status==='Awaiting signatures'||p.status==='Pending release')h+='<button class="btn danger" id="pCancel" type="button">'+esc(tr('cancelPass'))+'</button>';
@@ -332,6 +424,7 @@ $('vPass').addEventListener('click',function(e){
   if(t.id==='sgFile'){var fi=$('sgIn');if(fi)fi.click();return;}
   if(t.id==='pBack'){homeOpen();}
   else if(t.getAttribute('data-sgrm')!==null){SG.splice(+t.getAttribute('data-sgrm'),1);passDraw();}
+  else if(t.id==='pPdf'){if(PASS){PASS.siteLead=PASS.siteLead||CFG.siteLead;pdfPass(PASS,t);}}
   else if(t.id==='pPrint'||t.id==='pPrint1'){if(PASS){PASS.siteLead=PASS.siteLead||CFG.siteLead;printPass(PASS,t.id==='pPrint1');}}
   else if(t.id==='pNew'){D=newDraft();newOpen();}
   else if(t.id==='pSend'){
@@ -350,22 +443,89 @@ $('vPass').addEventListener('click',function(e){
   }
 });
 
-/* ===== find a pass ===== */
-function findOpen(){show('vFind');findDraw();}
+/* ===== find a pass: by pass number, by KTP / SIM number, or by scanning the QR on the pass ===== */
+var FD={q:'',err:'',res:null,take:''};
+var REFRE=/MGP-[A-Z0-9]{1,8}-\d{4}-\d{3,}/i;
+function findOpen(){FD.err='';FD.res=null;FD.take='';FD.from='';show('vFind');findDraw();}
 function findDraw(){
-  $('vFind').innerHTML=h1(tr('find'))+'<p class="note">'+esc(tr('findHelp'))+'</p><label for="fdRef">'+esc(tr('refLbl'))+'</label><input id="fdRef" placeholder="'+esc(tr('refPh'))+'" autocapitalize="characters" autocomplete="off"><label for="fdVeh">'+esc(tr('vehicle'))+'</label><input id="fdVeh" autocapitalize="characters" autocomplete="off"><div class="err" id="fdErr"></div><button class="btn" id="fdGo" type="button">'+esc(tr('findGo'))+'</button><button class="btn ghost" id="fdBack" type="button">'+esc(tr('back'))+'</button>';
+  var h=h1(tr('find'));
+  if(FD.take){
+    h+='<div class="ref" style="font-size:24px">'+esc(FD.take)+'</div><p class="note">'+esc(tr('takeHelp'))+'</p><label for="fdVeh">'+esc(tr('vehicle'))+'</label><input id="fdVeh" autocapitalize="characters" autocomplete="off"><div class="err" id="fdErr">'+esc(FD.err)+'</div><button class="btn" id="fdTake" type="button">'+esc(tr('takeOver'))+'</button><button class="btn ghost" id="fdBack2" type="button">'+esc(tr('back'))+'</button>';
+    $('vFind').innerHTML=h;return;
+  }
+  h+='<p class="note">'+esc(tr('findHelp2'))+'</p><label for="fdQ">'+esc(tr('fdQ'))+'</label><input id="fdQ" placeholder="'+esc(tr('refPh'))+'" autocapitalize="characters" autocomplete="off" value="'+esc(FD.q)+'"><div class="err" id="fdErr">'+esc(FD.err)+'</div><button class="btn" id="fdGo" type="button">'+esc(tr('findGo'))+'</button><button class="btn amber" id="fdQr" type="button">'+esc(tr('scanQr'))+'</button>';
+  if(FD.res&&FD.res.length){h+='<h2>'+esc(tr('found'))+'</h2>'+FD.res.map(function(s){return '<button class="pas" type="button" data-fdopen="'+esc(s.ref)+'"><span><b>'+esc(s.ref)+'</b><small>'+esc(s.company+' · '+s.vehicle+' · '+fmtD(s.date))+'</small></span>'+chip(s.status)+'</button>';}).join('');}
+  h+='<button class="btn ghost" id="fdBack" type="button">'+esc(tr('back'))+'</button>';
+  $('vFind').innerHTML=h;
 }
+function findGo(){
+  var q=($('fdQ').value||'').trim();FD.q=q;FD.err='';FD.res=null;
+  api({action:'lookup',q:q}).then(function(r){
+    if(!r||!r.ok){FD.err=errText(r&&r.err);findDraw();return;}
+    if(!r.list.length){FD.err=tr('noMatch');findDraw();return;}
+    if(r.list.length===1){FD.from='find';verifyOpen(r.list[0].ref);return;}
+    FD.res=r.list;findDraw();
+  },function(){FD.err=tr('err_net');findDraw();});
+}
+$('vFind').addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.id==='fdQ'){e.preventDefault();findGo();}});
 $('vFind').addEventListener('click',function(e){
   var t=e.target.closest('button');if(!t)return;
   if(t.id==='fdBack')homeOpen();
-  if(t.id==='fdGo'){
-    var ref=$('fdRef').value.trim().toUpperCase(),veh=$('fdVeh').value.trim();
-    api({action:'find',ref:ref,vehicle:veh}).then(function(r){
-      if(!r||!r.ok){$('fdErr').textContent=errText(r&&r.err);return;}
-      MINE=MINE.filter(function(m){return m.ref!==r.ref;});MINE.unshift({ref:r.ref,token:r.token,vehicle:r.pass.vehicle,company:r.pass.company,ts:Date.now()});saveMine();passOpen(r.ref);
-    },function(){$('fdErr').textContent=tr('err_net');});
+  else if(t.id==='fdBack2'){FD.take='';FD.err='';findDraw();}
+  else if(t.id==='fdGo')findGo();
+  else if(t.id==='fdQr'){FD.q=$('fdQ').value;qrScanOpen(function(ref){FD.from='find';verifyOpen(ref);});}
+  else if(t.getAttribute('data-fdopen')){FD.from='find';verifyOpen(t.getAttribute('data-fdopen'));}
+  else if(t.id==='fdTake'){
+    var veh=$('fdVeh').value.trim();
+    api({action:'find',ref:FD.take,vehicle:veh}).then(function(r){
+      if(!r||!r.ok){FD.err=errText(r&&r.err);findDraw();return;}
+      MINE=MINE.filter(function(m){return m.ref!==r.ref;});MINE.unshift({ref:r.ref,token:r.token,vehicle:r.pass.vehicle,company:r.pass.company,ts:Date.now()});saveMine();FD.take='';passOpen(r.ref);
+    },function(){FD.err=tr('err_net');findDraw();});
   }
 });
+
+/* ===== QR scanner (camera): BarcodeDetector where the phone has it, otherwise jsQR.js loaded from the same site ===== */
+var QS={el:null,stream:null,on:false,cb:null,det:null,load:null};
+function qrLoadLib(){
+  if(window.jsQR)return Promise.resolve();
+  if(!QS.load)QS.load=new Promise(function(ok,no){var e=document.createElement('script');e.src='jsQR.js';e.onload=ok;e.onerror=function(){QS.load=null;no();};document.head.appendChild(e);});
+  return QS.load;
+}
+function qrScanClose(){
+  QS.on=false;if(QS.stream){QS.stream.getTracks().forEach(function(t){t.stop();});QS.stream=null;}
+  if(QS.el)QS.el.classList.add('hidden');
+}
+function qrScanOpen(cb){
+  if(!QS.el){
+    var d=document.createElement('div');d.id='qrs';d.className='ovl hidden';
+    d.innerHTML='<div class="ovbar"><span id="qrT" style="margin-right:auto;font-weight:300;letter-spacing:.14em;text-transform:uppercase;padding-left:6px"></span><button class="btn ghost sm" id="qrX" type="button" style="width:auto;margin:0">&times;</button></div><video id="qrV" playsinline muted></video><div id="qrBox"></div><div id="qrMsg"></div><canvas id="qrC" class="hidden"></canvas>';
+    document.body.appendChild(d);QS.el=d;d.querySelector('#qrX').onclick=qrScanClose;
+  }
+  QS.cb=cb;var d2=QS.el;d2.classList.remove('hidden');d2.querySelector('#qrT').textContent=tr('scanQr');d2.querySelector('#qrMsg').textContent=tr('qrHelp');
+  try{if(!QS.det&&window.BarcodeDetector)QS.det=new BarcodeDetector({formats:['qr_code']});}catch(e){QS.det=null;}
+  (QS.det?Promise.resolve():qrLoadLib()).then(function(){return navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});}).then(function(st){
+    QS.stream=st;var v=d2.querySelector('#qrV');v.srcObject=st;return v.play();
+  }).then(function(){QS.on=true;qrLoop();},function(){d2.querySelector('#qrMsg').textContent=tr('camErr');});
+}
+function qrGot(raw){
+  var m=String(raw||'').match(REFRE);
+  if(!m){QS.el.querySelector('#qrMsg').textContent=tr('qrNone');setTimeout(function(){if(QS.stream){QS.on=true;QS.el.querySelector('#qrMsg').textContent=tr('qrHelp');qrLoop();}},1500);return;}
+  var f=QS.cb;qrScanClose();if(f)f(m[0].toUpperCase());
+}
+function qrLoop(){
+  if(!QS.on)return;
+  var v=QS.el.querySelector('#qrV'),c=QS.el.querySelector('#qrC');
+  if(v.readyState>=2&&v.videoWidth){
+    if(QS.det){QS.det.detect(v).then(function(r){if(!QS.on)return;if(r&&r.length&&r[0].rawValue){QS.on=false;qrGot(r[0].rawValue);}else setTimeout(qrLoop,150);},function(){QS.det=null;setTimeout(qrLoop,150);});return;}
+    if(window.jsQR){
+      var w=Math.min(640,v.videoWidth),h=Math.round(w*v.videoHeight/v.videoWidth);if(c.width!==w)c.width=w;if(c.height!==h)c.height=h;
+      var x=c.getContext('2d',{willReadFrequently:true});x.drawImage(v,0,0,w,h);
+      var im=x.getImageData(0,0,w,h),r=jsQR(im.data,w,h,{inversionAttempts:'dontInvert'});
+      if(r&&r.data){QS.on=false;qrGot(r.data);return;}
+    }
+  }
+  setTimeout(qrLoop,180);
+}
 
 /* ===== public verify (QR from a phone camera) ===== */
 var VREF='',VRES=null;
@@ -381,12 +541,24 @@ function verifyDraw(){
     h+='<div class="vbox '+cls+'"><div class="big">'+esc(tr(k[0]))+'</div>'+(k[1]?'<div>'+esc(tr(k[1]))+'</div>':'')+(s==='Released'&&VRES.decidedAt?'<div>'+esc(VRES.decidedAt)+' WIB</div>':'')+'</div>';
     h+='<div class="card"><div class="kv"><span>'+esc(tr('date'))+'</span><span>'+esc(fmtD(VRES.date))+'</span><span>'+esc(tr('compShort'))+'</span><span>'+esc(VRES.company)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(VRES.vehicle)+'</span><span>'+esc(tr('items'))+'</span><span>'+esc(VRES.items)+'</span></div></div>';
   }
+  if(VRES&&VRES.ok&&VRES.found){
+    if(tokenOf(VREF))h+='<button class="btn" id="vOpen" type="button">'+esc(tr('openPass'))+'</button>';
+    else h+='<button class="btn" id="vTake" type="button">'+esc(tr('takeOver'))+'</button>';
+  }
+  if(FD.from==='find')h+='<button class="btn ghost" id="vBack" type="button">'+esc(tr('back'))+'</button>';
   h+='<a class="btn ghost" href="'+esc(APP_URL)+'">'+esc(tr('openApp'))+'</a>';
   $('vVerify').innerHTML=h;
 }
 
+$('vVerify').addEventListener('click',function(e){
+  var t=e.target.closest('button');if(!t)return;
+  if(t.id==='vOpen')passOpen(VREF);
+  else if(t.id==='vTake'){FD.take=VREF;FD.err='';show('vFind');findDraw();}
+  else if(t.id==='vBack'){FD.take='';findDraw();show('vFind');}
+});
+
 /* ===== admin ===== */
-var AD={pin:ls('gp_apin')||'',list:null,counts:{},q:'',st:'',sel:null};
+var AD={pin:ls('gp_apin')||'',list:null,counts:{},q:'',st:'',sel:null,chk:{}};
 function adminOpen(){show('vAdmin');if(AD.pin)adminLoad();else adminDraw();}
 function adminLoad(){
   api({action:'a_list',pin:AD.pin,q:AD.q,status:AD.st}).then(function(r){
@@ -399,8 +571,10 @@ function adminDraw(){
   if(!AD.pin){h+='<label for="adPin">'+esc(tr('pin'))+'</label><input id="adPin" type="password" inputmode="numeric" autocomplete="off" maxlength="12"><div class="err">'+esc(AD.err||'')+'</div><button class="btn" id="adGo" type="button">'+esc(tr('login'))+'</button><button class="btn ghost" id="adBack" type="button">'+esc(tr('back'))+'</button>';$('vAdmin').innerHTML=h;return;}
   if(AD.sel){adminDetailDraw(h);return;}
   h+='<div class="row2"><input id="adQ" placeholder="'+esc(tr('search'))+'" value="'+esc(AD.q)+'"><select id="adSt"><option value="">'+esc(tr('all'))+'</option>'+Object.keys(ST).map(function(s){return '<option value="'+esc(s)+'"'+(AD.st===s?' selected':'')+'>'+esc(tr(ST[s][0]))+' ('+(AD.counts[s]||0)+')</option>';}).join('')+'</select></div>';
-  h+='<div class="err">'+esc(AD.err||'')+'</div>';
-  (AD.list||[]).forEach(function(s){h+='<button class="pas" type="button" data-adopen="'+esc(s.ref)+'"><span><b>'+esc(s.ref)+'</b><small>'+esc(s.company+' · '+s.vehicle+' · '+s.carrier)+'<br>'+esc(s.createdAt)+'</small></span>'+chip(s.status)+'</button>';});
+  h+='<div class="err">'+esc(AD.err||'')+'</div>'+(AD.note?'<div class="note">'+esc(AD.note)+'</div>':'');
+  (AD.list||[]).forEach(function(s){h+='<div class="adrow"><input type="checkbox" data-adsel="'+esc(s.ref)+'"'+(AD.chk[s.ref]?' checked':'')+' aria-label="'+esc(s.ref)+'"><button class="pas" type="button" data-adopen="'+esc(s.ref)+'"><span><b>'+esc(s.ref)+'</b><small>'+esc(s.company+' · '+s.vehicle+' · '+s.carrier)+'<br>'+esc(s.createdAt)+'</small></span>'+chip(s.status)+'</button></div>';});
+  var nsel=Object.keys(AD.chk).filter(function(k){return AD.chk[k];}).length;
+  if(nsel)h+='<button class="btn danger" id="adDelSel" type="button">'+esc(tr('adDeleteSel').replace('{n}',nsel))+'</button>';
   h+='<button class="btn ghost" id="adCsv" type="button">'+esc(tr('csv'))+'</button><button class="btn ghost" id="adOut" type="button">'+esc(tr('logout'))+'</button><button class="btn ghost" id="adBack" type="button">'+esc(tr('back'))+'</button>';
   $('vAdmin').innerHTML=h;
 }
@@ -411,11 +585,23 @@ function adminDetailDraw(h){
   h+='<h2>'+esc(tr('links'))+'</h2><div>'+[['front',d.links.front],['load',d.links.load],['top',(d.links.old||[])[0]],['left',(d.links.old||[])[1]],['right',(d.links.old||[])[2]]].filter(function(x){return x[1]&&/^http/.test(x[1])&&!(x[0]==='top'&&x[1]===d.links.load);}).map(function(x){return '<a class="btn ghost sm" target="_blank" rel="noopener" href="'+esc(x[1])+'">'+esc(tr('ph_'+x[0]))+'</a>';}).join('')+d.links.signed.map(function(u,i){return '<a class="btn sm" target="_blank" rel="noopener" href="'+esc(u)+'">'+esc(tr('upload'))+' '+(i+1)+'</a>';}).join('')+'</div>';
   h+='<h2>'+esc(tr('auditLog'))+'</h2><table class="it adm"><tr><th>Time</th><th>Event</th><th>By</th><th>Detail</th></tr>'+d.log.map(function(l){return '<tr><td>'+esc(l.t)+'</td><td>'+esc(l.ev)+'</td><td>'+esc(l.by)+'</td><td>'+esc(l.d)+'</td></tr>';}).join('')+'</table>';
   if(p.status==='Awaiting signatures'||p.status==='Pending release')h+='<button class="btn danger" id="adCancel" type="button">'+esc(tr('adminCancel'))+'</button>';
-  h+='<button class="btn" id="adPrint" type="button">'+esc(tr('printAgain'))+'</button><button class="btn ghost" id="adList" type="button">'+esc(tr('back'))+'</button>';
+  h+='<button class="btn" id="adPrint" type="button">'+esc(tr('printAgain'))+'</button><button class="btn ghost" id="adPdf" type="button">'+esc(tr('dlPdf'))+'</button><button class="btn danger" id="adDel" type="button">'+esc(tr('adDelete'))+'</button><button class="btn ghost" id="adList" type="button">'+esc(tr('back'))+'</button>';
   $('vAdmin').innerHTML=h;
 }
-$('vAdmin').addEventListener('input',function(e){if(e.target.id==='adQ'){AD.q=e.target.value;clearTimeout(AD.tm);AD.tm=setTimeout(adminLoad,400);}});
-$('vAdmin').addEventListener('change',function(e){if(e.target.id==='adSt'){AD.st=e.target.value;adminLoad();}});
+$('vAdmin').addEventListener('input',function(e){if(e.target.id==='adQ'){AD.note='';AD.q=e.target.value;clearTimeout(AD.tm);AD.tm=setTimeout(adminLoad,400);}});
+$('vAdmin').addEventListener('change',function(e){
+  if(e.target.id==='adSt'){AD.st=e.target.value;adminLoad();}
+  else if(e.target.getAttribute('data-adsel')){AD.chk[e.target.getAttribute('data-adsel')]=e.target.checked;adminDraw();}
+});
+function adminDelete(refs){
+  if(!refs.length)return;
+  if(!window.confirm(tr('delAsk').replace('{n}',refs.length)+'\n\n'+refs.join('\n')))return;
+  api({action:'a_delete',pin:AD.pin,refs:refs},60000).then(function(r){
+    if(!r||!r.ok){AD.err=errText(r&&r.err);adminDraw();return;}
+    refs.forEach(function(x){delete AD.chk[x];delete PHC[x];});MINE=MINE.filter(function(m){return refs.indexOf(m.ref)<0;});saveMine();
+    AD.sel=null;AD.note=tr('delDone').replace('{n}',r.deleted.length);adminLoad();
+  },function(){AD.err=tr('err_net');adminDraw();});
+}
 $('vAdmin').addEventListener('click',function(e){
   var t=e.target.closest('button');if(!t)return;
   if(t.id==='adBack')homeOpen();
@@ -425,6 +611,9 @@ $('vAdmin').addEventListener('click',function(e){
   else if(t.getAttribute('data-adopen')){api({action:'a_get',pin:AD.pin,ref:t.getAttribute('data-adopen')}).then(function(r){if(r&&r.ok){AD.sel=r;adminDraw();}else{AD.err=errText(r&&r.err);adminDraw();}});}
   else if(t.id==='adCancel'){var why=window.prompt(tr('cancelWhy'),'');if(why===null)return;api({action:'a_cancel',pin:AD.pin,ref:AD.sel.pass.ref,reason:why}).then(function(r){AD.sel=null;adminLoad();});}
   else if(t.id==='adPrint'){var p=AD.sel.pass;p.siteLead=p.siteLead||CFG.siteLead;printPass(p);}
+  else if(t.id==='adPdf'){var p2=AD.sel.pass;p2.siteLead=p2.siteLead||CFG.siteLead;pdfPass(p2,t);}
+  else if(t.id==='adDel'){adminDelete([AD.sel.pass.ref]);}
+  else if(t.id==='adDelSel'){adminDelete(Object.keys(AD.chk).filter(function(k){return AD.chk[k];}));}
   else if(t.id==='adCsv'){csv();}
 });
 function csv(){
@@ -469,7 +658,7 @@ function zmBuild(){
 function zoomOpen(src){if(!src)return;zmBuild();ZM.img.src=src;ZM.s=1;ZM.x=0;ZM.y=0;zmApply();ZM.pt={};ZM.el.classList.remove('hidden');}
 function zoomClose(){if(ZM.el)ZM.el.classList.add('hidden');}
 document.addEventListener('click',function(e){var im=e.target&&e.target.closest&&e.target.closest('img[data-zoom]');if(im){e.preventDefault();zoomOpen(im.getAttribute('data-zoom'));}});
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){zoomClose();scanClose();}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){zoomClose();scanClose();qrScanClose();}});
 
 /* ===== document scanner for the signed copy: camera with a page frame, cropped to the frame, cleaned up like a scan ===== */
 var SC={el:null,stream:null,cb:null,shot:null};

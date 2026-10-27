@@ -43,3 +43,7 @@ Validity: a pass is valid only on the day it was issued (Jakarta date). After th
 • Anyone with the link can raise a pass, so the control is the signed copy plus the guard's physical check, not the form. Limits: 30 new passes per 10 minutes for the whole site, daily cap per company (default 40), honeypot field, photo size limits.
 • The token that lets an IC upload or cancel a pass is kept on that phone. A new phone: Find a pass (reference + vehicle number).
 • The public repo contains no secrets. ADMIN_PIN, BRIDGE_SECRET and the token salt are script properties.
+
+## v1.7
+• Download PDF, print time on every page, Find by pass number / ID number / QR scan, admin delete.
+• jsQR.js (MIT) sits next to index.html: the QR scanner uses it on phones without BarcodeDetector (iPhone).

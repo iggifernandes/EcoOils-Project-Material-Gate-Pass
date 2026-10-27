@@ -93,6 +93,11 @@ table.it{border-collapse:collapse;width:100%;font-size:14px;margin-top:6px}table
 #scShot{width:68px;height:68px;border-radius:50%;border:5px solid #fff;background:#fff3;cursor:pointer}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 img[data-zoom]{cursor:zoom-in}
+#qrs video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#qrBox{position:absolute;left:50%;top:50%;width:62vmin;height:62vmin;transform:translate(-50%,-50%);border:3px solid #fff;border-radius:10px;box-shadow:0 0 0 100vmax #0007;z-index:2;pointer-events:none}
+#qrMsg{position:absolute;left:12px;right:12px;bottom:40px;text-align:center;font-size:15px;z-index:3;text-shadow:0 1px 3px #000}
+.adrow{display:flex;align-items:center;gap:8px}.adrow input[type=checkbox]{width:24px;height:24px;flex:none;margin:0}.adrow .pas{flex:1;min-width:0}
+
 @media print{
  @page{size:A4;margin:0}
  html,body{background:#fff!important;margin:0!important}
@@ -139,7 +144,7 @@ img[data-zoom]{cursor:zoom-in}
 #printArea .bigph{margin-top:5mm;text-align:center}#printArea .bigph .pi{height:80mm;display:flex;justify-content:center}#printArea .bigph img{height:80mm;width:auto;max-width:190mm;display:block;border:1px solid #000}#printArea .bigph small{display:block;font-size:9pt;font-style:italic;margin-top:1.5mm}
 </style></head><body>
 <header><div class="brand" role="img" aria-label="EcoOils Mentari"><img src="%%LOGO%%" alt=""></div>
-<div class="right"><span id="ver">v1.6</span><div class="lang" role="group" aria-label="Language"><button id="lEN" type="button">EN</button><button id="lID" type="button">ID</button><button id="lMS" type="button">MS</button></div></div></header>
+<div class="right"><span id="ver">v1.7</span><div class="lang" role="group" aria-label="Language"><button id="lEN" type="button">EN</button><button id="lID" type="button">ID</button><button id="lMS" type="button">MS</button></div></div></header>
 <main>
 <div id="banner"></div>
 <section id="vHome" class="hidden"></section>

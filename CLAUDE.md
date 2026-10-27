@@ -17,7 +17,7 @@ Owner: Iggy (Ignatius Ambrosio Viegas e Fernandes), HSSE Manager, Mentari Projec
 
 ## Files
 • index.html built from index.src.html + app.js + app.i18n.js + qrcode.js (Patroli repo copy) + logo (dev/logo.txt) with dev/build.py. Edit the sources, rebuild, run the tests.
-• Code.gs backend. Actions: config, create, mine, get, find, signed, cancel, verify (public); a_list, a_get, a_cancel, a_log (Admin PIN); b_list, b_get, b_release (BRIDGE_SECRET, used by Patroli).
+• Code.gs backend. Actions: config, create, mine, get, find, lookup, signed, cancel, verify (public); a_list, a_get, a_cancel, a_delete, a_log (Admin PIN); b_list, b_get, b_release (BRIDGE_SECRET, used by Patroli).
 • dev/t01.js backend, dev/ui.js phone app (needs playwright), dev/t02_patroli.js real Gate Pass + real Patroli (PATROLI_DIR).
 
 ## Version history
@@ -29,3 +29,4 @@ Owner: Iggy (Ignatius Ambrosio Viegas e Fernandes), HSSE Manager, Mentari Projec
 • v1.4 (26 Oct 2026): quick reasons dropdown for 'purpose of taking the items out' (6 for A, 7 for B, plus Other) with optional details; stored as one English text. Front end only, Code.gs unchanged (v1.3).
 • v1.5 (27 Oct 2026): vehicle photos must be landscape (portrait refused at capture). Print has two modes: 'both sides' = 2 pages (page 1 the FM003 form, page 2 the two photos at 8 cm height each, landscape, no crop, QR and ref repeated; 1 sheet double-sided) and 'one side' = 1 page with small photos. Front end only; Code.gs unchanged (v1.3).
 • v1.6 (27 Oct 2026): live digit counter under the ID field: KTP must be exactly 16 digits, SIM exactly 12 (owner confirmed). Front end only; Code.gs unchanged (v1.3).
+• v1.7 (27 Oct 2026): Download PDF button (same 2 pages as 'both sides' print, built in the browser from page pictures, no library; file name = pass number_date_time of printing). Printed pages show 'Printed DD Mon YYYY HH:MM WIB'; the tab title is the same file name so 'Save as PDF' from the print dialog is named alike. Find a pass: type pass number or KTP/SIM number, or scan the QR (BarcodeDetector, else jsQR.js next to index.html); result = public status page; taking a pass over on a phone still needs the vehicle number. Admin: tick passes and Delete (row, items, Drive folder to Trash, audit line DELETED_ADMIN; numbers are never reused). Code.gs v1.4 (lookup, a_delete): owner pastes it into Apps Script. The Admin PIN lives only in the Apps Script property ADMIN_PIN, never in the repo.

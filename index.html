@@ -93,6 +93,11 @@ table.it{border-collapse:collapse;width:100%;font-size:14px;margin-top:6px}table
 #scShot{width:68px;height:68px;border-radius:50%;border:5px solid #fff;background:#fff3;cursor:pointer}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 img[data-zoom]{cursor:zoom-in}
+#qrs video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#qrBox{position:absolute;left:50%;top:50%;width:62vmin;height:62vmin;transform:translate(-50%,-50%);border:3px solid #fff;border-radius:10px;box-shadow:0 0 0 100vmax #0007;z-index:2;pointer-events:none}
+#qrMsg{position:absolute;left:12px;right:12px;bottom:40px;text-align:center;font-size:15px;z-index:3;text-shadow:0 1px 3px #000}
+.adrow{display:flex;align-items:center;gap:8px}.adrow input[type=checkbox]{width:24px;height:24px;flex:none;margin:0}.adrow .pas{flex:1;min-width:0}
+
 @media print{
  @page{size:A4;margin:0}
  html,body{background:#fff!important;margin:0!important}
@@ -139,7 +144,7 @@ img[data-zoom]{cursor:zoom-in}
 #printArea .bigph{margin-top:5mm;text-align:center}#printArea .bigph .pi{height:80mm;display:flex;justify-content:center}#printArea .bigph img{height:80mm;width:auto;max-width:190mm;display:block;border:1px solid #000}#printArea .bigph small{display:block;font-size:9pt;font-style:italic;margin-top:1.5mm}
 </style></head><body>
 <header><div class="brand" role="img" aria-label="EcoOils Mentari"><img src="data:image/png;base64,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" alt=""></div>
-<div class="right"><span id="ver">v1.6</span><div class="lang" role="group" aria-label="Language"><button id="lEN" type="button">EN</button><button id="lID" type="button">ID</button><button id="lMS" type="button">MS</button></div></div></header>
+<div class="right"><span id="ver">v1.7</span><div class="lang" role="group" aria-label="Language"><button id="lEN" type="button">EN</button><button id="lID" type="button">ID</button><button id="lMS" type="button">MS</button></div></div></header>
 <main>
 <div id="banner"></div>
 <section id="vHome" class="hidden"></section>
@@ -2472,7 +2477,10 @@ var T={en:{
  pin:'Admin PIN',login:'Log in',search:'Search',all:'All',csv:'Download CSV',logout:'Log out',auditLog:'Audit trail',links:'Photos and signed copy (Google Drive)',adminCancel:'Cancel pass (admin)',
  notConf:'Not configured yet: the app has no server address.',
  err_bad_icno:'The KTP or SIM number is not valid. Check it against the card.',icPhone:'IC responsible person - phone number',f_icPhone:'Enter a valid phone number (8 to 15 digits).',err_bad_icphone:'The phone number is not valid.',ph_load:'Material in the truck',photosTitle:'Photos',zoom:'Zoom',scanBtn:'Scan signed copy',scanNext:'Scan another page',scanFile:'Choose a file instead',scanTitle:'Scan',scanHelp:'Place the signed pass inside the frame, in good light, then tap the round button.',scanCheck:'Check that the whole page and the signatures are clear.',scanStart:'Starting camera...',scanUse:'Use this scan',scanRetake:'Scan again',scanNoCam:'The camera could not be opened. Choose a photo of the signed pass instead.',unitPick:'Select unit',icDigits:'{n} of {m} digits (KTP = 16, SIM = 12)',icPickFirst:'Select KTP or SIM first. KTP has 16 digits, SIM has 12.',printBoth:'Print both sides (big photos, 1 sheet)',printOne:'Print one side only (small photos)',printHint:'Tip: choose double-sided printing so the pass and the photos use one sheet.',err_portrait:'Photos must be landscape. Turn your phone sideways and take the photo again.',reasonLbl:'Reason for taking the items out',reasonPick:'Select a reason',reasonDetails:'More details (optional)',reasonDescribe:'Describe the reason',purposeFirst:'Choose A or B above first.',f_reason:'Select a reason.',f_reasonOther:'Describe the reason (at least 3 characters).',rA1:'Rejected on receipt: damaged or defective',rA2:'Wrong item or wrong specification delivered',rA3:'Excess quantity, not as per purchase order',rA4:'Failed inspection / QA-QC, not accepted',rA5:'Missing certificates or documents, not accepted',rA6:'Returned for replacement under warranty',rB1:'Surplus material after completion of work',rB2:'Demobilisation / end of contract',rB3:'Tools or equipment for repair or calibration',rB4:'Rental equipment returned to vendor',rB5:'Transfer to another project or site',rB6:'Scrap or waste to be disposed of off site',rB7:'Empty drums, pallets or packaging returned',rOther:'Other (describe below)',f_unit:'Select the unit for every item (Kgs, Pcs, Ton, Liters...).',err_server:'Server error. Try again.',err_net:'No connection. Your entries are kept. Try again.',err_pin:'Wrong PIN or locked. Try again later.',err_notfound:'Not found.',err_busy:'Too many requests. Wait a few minutes.',err_daily_cap:'Daily limit for this company reached.',err_locked:'Too many wrong tries. Wait 10 minutes.',err_not_open:'This pass can no longer be changed.',err_bad_photo:'A photo is missing or not valid.',err_auth:'Not allowed.',
- f_purpose:'Choose A or B.',f_company:'Select the company.',f_vehicle:'Enter the vehicle number.',f_carrier:'Enter the name of the person taking the material out.',f_icType:'Select KTP or SIM.',f_icNo:'Enter the KTP or SIM number.',f_icKTP:'A KTP number has 16 digits. Check it against the card.',f_icSIM:'A SIM (driving licence) number has 12 digits. Check it against the card.',f_purposeText:'Describe the purpose.',f_dept:'Select the EcoOils department.',f_icRep:'Enter the IC responsible person.',f_items:'Add at least one item with a quantity.',f_photos:'Take both photos.',f_signed:'Scan the signed pass first.'
+ f_purpose:'Choose A or B.',f_company:'Select the company.',f_vehicle:'Enter the vehicle number.',f_carrier:'Enter the name of the person taking the material out.',f_icType:'Select KTP or SIM.',f_icNo:'Enter the KTP or SIM number.',f_icKTP:'A KTP number has 16 digits. Check it against the card.',f_icSIM:'A SIM (driving licence) number has 12 digits. Check it against the card.',f_purposeText:'Describe the purpose.',f_dept:'Select the EcoOils department.',f_icRep:'Enter the IC responsible person.',f_items:'Add at least one item with a quantity.',f_photos:'Take both photos.',f_signed:'Scan the signed pass first.',
+ dlPdf:'Download PDF',pdfWait:'Preparing PDF...',pdfFail:'The PDF could not be made on this phone. Use Print and choose Save as PDF.',printedAt:'Printed',
+ findHelp2:'Type the pass number or the ID number (KTP / SIM), or scan the QR code printed on the pass.',fdQ:'Pass number or ID number (KTP / SIM)',scanQr:'Scan QR',qrHelp:'Point the camera at the QR code on the pass.',qrNone:'This QR code is not a gate pass.',camErr:'The camera could not be opened. Allow camera access, or type the number.',noMatch:'No pass found with that number.',err_bad_query:'Enter a pass number (MGP-...) or a 12 or 16 digit KTP / SIM number.',takeOver:'Open this pass on this phone',takeHelp:'To print, upload the signed copy or cancel, enter the vehicle number printed on the pass.',found:'Passes found',
+ adDelete:'Delete pass',adDeleteSel:'Delete selected ({n})',delAsk:'Delete {n} pass(es) for good? The photos and signed copy folder in Google Drive goes to the Trash.',delDone:'Deleted: {n}',
 },id:{
  title:'Surat jalan material',newPass:'Surat jalan baru',how:'Cara kerja',how1:'Isi data dan ambil 4 foto kendaraan.',how2:'Cetak surat dan kumpulkan 4 tanda tangan: pengemudi, perwakilan IC, perwakilan EcoOils, Site Lead.',how3:'Unggah foto surat yang sudah ditandatangani di sini.',how4:'Security memeriksa kendaraan lalu melepasnya.',
  mine:'Surat saya',noneMine:'Belum ada surat di ponsel ini.',find:'Cari surat',refresh:'Segarkan',admin:'Admin',back:'Kembali',next:'Lanjut',close:'Tutup',cancelBtn:'Batal',loading:'Memuat...',
@@ -2493,7 +2501,10 @@ var T={en:{
  pin:'PIN Admin',login:'Masuk',search:'Cari',all:'Semua',csv:'Unduh CSV',logout:'Keluar',auditLog:'Jejak audit',links:'Foto dan salinan bertanda tangan (Google Drive)',adminCancel:'Batalkan surat (admin)',
  notConf:'Belum dikonfigurasi: aplikasi belum memiliki alamat server.',
  err_bad_icno:'Nomor KTP atau SIM tidak valid. Periksa dengan kartunya.',icPhone:'Penanggung jawab IC - nomor telepon',f_icPhone:'Isi nomor telepon yang valid (8 sampai 15 angka).',err_bad_icphone:'Nomor telepon tidak valid.',ph_load:'Material di dalam truk',photosTitle:'Foto',zoom:'Perbesar',scanBtn:'Pindai salinan bertanda tangan',scanNext:'Pindai halaman lain',scanFile:'Pilih file saja',scanTitle:'Pindai',scanHelp:'Letakkan surat yang sudah ditandatangani di dalam bingkai, dengan cahaya cukup, lalu ketuk tombol bulat.',scanCheck:'Pastikan seluruh halaman dan tanda tangan terlihat jelas.',scanStart:'Memulai kamera...',scanUse:'Pakai hasil pindai',scanRetake:'Pindai ulang',scanNoCam:'Kamera tidak dapat dibuka. Pilih foto surat yang sudah ditandatangani.',unitPick:'Pilih satuan',icDigits:'{n} dari {m} angka (KTP = 16, SIM = 12)',icPickFirst:'Pilih KTP atau SIM dulu. KTP 16 angka, SIM 12 angka.',printBoth:'Cetak bolak-balik (foto besar, 1 lembar)',printOne:'Cetak satu sisi saja (foto kecil)',printHint:'Tips: pilih cetak dua sisi agar surat dan foto memakai satu lembar.',err_portrait:'Foto harus mendatar (landscape). Putar ponsel ke samping lalu foto lagi.',reasonLbl:'Alasan membawa barang keluar',reasonPick:'Pilih alasan',reasonDetails:'Keterangan tambahan (opsional)',reasonDescribe:'Jelaskan alasannya',purposeFirst:'Pilih A atau B di atas dulu.',f_reason:'Pilih alasan.',f_reasonOther:'Jelaskan alasannya (minimal 3 karakter).',rA1:'Ditolak saat diterima: rusak atau cacat',rA2:'Barang salah atau spesifikasi salah',rA3:'Jumlah berlebih, tidak sesuai PO',rA4:'Gagal inspeksi / QA-QC, tidak diterima',rA5:'Sertifikat atau dokumen tidak lengkap, tidak diterima',rA6:'Dikembalikan untuk penggantian (garansi)',rB1:'Material sisa setelah pekerjaan selesai',rB2:'Demobilisasi / kontrak berakhir',rB3:'Alat atau peralatan untuk perbaikan atau kalibrasi',rB4:'Pengembalian peralatan sewa ke vendor',rB5:'Dipindahkan ke proyek atau lokasi lain',rB6:'Sisa atau limbah dibuang di luar lokasi',rB7:'Drum kosong, palet atau kemasan dikembalikan',rOther:'Lainnya (jelaskan di bawah)',f_unit:'Pilih satuan untuk setiap barang (Kgs, Pcs, Ton, Liters...).',err_server:'Kesalahan server. Coba lagi.',err_net:'Tidak ada koneksi. Isian Anda tersimpan. Coba lagi.',err_pin:'PIN salah atau terkunci. Coba lagi nanti.',err_notfound:'Tidak ditemukan.',err_busy:'Terlalu banyak permintaan. Tunggu beberapa menit.',err_daily_cap:'Batas harian perusahaan ini tercapai.',err_locked:'Terlalu banyak salah. Tunggu 10 menit.',err_not_open:'Surat ini tidak dapat diubah lagi.',err_bad_photo:'Ada foto yang hilang atau tidak valid.',err_auth:'Tidak diizinkan.',
- f_purpose:'Pilih A atau B.',f_company:'Pilih perusahaan.',f_vehicle:'Isi nomor kendaraan.',f_carrier:'Isi nama orang yang membawa material keluar.',f_icType:'Pilih KTP atau SIM.',f_icNo:'Isi nomor KTP atau SIM.',f_icKTP:'Nomor KTP terdiri dari 16 angka. Periksa kembali dengan kartunya.',f_icSIM:'Nomor SIM terdiri dari 12 angka. Periksa kembali dengan kartunya.',f_purposeText:'Jelaskan tujuannya.',f_dept:'Pilih departemen EcoOils.',f_icRep:'Isi penanggung jawab IC.',f_items:'Tambahkan minimal satu barang beserta jumlahnya.',f_photos:'Ambil kedua foto.',f_signed:'Pindai dulu surat yang sudah ditandatangani.'
+ f_purpose:'Pilih A atau B.',f_company:'Pilih perusahaan.',f_vehicle:'Isi nomor kendaraan.',f_carrier:'Isi nama orang yang membawa material keluar.',f_icType:'Pilih KTP atau SIM.',f_icNo:'Isi nomor KTP atau SIM.',f_icKTP:'Nomor KTP terdiri dari 16 angka. Periksa kembali dengan kartunya.',f_icSIM:'Nomor SIM terdiri dari 12 angka. Periksa kembali dengan kartunya.',f_purposeText:'Jelaskan tujuannya.',f_dept:'Pilih departemen EcoOils.',f_icRep:'Isi penanggung jawab IC.',f_items:'Tambahkan minimal satu barang beserta jumlahnya.',f_photos:'Ambil kedua foto.',f_signed:'Pindai dulu surat yang sudah ditandatangani.',
+ dlPdf:'Unduh PDF',pdfWait:'Menyiapkan PDF...',pdfFail:'PDF tidak bisa dibuat di ponsel ini. Gunakan Cetak lalu pilih Simpan sebagai PDF.',printedAt:'Dicetak',
+ findHelp2:'Ketik nomor surat atau nomor identitas (KTP / SIM), atau pindai kode QR di surat.',fdQ:'Nomor surat atau nomor identitas (KTP / SIM)',scanQr:'Pindai QR',qrHelp:'Arahkan kamera ke kode QR di surat.',qrNone:'Kode QR ini bukan surat jalan.',camErr:'Kamera tidak bisa dibuka. Izinkan akses kamera, atau ketik nomornya.',noMatch:'Tidak ada surat dengan nomor itu.',err_bad_query:'Isi nomor surat (MGP-...) atau nomor KTP / SIM 12 atau 16 angka.',takeOver:'Buka surat ini di ponsel ini',takeHelp:'Untuk mencetak, mengunggah salinan bertanda tangan atau membatalkan, isi nomor kendaraan yang tercetak di surat.',found:'Surat ditemukan',
+ adDelete:'Hapus surat',adDeleteSel:'Hapus yang dipilih ({n})',delAsk:'Hapus {n} surat secara permanen? Folder foto dan salinan di Google Drive masuk ke Sampah.',delDone:'Dihapus: {n}',
 },ms:{
  title:'Pas pintu bahan',newPass:'Pas pintu baharu',how:'Cara ia berfungsi',how1:'Isi butiran dan ambil 4 foto kenderaan.',how2:'Cetak pas dan kumpulkan 4 tandatangan: pemandu, wakil IC, wakil EcoOils, Site Lead.',how3:'Muat naik foto pas yang telah ditandatangani di sini.',how4:'Keselamatan memeriksa kenderaan dan melepaskannya.',
  mine:'Pas saya',noneMine:'Belum ada pas pada telefon ini.',find:'Cari pas',refresh:'Segar semula',admin:'Admin',back:'Kembali',next:'Seterusnya',close:'Tutup',cancelBtn:'Batal',loading:'Memuatkan...',
@@ -2514,10 +2525,13 @@ var T={en:{
  pin:'PIN Admin',login:'Log masuk',search:'Cari',all:'Semua',csv:'Muat turun CSV',logout:'Log keluar',auditLog:'Jejak audit',links:'Foto dan salinan bertandatangan (Google Drive)',adminCancel:'Batalkan pas (admin)',
  notConf:'Belum dikonfigurasi: aplikasi belum mempunyai alamat pelayan.',
  err_bad_icno:'Nombor KTP atau SIM tidak sah. Semak dengan kad.',icPhone:'Orang bertanggungjawab IC - nombor telefon',f_icPhone:'Masukkan nombor telefon yang sah (8 hingga 15 digit).',err_bad_icphone:'Nombor telefon tidak sah.',ph_load:'Bahan di dalam lori',photosTitle:'Foto',zoom:'Zum',scanBtn:'Imbas salinan bertandatangan',scanNext:'Imbas muka surat lain',scanFile:'Pilih fail sebaliknya',scanTitle:'Imbas',scanHelp:'Letakkan pas yang ditandatangani di dalam bingkai, dengan cahaya yang baik, kemudian tekan butang bulat.',scanCheck:'Pastikan seluruh muka surat dan tandatangan jelas.',scanStart:'Memulakan kamera...',scanUse:'Guna imbasan ini',scanRetake:'Imbas semula',scanNoCam:'Kamera tidak dapat dibuka. Pilih foto pas yang ditandatangani.',unitPick:'Pilih unit',icDigits:'{n} daripada {m} digit (KTP = 16, SIM = 12)',icPickFirst:'Pilih KTP atau SIM dahulu. KTP 16 digit, SIM 12 digit.',printBoth:'Cetak dua belah (foto besar, 1 helai)',printOne:'Cetak satu belah sahaja (foto kecil)',printHint:'Petua: pilih cetakan dua belah supaya pas dan foto guna satu helai.',err_portrait:'Foto mesti mendatar (landscape). Pusing telefon ke sisi dan ambil foto semula.',reasonLbl:'Sebab membawa barang keluar',reasonPick:'Pilih sebab',reasonDetails:'Maklumat tambahan (pilihan)',reasonDescribe:'Terangkan sebabnya',purposeFirst:'Pilih A atau B di atas dahulu.',f_reason:'Pilih sebab.',f_reasonOther:'Terangkan sebabnya (sekurang-kurangnya 3 aksara).',rA1:'Ditolak semasa terima: rosak atau cacat',rA2:'Barang salah atau spesifikasi salah',rA3:'Kuantiti berlebihan, tidak ikut PO',rA4:'Gagal pemeriksaan / QA-QC, tidak diterima',rA5:'Sijil atau dokumen tidak lengkap, tidak diterima',rA6:'Dipulangkan untuk penggantian (waranti)',rB1:'Bahan lebihan selepas kerja siap',rB2:'Demobilisasi / kontrak tamat',rB3:'Alat atau peralatan untuk pembaikan atau penentukuran',rB4:'Peralatan sewa dipulangkan kepada vendor',rB5:'Dipindahkan ke projek atau tapak lain',rB6:'Sisa atau buangan dibuang di luar tapak',rB7:'Dram kosong, palet atau bungkusan dipulangkan',rOther:'Lain-lain (terangkan di bawah)',f_unit:'Pilih unit untuk setiap barang (Kgs, Pcs, Ton, Liters...).',err_server:'Ralat pelayan. Cuba lagi.',err_net:'Tiada sambungan. Isian anda disimpan. Cuba lagi.',err_pin:'PIN salah atau dikunci. Cuba lagi nanti.',err_notfound:'Tidak ditemui.',err_busy:'Terlalu banyak permintaan. Tunggu beberapa minit.',err_daily_cap:'Had harian syarikat ini dicapai.',err_locked:'Terlalu banyak salah. Tunggu 10 minit.',err_not_open:'Pas ini tidak boleh diubah lagi.',err_bad_photo:'Ada foto yang hilang atau tidak sah.',err_auth:'Tidak dibenarkan.',
- f_purpose:'Pilih A atau B.',f_company:'Pilih syarikat.',f_vehicle:'Masukkan nombor kenderaan.',f_carrier:'Masukkan nama orang yang membawa bahan keluar.',f_icType:'Pilih KTP atau SIM.',f_icNo:'Masukkan nombor KTP atau SIM.',f_icKTP:'Nombor KTP mempunyai 16 digit. Semak dengan kad.',f_icSIM:'Nombor SIM mempunyai 12 digit. Semak dengan kad.',f_purposeText:'Huraikan tujuan.',f_dept:'Pilih jabatan EcoOils.',f_icRep:'Masukkan orang bertanggungjawab IC.',f_items:'Tambah sekurang-kurangnya satu barang dengan kuantiti.',f_photos:'Ambil kedua-dua foto.',f_signed:'Imbas pas yang ditandatangani dahulu.'
+ f_purpose:'Pilih A atau B.',f_company:'Pilih syarikat.',f_vehicle:'Masukkan nombor kenderaan.',f_carrier:'Masukkan nama orang yang membawa bahan keluar.',f_icType:'Pilih KTP atau SIM.',f_icNo:'Masukkan nombor KTP atau SIM.',f_icKTP:'Nombor KTP mempunyai 16 digit. Semak dengan kad.',f_icSIM:'Nombor SIM mempunyai 12 digit. Semak dengan kad.',f_purposeText:'Huraikan tujuan.',f_dept:'Pilih jabatan EcoOils.',f_icRep:'Masukkan orang bertanggungjawab IC.',f_items:'Tambah sekurang-kurangnya satu barang dengan kuantiti.',f_photos:'Ambil kedua-dua foto.',f_signed:'Imbas pas yang ditandatangani dahulu.',
+ dlPdf:'Muat turun PDF',pdfWait:'Menyediakan PDF...',pdfFail:'PDF tidak dapat dibuat pada telefon ini. Guna Cetak dan pilih Simpan sebagai PDF.',printedAt:'Dicetak',
+ findHelp2:'Taip nombor pas atau nombor pengenalan (KTP / SIM), atau imbas kod QR pada pas.',fdQ:'Nombor pas atau nombor pengenalan (KTP / SIM)',scanQr:'Imbas QR',qrHelp:'Halakan kamera ke kod QR pada pas.',qrNone:'Kod QR ini bukan pas pintu.',camErr:'Kamera tidak dapat dibuka. Benarkan akses kamera, atau taip nombor.',noMatch:'Tiada pas dengan nombor itu.',err_bad_query:'Masukkan nombor pas (MGP-...) atau nombor KTP / SIM 12 atau 16 digit.',takeOver:'Buka pas ini pada telefon ini',takeHelp:'Untuk mencetak, memuat naik salinan bertandatangan atau membatalkan, masukkan nombor kenderaan yang dicetak pada pas.',found:'Pas ditemui',
+ adDelete:'Padam pas',adDeleteSel:'Padam yang dipilih ({n})',delAsk:'Padam {n} pas selama-lamanya? Folder foto dan salinan di Google Drive masuk ke Tong Sampah.',delDone:'Dipadam: {n}',
 }};
 
-var VERSION='v1.6';
+var VERSION='v1.7';
 var PHV=['front','load'];
 var APP_URL='https://iggifernandes.github.io/EcoOils-Project-Material-Gate-Pass/';
 var API_URL='https://script.google.com/macros/s/AKfycbxULvNJReaniGRTFWKY507I0AZD5YLP3mBBjAyFFA-7z4nI0-LPncZbPZTajS89Jp0Z/exec';
@@ -2749,10 +2763,10 @@ function doneOpen(){show('vDone');doneDraw();}
 function doneDraw(){
   if(!LAST){homeOpen();return;}
   var h=h1(tr('doneTitle'))+'<div class="note" style="text-align:center">'+esc(tr('refLbl'))+'</div><div class="ref">'+esc(LAST.ref)+'</div>'+'<div class="qr">'+qrSvg(verifyUrl(LAST.ref))+'</div>';
-  h+='<p>'+esc(tr('doneNext'))+'</p><button class="btn amber" id="dPrint" type="button">'+esc(tr('printBoth'))+'</button><button class="btn ghost" id="dPrint1" type="button">'+esc(tr('printOne'))+'</button><div class="note">'+esc(tr('printHint'))+'</div><button class="btn ghost" id="dOpen" type="button">'+esc(tr('openPass'))+'</button>';
+  h+='<p>'+esc(tr('doneNext'))+'</p><button class="btn amber" id="dPrint" type="button">'+esc(tr('printBoth'))+'</button><button class="btn ghost" id="dPrint1" type="button">'+esc(tr('printOne'))+'</button><button class="btn ghost" id="dPdf" type="button">'+esc(tr('dlPdf'))+'</button><div class="note">'+esc(tr('printHint'))+'</div><button class="btn ghost" id="dOpen" type="button">'+esc(tr('openPass'))+'</button>';
   $('vDone').innerHTML=h;
 }
-$('vDone').addEventListener('click',function(e){var t=e.target.closest('button');if(!t)return;if(t.id==='dPrint')printPass(LAST);else if(t.id==='dPrint1')printPass(LAST,true);else if(t.id==='dOpen')passOpen(LAST.ref);});
+$('vDone').addEventListener('click',function(e){var t=e.target.closest('button');if(!t)return;if(t.id==='dPrint')printPass(LAST);else if(t.id==='dPrint1')printPass(LAST,true);else if(t.id==='dPdf')pdfPass(LAST,t);else if(t.id==='dOpen')passOpen(LAST.ref);});
 
 /* ===== QR and print ===== */
 function verifyUrl(ref){return APP_URL+'?v='+encodeURIComponent(ref);}
@@ -2779,7 +2793,12 @@ function printPass(p,one){
   if(!p)return;
   getPhotos(p).then(function(ph){printPassNow(p,ph,!!one);});
 }
-function printPassNow(p,ph,one){
+function stampNow(){
+  var d=new Date(Date.now()+7*3600000),M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],z=function(n){return (n<10?'0':'')+n;};
+  return {txt:z(d.getUTCDate())+' '+M[d.getUTCMonth()]+' '+d.getUTCFullYear()+' '+z(d.getUTCHours())+':'+z(d.getUTCMinutes())+' WIB',file:d.getUTCFullYear()+'-'+z(d.getUTCMonth()+1)+'-'+z(d.getUTCDate())+'_'+z(d.getUTCHours())+'-'+z(d.getUTCMinutes())};
+}
+function fileBase(p,st){return String(p.ref).replace(/[^A-Za-z0-9_-]/g,'')+'_'+st.file;}
+function passHtml(p,ph,one,st){
   var rows='',n=Math.max(6,p.items.length);
   for(var i=0;i<n;i++){var it=p.items[i];rows+='<tr><td style="text-align:center;width:9%">'+(it?(i+1):'')+'</td><td>'+(it?esc(it.item):'')+'</td><td style="text-align:center;width:10%">'+(it?esc(it.qty):'')+'</td><td style="text-align:center;width:13%">'+(it?esc(String(it.unit||'').toUpperCase()):'')+'</td></tr>';}
   var h='<div class="pg'+(p.items.length>8?' cmp':'')+'"><table class="hd"><tr><td class="lg" rowspan="3"><img alt="" src="'+LOGO+'"></td><td class="k">Item</td><td class="v">: EOSM-HSSE-FM003</td></tr><tr><td class="k">Revision No</td><td class="v">: Initial Issue</td></tr><tr><td class="k">Date</td><td class="v">: February, 3rd 2026</td></tr></table>';
@@ -2794,20 +2813,107 @@ function printPassNow(p,ph,one){
   if(one)h+='<div class="ph2"><div><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>FRONT VIEW OF THE VEHICLE</small></div><div><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>MATERIAL LOADED IN THE TRUCK</small></div></div>';
   h+='<div class="sig"><div><b>CARRIED BY:</b><div class="l"></div><small>(Person taking the material out)</small><div style="font-size:9pt">'+esc(p.carrier)+'</div></div><div><b>CHECKED BY:</b><div class="l"></div><small>(IC responsible Person- Lead/Store in charge)</small><div style="font-size:9pt">'+esc(p.icRep+(p.icPos?', '+p.icPos:''))+(p.icPhone?'<br>Tel: '+esc(p.icPhone):'')+'</div></div></div>';
   h+='<div class="sig" style="margin-top:3mm"><div><b>EcoOils Rep:</b><div class="l"></div><small>(Proj/Eng, Discipline Eng, HSSE, Stores)</small><div style="font-size:9pt">'+esc(p.dept)+'</div></div><div><b>Approval By:</b><div class="l"></div><small>(EcoOils Site Lead)</small><div style="font-size:9pt">'+esc(p.siteLead||'')+'</div></div></div>';
-  h+='<div class="ft"><span>COPY: <i>SECURITY / CARRIER / STORES</i></span><span class="pn">Page 1 of '+(one?1:2)+'</span></div></div>';
+  h+='<div class="ft"><span>COPY: <i>SECURITY / CARRIER / STORES</i></span><span class="pn">'+esc(tr('printedAt'))+' '+esc(st.txt)+' &middot; Page 1 of '+(one?1:2)+'</span></div></div>';
   if(!one){
     h+='<div class="pg pg2"><table class="hd"><tr><td class="lg" rowspan="3"><img alt="" src="'+LOGO+'"></td><td class="k">Item</td><td class="v">: EOSM-HSSE-FM003</td></tr><tr><td class="k">SR NO</td><td class="v">: '+esc(p.ref)+'</td></tr><tr><td class="k">Date</td><td class="v">: '+esc(fmtD(p.date))+'</td></tr></table>';
     h+='<div class="ttl">MATERIAL GATE PASS &ndash; VEHICLE AND MATERIAL PHOTOS</div>';
     h+='<div class="top"><div><div class="ln">COMPANY: <b>'+esc(p.company)+'</b></div><div class="ln">VEHICLE NO: <b>'+esc(p.vehicle)+'</b></div><div class="ln">CARRIED BY: <b>'+esc(p.carrier)+'</b></div></div><div>'+qrSvg(verifyUrl(p.ref))+'</div></div>';
     h+='<div class="bigph"><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>FRONT VIEW OF THE VEHICLE</small></div>';
     h+='<div class="bigph"><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>MATERIAL LOADED IN THE TRUCK</small></div>';
-    h+='<div class="ft"><span>'+esc(p.ref)+'</span><span class="pn">Page 2 of 2</span></div></div>';
+    h+='<div class="ft"><span>'+esc(p.ref)+'</span><span class="pn">'+esc(tr('printedAt'))+' '+esc(st.txt)+' &middot; Page 2 of 2</span></div></div>';
   }
-  $('printArea').innerHTML=h;
-  var old=document.title;document.title=' ';
+  return h;
+}
+function printPassNow(p,ph,one){
+  var st=stampNow();
+  $('printArea').innerHTML=passHtml(p,ph,one,st);
+  /* margin 0 hides the browser header, so the tab title is free to become the file name when the person saves as PDF */
+  var old=document.title;document.title=fileBase(p,st);
   var back=function(){document.title=old;window.removeEventListener('afterprint',back);};window.addEventListener('afterprint',back);
   var imgs=$('printArea').querySelectorAll('img'),left=imgs.length,go=function(){if(--left<=0)setTimeout(function(){window.print();},120);};
   if(!left)go();else Array.prototype.forEach.call(imgs,function(im){if(im.complete)go();else{im.onload=go;im.onerror=go;}});
+}
+
+/* ===== Download PDF: the same pages as the print, drawn to pictures and packed into a PDF (no library, no paid service) ===== */
+function printCss(){
+  var o='';
+  Array.prototype.forEach.call(document.styleSheets,function(ss){try{Array.prototype.forEach.call(ss.cssRules,function(r){
+    if(r.type===4){if(/print/.test(r.media.mediaText))Array.prototype.forEach.call(r.cssRules,function(q){if(q.selectorText&&q.selectorText.indexOf('#printArea')===0)o+=q.cssText;});}
+    else if(r.selectorText&&r.selectorText.indexOf('#printArea')===0&&r.cssText.indexOf('display: none')<0)o+=r.cssText;
+  });}catch(e){}});
+  return o;
+}
+/* Jost for the PDF pictures (a picture cannot use web fonts by link, so the font file is fetched once and embedded); falls back to Arial when offline */
+var JOST=null;
+function jostCss(){
+  if(JOST!==null)return Promise.resolve(JOST);
+  return new Promise(function(res){
+    var fin=function(v){if(JOST===null){JOST=v||'';res(JOST);}};setTimeout(function(){fin('');},6000);
+    var l=document.querySelector('link[href*="fonts.googleapis.com/css2"]');if(!l||!window.fetch)return fin('');
+    fetch(l.href).then(function(r){return r.text();}).then(function(css){
+      var parts=css.split(/\/\*\s*/).filter(function(x){return /^latin\s*\*\//.test(x);});
+      return Promise.all(parts.map(function(b){
+        var m=b.match(/url\((https:[^)]+)\)/);if(!m)return '';
+        return fetch(m[1]).then(function(r){return r.arrayBuffer();}).then(function(buf){
+          var u=new Uint8Array(buf),bin='';for(var i=0;i<u.length;i+=8192)bin+=String.fromCharCode.apply(null,u.subarray(i,i+8192));
+          return b.replace(/^latin\s*\*\//,'').replace(m[0],'url(data:font/woff2;base64,'+btoa(bin)+')');
+        });
+      }));
+    }).then(function(a){fin(a.join('\n'));},function(){fin('');});
+  });
+}
+function pageJpeg(pgHtml,css){
+  return new Promise(function(res,rej){
+    var W=794,H=1123,box=document.createElement('div');
+    box.innerHTML='<style>'+css+'</style><div id="printArea" style="display:block;width:'+W+'px;height:'+H+'px;background:#fff;color:#000;overflow:hidden">'+pgHtml+'</div>';
+    var xml=new XMLSerializer().serializeToString(box);
+    var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'"><foreignObject x="0" y="0" width="'+W+'" height="'+H+'">'+xml+'</foreignObject></svg>';
+    var im=new Image();
+    im.onload=function(){try{
+      var c=document.createElement('canvas');c.width=W*2;c.height=H*2;var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
+      var b=atob(c.toDataURL('image/jpeg',0.9).split(',')[1]),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);
+      res({jpg:u,w:c.width,h:c.height});
+    }catch(e){rej(e);}};
+    im.onerror=function(){rej(new Error('render'));};
+    im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+  });
+}
+function mkPdf(pages,title){
+  var parts=[],len=0,offs=[];
+  var put=function(x){var u=typeof x==='string'?(function(){var a=new Uint8Array(x.length);for(var i=0;i<x.length;i++)a[i]=x.charCodeAt(i)&255;return a;})():x;parts.push(u);len+=u.length;};
+  var N=pages.length*3+4;
+  put('%PDF-1.4\n');
+  var obj=function(n,body){offs[n]=len;put(n+' 0 obj\n'+body+'\nendobj\n');};
+  obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2,'<< /Type /Pages /Count '+pages.length+' /Kids ['+pages.map(function(_,i){return (3+i*3)+' 0 R';}).join(' ')+'] >>');
+  pages.forEach(function(pg,i){
+    var a=3+i*3;
+    obj(a,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 '+(a+2)+' 0 R >> >> /Contents '+(a+1)+' 0 R >>');
+    var cs='q 595.28 0 0 841.89 0 0 cm /Im0 Do Q';
+    obj(a+1,'<< /Length '+cs.length+' >>\nstream\n'+cs+'\nendstream');
+    offs[a+2]=len;put((a+2)+' 0 obj\n<< /Type /XObject /Subtype /Image /Width '+pg.w+' /Height '+pg.h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+pg.jpg.length+' >>\nstream\n');put(pg.jpg);put('\nendstream\nendobj\n');
+  });
+  obj(N-1,'<< /Title ('+String(title).replace(/[()\\]/g,'')+') /Producer (EcoOils Material Gate Pass) >>');
+  var xr=len;put('xref\n0 '+N+'\n0000000000 65535 f \n');
+  for(var k=1;k<N;k++)put(('0000000000'+offs[k]).slice(-10)+' 00000 n \n');
+  put('trailer\n<< /Size '+N+' /Root 1 0 R /Info '+(N-1)+' 0 R >>\nstartxref\n'+xr+'\n%%EOF\n');
+  return new Blob(parts,{type:'application/pdf'});
+}
+function saveBlob(blob,name){
+  var a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(u);a.remove();},5000);
+}
+function pdfPass(p,btn){
+  if(!p)return;
+  var lbl=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent=tr('pdfWait');}
+  var done=function(){if(btn){btn.disabled=false;btn.textContent=lbl;}};
+  Promise.all([getPhotos(p),jostCss()]).then(function(a){
+    var st=stampNow(),box=document.createElement('div');box.innerHTML=passHtml(p,a[0],false,st);
+    var css=printCss()+a[1],pgs=Array.prototype.slice.call(box.querySelectorAll('.pg')),list=[];
+    return pgs.reduce(function(pr,pg){return pr.then(function(){return pageJpeg(pg.outerHTML,css).then(function(j){list.push(j);});});},Promise.resolve()).then(function(){
+      saveBlob(mkPdf(list,fileBase(p,st)),fileBase(p,st)+'.pdf');
+    });
+  }).then(done,function(){done();alert(tr('pdfFail'));});
 }
 
 /* ===== pass detail ===== */
@@ -2827,12 +2933,12 @@ function passDraw(){
   if(p.status==='Rejected')h+='<div class="card"><b>'+esc(tr('rejReason'))+'</b>: '+esc(p.note)+'<br><span class="note">'+esc(p.decidedBy)+' · '+esc(p.decidedAt)+' WIB</span></div>';
   if(p.status==='Cancelled'&&p.cancelReason)h+='<div class="card">'+esc(p.cancelReason)+'</div>';
   if(p.status==='Awaiting signatures'||p.status==='Pending release'){
-    h+='<button class="btn amber" id="pPrint" type="button">'+esc(tr('printBoth'))+'</button><button class="btn ghost" id="pPrint1" type="button">'+esc(tr('printOne'))+'</button>';
+    h+='<button class="btn amber" id="pPrint" type="button">'+esc(tr('printBoth'))+'</button><button class="btn ghost" id="pPrint1" type="button">'+esc(tr('printOne'))+'</button><button class="btn ghost" id="pPdf" type="button">'+esc(tr('dlPdf'))+'</button>';
     h+='<h2>'+esc(p.status==='Pending release'?tr('replaceSigned'):tr('upload'))+'</h2><p class="note">'+esc(tr('signedHelp'))+'</p>';
     h+='<div class="tiles">'+SG.map(function(s,i){return '<div class="tile on" style="cursor:default"><img alt="" data-zoom="data:image/jpeg;base64,'+s+'" src="data:image/jpeg;base64,'+s+'"><button class="btn danger sm" type="button" data-sgrm="'+i+'">'+esc(tr('remove'))+'</button></div>';}).join('')+(SG.length<2?'<button type="button" class="tile ph" style="margin:0;font:inherit;color:inherit" data-scan="1"><span style="font-size:28px">&#128247;</span><span>'+esc(SG.length?tr('scanNext'):tr('scanBtn'))+'</span></button>':'')+'</div><input type="file" accept="image/*" id="sgIn" class="hidden">';
     if(SG.length<2)h+='<button class="btn ghost sm" type="button" id="sgFile">'+esc(tr('scanFile'))+'</button>';
     h+='<div class="err" id="pErr"></div>'+(SG.length?'<button class="btn" id="pSend" type="button">'+esc(tr('sendSigned'))+'</button>':'');
-  }else h+='<button class="btn ghost" id="pPrint" type="button">'+esc(tr('printAgain'))+'</button>';
+  }else h+='<button class="btn ghost" id="pPrint" type="button">'+esc(tr('printAgain'))+'</button><button class="btn ghost" id="pPdf" type="button">'+esc(tr('dlPdf'))+'</button>';
   h+='<h2>'+esc(tr('photosTitle'))+'</h2><div class="row2" id="pPhotos">'+(PHC[p.ref]?PHV.map(function(v){return '<div class="pv"><small class="note">'+esc(tr('ph_'+v))+'</small><img alt="" data-zoom="'+PHC[p.ref][v]+'" src="'+PHC[p.ref][v]+'"></div>';}).join(''):'<div class="note"><span class="sp"></span></div>')+'</div>';
   h+='<h2>'+esc(tr('items'))+'</h2><div class="card"><div class="kv"><span>'+esc(tr('compShort'))+'</span><span>'+esc(p.company)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(p.vehicle)+'</span><span>'+esc(tr('driver'))+'</span><span>'+esc(p.carrier)+'</span><span>'+esc(tr('purposeText'))+'</span><span>'+esc(p.purposeText)+'</span></div><table class="it"><tr><th>#</th><th>'+esc(tr('itemName'))+'</th><th>'+esc(tr('qty'))+'</th><th>'+esc(tr('unit'))+'</th></tr>'+p.items.map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(it.item)+'</td><td>'+esc(it.qty)+'</td><td>'+esc(it.unit)+'</td></tr>';}).join('')+'</table></div>';
   if(p.status==='Awaiting signatures'||p.status==='Pending release')h+='<button class="btn danger" id="pCancel" type="button">'+esc(tr('cancelPass'))+'</button>';
@@ -2851,6 +2957,7 @@ $('vPass').addEventListener('click',function(e){
   if(t.id==='sgFile'){var fi=$('sgIn');if(fi)fi.click();return;}
   if(t.id==='pBack'){homeOpen();}
   else if(t.getAttribute('data-sgrm')!==null){SG.splice(+t.getAttribute('data-sgrm'),1);passDraw();}
+  else if(t.id==='pPdf'){if(PASS){PASS.siteLead=PASS.siteLead||CFG.siteLead;pdfPass(PASS,t);}}
   else if(t.id==='pPrint'||t.id==='pPrint1'){if(PASS){PASS.siteLead=PASS.siteLead||CFG.siteLead;printPass(PASS,t.id==='pPrint1');}}
   else if(t.id==='pNew'){D=newDraft();newOpen();}
   else if(t.id==='pSend'){
@@ -2869,22 +2976,89 @@ $('vPass').addEventListener('click',function(e){
   }
 });
 
-/* ===== find a pass ===== */
-function findOpen(){show('vFind');findDraw();}
+/* ===== find a pass: by pass number, by KTP / SIM number, or by scanning the QR on the pass ===== */
+var FD={q:'',err:'',res:null,take:''};
+var REFRE=/MGP-[A-Z0-9]{1,8}-\d{4}-\d{3,}/i;
+function findOpen(){FD.err='';FD.res=null;FD.take='';FD.from='';show('vFind');findDraw();}
 function findDraw(){
-  $('vFind').innerHTML=h1(tr('find'))+'<p class="note">'+esc(tr('findHelp'))+'</p><label for="fdRef">'+esc(tr('refLbl'))+'</label><input id="fdRef" placeholder="'+esc(tr('refPh'))+'" autocapitalize="characters" autocomplete="off"><label for="fdVeh">'+esc(tr('vehicle'))+'</label><input id="fdVeh" autocapitalize="characters" autocomplete="off"><div class="err" id="fdErr"></div><button class="btn" id="fdGo" type="button">'+esc(tr('findGo'))+'</button><button class="btn ghost" id="fdBack" type="button">'+esc(tr('back'))+'</button>';
+  var h=h1(tr('find'));
+  if(FD.take){
+    h+='<div class="ref" style="font-size:24px">'+esc(FD.take)+'</div><p class="note">'+esc(tr('takeHelp'))+'</p><label for="fdVeh">'+esc(tr('vehicle'))+'</label><input id="fdVeh" autocapitalize="characters" autocomplete="off"><div class="err" id="fdErr">'+esc(FD.err)+'</div><button class="btn" id="fdTake" type="button">'+esc(tr('takeOver'))+'</button><button class="btn ghost" id="fdBack2" type="button">'+esc(tr('back'))+'</button>';
+    $('vFind').innerHTML=h;return;
+  }
+  h+='<p class="note">'+esc(tr('findHelp2'))+'</p><label for="fdQ">'+esc(tr('fdQ'))+'</label><input id="fdQ" placeholder="'+esc(tr('refPh'))+'" autocapitalize="characters" autocomplete="off" value="'+esc(FD.q)+'"><div class="err" id="fdErr">'+esc(FD.err)+'</div><button class="btn" id="fdGo" type="button">'+esc(tr('findGo'))+'</button><button class="btn amber" id="fdQr" type="button">'+esc(tr('scanQr'))+'</button>';
+  if(FD.res&&FD.res.length){h+='<h2>'+esc(tr('found'))+'</h2>'+FD.res.map(function(s){return '<button class="pas" type="button" data-fdopen="'+esc(s.ref)+'"><span><b>'+esc(s.ref)+'</b><small>'+esc(s.company+' · '+s.vehicle+' · '+fmtD(s.date))+'</small></span>'+chip(s.status)+'</button>';}).join('');}
+  h+='<button class="btn ghost" id="fdBack" type="button">'+esc(tr('back'))+'</button>';
+  $('vFind').innerHTML=h;
 }
+function findGo(){
+  var q=($('fdQ').value||'').trim();FD.q=q;FD.err='';FD.res=null;
+  api({action:'lookup',q:q}).then(function(r){
+    if(!r||!r.ok){FD.err=errText(r&&r.err);findDraw();return;}
+    if(!r.list.length){FD.err=tr('noMatch');findDraw();return;}
+    if(r.list.length===1){FD.from='find';verifyOpen(r.list[0].ref);return;}
+    FD.res=r.list;findDraw();
+  },function(){FD.err=tr('err_net');findDraw();});
+}
+$('vFind').addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.id==='fdQ'){e.preventDefault();findGo();}});
 $('vFind').addEventListener('click',function(e){
   var t=e.target.closest('button');if(!t)return;
   if(t.id==='fdBack')homeOpen();
-  if(t.id==='fdGo'){
-    var ref=$('fdRef').value.trim().toUpperCase(),veh=$('fdVeh').value.trim();
-    api({action:'find',ref:ref,vehicle:veh}).then(function(r){
-      if(!r||!r.ok){$('fdErr').textContent=errText(r&&r.err);return;}
-      MINE=MINE.filter(function(m){return m.ref!==r.ref;});MINE.unshift({ref:r.ref,token:r.token,vehicle:r.pass.vehicle,company:r.pass.company,ts:Date.now()});saveMine();passOpen(r.ref);
-    },function(){$('fdErr').textContent=tr('err_net');});
+  else if(t.id==='fdBack2'){FD.take='';FD.err='';findDraw();}
+  else if(t.id==='fdGo')findGo();
+  else if(t.id==='fdQr'){FD.q=$('fdQ').value;qrScanOpen(function(ref){FD.from='find';verifyOpen(ref);});}
+  else if(t.getAttribute('data-fdopen')){FD.from='find';verifyOpen(t.getAttribute('data-fdopen'));}
+  else if(t.id==='fdTake'){
+    var veh=$('fdVeh').value.trim();
+    api({action:'find',ref:FD.take,vehicle:veh}).then(function(r){
+      if(!r||!r.ok){FD.err=errText(r&&r.err);findDraw();return;}
+      MINE=MINE.filter(function(m){return m.ref!==r.ref;});MINE.unshift({ref:r.ref,token:r.token,vehicle:r.pass.vehicle,company:r.pass.company,ts:Date.now()});saveMine();FD.take='';passOpen(r.ref);
+    },function(){FD.err=tr('err_net');findDraw();});
   }
 });
+
+/* ===== QR scanner (camera): BarcodeDetector where the phone has it, otherwise jsQR.js loaded from the same site ===== */
+var QS={el:null,stream:null,on:false,cb:null,det:null,load:null};
+function qrLoadLib(){
+  if(window.jsQR)return Promise.resolve();
+  if(!QS.load)QS.load=new Promise(function(ok,no){var e=document.createElement('script');e.src='jsQR.js';e.onload=ok;e.onerror=function(){QS.load=null;no();};document.head.appendChild(e);});
+  return QS.load;
+}
+function qrScanClose(){
+  QS.on=false;if(QS.stream){QS.stream.getTracks().forEach(function(t){t.stop();});QS.stream=null;}
+  if(QS.el)QS.el.classList.add('hidden');
+}
+function qrScanOpen(cb){
+  if(!QS.el){
+    var d=document.createElement('div');d.id='qrs';d.className='ovl hidden';
+    d.innerHTML='<div class="ovbar"><span id="qrT" style="margin-right:auto;font-weight:300;letter-spacing:.14em;text-transform:uppercase;padding-left:6px"></span><button class="btn ghost sm" id="qrX" type="button" style="width:auto;margin:0">&times;</button></div><video id="qrV" playsinline muted></video><div id="qrBox"></div><div id="qrMsg"></div><canvas id="qrC" class="hidden"></canvas>';
+    document.body.appendChild(d);QS.el=d;d.querySelector('#qrX').onclick=qrScanClose;
+  }
+  QS.cb=cb;var d2=QS.el;d2.classList.remove('hidden');d2.querySelector('#qrT').textContent=tr('scanQr');d2.querySelector('#qrMsg').textContent=tr('qrHelp');
+  try{if(!QS.det&&window.BarcodeDetector)QS.det=new BarcodeDetector({formats:['qr_code']});}catch(e){QS.det=null;}
+  (QS.det?Promise.resolve():qrLoadLib()).then(function(){return navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});}).then(function(st){
+    QS.stream=st;var v=d2.querySelector('#qrV');v.srcObject=st;return v.play();
+  }).then(function(){QS.on=true;qrLoop();},function(){d2.querySelector('#qrMsg').textContent=tr('camErr');});
+}
+function qrGot(raw){
+  var m=String(raw||'').match(REFRE);
+  if(!m){QS.el.querySelector('#qrMsg').textContent=tr('qrNone');setTimeout(function(){if(QS.stream){QS.on=true;QS.el.querySelector('#qrMsg').textContent=tr('qrHelp');qrLoop();}},1500);return;}
+  var f=QS.cb;qrScanClose();if(f)f(m[0].toUpperCase());
+}
+function qrLoop(){
+  if(!QS.on)return;
+  var v=QS.el.querySelector('#qrV'),c=QS.el.querySelector('#qrC');
+  if(v.readyState>=2&&v.videoWidth){
+    if(QS.det){QS.det.detect(v).then(function(r){if(!QS.on)return;if(r&&r.length&&r[0].rawValue){QS.on=false;qrGot(r[0].rawValue);}else setTimeout(qrLoop,150);},function(){QS.det=null;setTimeout(qrLoop,150);});return;}
+    if(window.jsQR){
+      var w=Math.min(640,v.videoWidth),h=Math.round(w*v.videoHeight/v.videoWidth);if(c.width!==w)c.width=w;if(c.height!==h)c.height=h;
+      var x=c.getContext('2d',{willReadFrequently:true});x.drawImage(v,0,0,w,h);
+      var im=x.getImageData(0,0,w,h),r=jsQR(im.data,w,h,{inversionAttempts:'dontInvert'});
+      if(r&&r.data){QS.on=false;qrGot(r.data);return;}
+    }
+  }
+  setTimeout(qrLoop,180);
+}
 
 /* ===== public verify (QR from a phone camera) ===== */
 var VREF='',VRES=null;
@@ -2900,12 +3074,24 @@ function verifyDraw(){
     h+='<div class="vbox '+cls+'"><div class="big">'+esc(tr(k[0]))+'</div>'+(k[1]?'<div>'+esc(tr(k[1]))+'</div>':'')+(s==='Released'&&VRES.decidedAt?'<div>'+esc(VRES.decidedAt)+' WIB</div>':'')+'</div>';
     h+='<div class="card"><div class="kv"><span>'+esc(tr('date'))+'</span><span>'+esc(fmtD(VRES.date))+'</span><span>'+esc(tr('compShort'))+'</span><span>'+esc(VRES.company)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(VRES.vehicle)+'</span><span>'+esc(tr('items'))+'</span><span>'+esc(VRES.items)+'</span></div></div>';
   }
+  if(VRES&&VRES.ok&&VRES.found){
+    if(tokenOf(VREF))h+='<button class="btn" id="vOpen" type="button">'+esc(tr('openPass'))+'</button>';
+    else h+='<button class="btn" id="vTake" type="button">'+esc(tr('takeOver'))+'</button>';
+  }
+  if(FD.from==='find')h+='<button class="btn ghost" id="vBack" type="button">'+esc(tr('back'))+'</button>';
   h+='<a class="btn ghost" href="'+esc(APP_URL)+'">'+esc(tr('openApp'))+'</a>';
   $('vVerify').innerHTML=h;
 }
 
+$('vVerify').addEventListener('click',function(e){
+  var t=e.target.closest('button');if(!t)return;
+  if(t.id==='vOpen')passOpen(VREF);
+  else if(t.id==='vTake'){FD.take=VREF;FD.err='';show('vFind');findDraw();}
+  else if(t.id==='vBack'){FD.take='';findDraw();show('vFind');}
+});
+
 /* ===== admin ===== */
-var AD={pin:ls('gp_apin')||'',list:null,counts:{},q:'',st:'',sel:null};
+var AD={pin:ls('gp_apin')||'',list:null,counts:{},q:'',st:'',sel:null,chk:{}};
 function adminOpen(){show('vAdmin');if(AD.pin)adminLoad();else adminDraw();}
 function adminLoad(){
   api({action:'a_list',pin:AD.pin,q:AD.q,status:AD.st}).then(function(r){
@@ -2918,8 +3104,10 @@ function adminDraw(){
   if(!AD.pin){h+='<label for="adPin">'+esc(tr('pin'))+'</label><input id="adPin" type="password" inputmode="numeric" autocomplete="off" maxlength="12"><div class="err">'+esc(AD.err||'')+'</div><button class="btn" id="adGo" type="button">'+esc(tr('login'))+'</button><button class="btn ghost" id="adBack" type="button">'+esc(tr('back'))+'</button>';$('vAdmin').innerHTML=h;return;}
   if(AD.sel){adminDetailDraw(h);return;}
   h+='<div class="row2"><input id="adQ" placeholder="'+esc(tr('search'))+'" value="'+esc(AD.q)+'"><select id="adSt"><option value="">'+esc(tr('all'))+'</option>'+Object.keys(ST).map(function(s){return '<option value="'+esc(s)+'"'+(AD.st===s?' selected':'')+'>'+esc(tr(ST[s][0]))+' ('+(AD.counts[s]||0)+')</option>';}).join('')+'</select></div>';
-  h+='<div class="err">'+esc(AD.err||'')+'</div>';
-  (AD.list||[]).forEach(function(s){h+='<button class="pas" type="button" data-adopen="'+esc(s.ref)+'"><span><b>'+esc(s.ref)+'</b><small>'+esc(s.company+' · '+s.vehicle+' · '+s.carrier)+'<br>'+esc(s.createdAt)+'</small></span>'+chip(s.status)+'</button>';});
+  h+='<div class="err">'+esc(AD.err||'')+'</div>'+(AD.note?'<div class="note">'+esc(AD.note)+'</div>':'');
+  (AD.list||[]).forEach(function(s){h+='<div class="adrow"><input type="checkbox" data-adsel="'+esc(s.ref)+'"'+(AD.chk[s.ref]?' checked':'')+' aria-label="'+esc(s.ref)+'"><button class="pas" type="button" data-adopen="'+esc(s.ref)+'"><span><b>'+esc(s.ref)+'</b><small>'+esc(s.company+' · '+s.vehicle+' · '+s.carrier)+'<br>'+esc(s.createdAt)+'</small></span>'+chip(s.status)+'</button></div>';});
+  var nsel=Object.keys(AD.chk).filter(function(k){return AD.chk[k];}).length;
+  if(nsel)h+='<button class="btn danger" id="adDelSel" type="button">'+esc(tr('adDeleteSel').replace('{n}',nsel))+'</button>';
   h+='<button class="btn ghost" id="adCsv" type="button">'+esc(tr('csv'))+'</button><button class="btn ghost" id="adOut" type="button">'+esc(tr('logout'))+'</button><button class="btn ghost" id="adBack" type="button">'+esc(tr('back'))+'</button>';
   $('vAdmin').innerHTML=h;
 }
@@ -2930,11 +3118,23 @@ function adminDetailDraw(h){
   h+='<h2>'+esc(tr('links'))+'</h2><div>'+[['front',d.links.front],['load',d.links.load],['top',(d.links.old||[])[0]],['left',(d.links.old||[])[1]],['right',(d.links.old||[])[2]]].filter(function(x){return x[1]&&/^http/.test(x[1])&&!(x[0]==='top'&&x[1]===d.links.load);}).map(function(x){return '<a class="btn ghost sm" target="_blank" rel="noopener" href="'+esc(x[1])+'">'+esc(tr('ph_'+x[0]))+'</a>';}).join('')+d.links.signed.map(function(u,i){return '<a class="btn sm" target="_blank" rel="noopener" href="'+esc(u)+'">'+esc(tr('upload'))+' '+(i+1)+'</a>';}).join('')+'</div>';
   h+='<h2>'+esc(tr('auditLog'))+'</h2><table class="it adm"><tr><th>Time</th><th>Event</th><th>By</th><th>Detail</th></tr>'+d.log.map(function(l){return '<tr><td>'+esc(l.t)+'</td><td>'+esc(l.ev)+'</td><td>'+esc(l.by)+'</td><td>'+esc(l.d)+'</td></tr>';}).join('')+'</table>';
   if(p.status==='Awaiting signatures'||p.status==='Pending release')h+='<button class="btn danger" id="adCancel" type="button">'+esc(tr('adminCancel'))+'</button>';
-  h+='<button class="btn" id="adPrint" type="button">'+esc(tr('printAgain'))+'</button><button class="btn ghost" id="adList" type="button">'+esc(tr('back'))+'</button>';
+  h+='<button class="btn" id="adPrint" type="button">'+esc(tr('printAgain'))+'</button><button class="btn ghost" id="adPdf" type="button">'+esc(tr('dlPdf'))+'</button><button class="btn danger" id="adDel" type="button">'+esc(tr('adDelete'))+'</button><button class="btn ghost" id="adList" type="button">'+esc(tr('back'))+'</button>';
   $('vAdmin').innerHTML=h;
 }
-$('vAdmin').addEventListener('input',function(e){if(e.target.id==='adQ'){AD.q=e.target.value;clearTimeout(AD.tm);AD.tm=setTimeout(adminLoad,400);}});
-$('vAdmin').addEventListener('change',function(e){if(e.target.id==='adSt'){AD.st=e.target.value;adminLoad();}});
+$('vAdmin').addEventListener('input',function(e){if(e.target.id==='adQ'){AD.note='';AD.q=e.target.value;clearTimeout(AD.tm);AD.tm=setTimeout(adminLoad,400);}});
+$('vAdmin').addEventListener('change',function(e){
+  if(e.target.id==='adSt'){AD.st=e.target.value;adminLoad();}
+  else if(e.target.getAttribute('data-adsel')){AD.chk[e.target.getAttribute('data-adsel')]=e.target.checked;adminDraw();}
+});
+function adminDelete(refs){
+  if(!refs.length)return;
+  if(!window.confirm(tr('delAsk').replace('{n}',refs.length)+'\n\n'+refs.join('\n')))return;
+  api({action:'a_delete',pin:AD.pin,refs:refs},60000).then(function(r){
+    if(!r||!r.ok){AD.err=errText(r&&r.err);adminDraw();return;}
+    refs.forEach(function(x){delete AD.chk[x];delete PHC[x];});MINE=MINE.filter(function(m){return refs.indexOf(m.ref)<0;});saveMine();
+    AD.sel=null;AD.note=tr('delDone').replace('{n}',r.deleted.length);adminLoad();
+  },function(){AD.err=tr('err_net');adminDraw();});
+}
 $('vAdmin').addEventListener('click',function(e){
   var t=e.target.closest('button');if(!t)return;
   if(t.id==='adBack')homeOpen();
@@ -2944,6 +3144,9 @@ $('vAdmin').addEventListener('click',function(e){
   else if(t.getAttribute('data-adopen')){api({action:'a_get',pin:AD.pin,ref:t.getAttribute('data-adopen')}).then(function(r){if(r&&r.ok){AD.sel=r;adminDraw();}else{AD.err=errText(r&&r.err);adminDraw();}});}
   else if(t.id==='adCancel'){var why=window.prompt(tr('cancelWhy'),'');if(why===null)return;api({action:'a_cancel',pin:AD.pin,ref:AD.sel.pass.ref,reason:why}).then(function(r){AD.sel=null;adminLoad();});}
   else if(t.id==='adPrint'){var p=AD.sel.pass;p.siteLead=p.siteLead||CFG.siteLead;printPass(p);}
+  else if(t.id==='adPdf'){var p2=AD.sel.pass;p2.siteLead=p2.siteLead||CFG.siteLead;pdfPass(p2,t);}
+  else if(t.id==='adDel'){adminDelete([AD.sel.pass.ref]);}
+  else if(t.id==='adDelSel'){adminDelete(Object.keys(AD.chk).filter(function(k){return AD.chk[k];}));}
   else if(t.id==='adCsv'){csv();}
 });
 function csv(){
@@ -2988,7 +3191,7 @@ function zmBuild(){
 function zoomOpen(src){if(!src)return;zmBuild();ZM.img.src=src;ZM.s=1;ZM.x=0;ZM.y=0;zmApply();ZM.pt={};ZM.el.classList.remove('hidden');}
 function zoomClose(){if(ZM.el)ZM.el.classList.add('hidden');}
 document.addEventListener('click',function(e){var im=e.target&&e.target.closest&&e.target.closest('img[data-zoom]');if(im){e.preventDefault();zoomOpen(im.getAttribute('data-zoom'));}});
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){zoomClose();scanClose();}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){zoomClose();scanClose();qrScanClose();}});
 
 /* ===== document scanner for the signed copy: camera with a page frame, cropped to the frame, cleaned up like a scan ===== */
 var SC={el:null,stream:null,cb:null,shot:null};

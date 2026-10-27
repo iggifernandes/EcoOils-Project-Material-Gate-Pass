@@ -6,7 +6,7 @@
    - Public QR check: action 'verify' returns status only (no names, no ID numbers, no photos).
    - Patroli (guards): actions b_list / b_get / b_release, protected by the shared secret BRIDGE_SECRET (script property). The guard's name comes from Patroli's PIN login.
    - Admin (you): actions a_*, protected by the script property ADMIN_PIN. */
-var VERSION = 'v1.3';
+var VERSION = 'v1.4';
 var OFF = 7 * 3600000;      // Jakarta (WIB), no daylight saving
 var TZ = 'Asia/Jakarta';
 var P_HEAD = ['Ref', 'Created (WIB)', 'Date', 'Purpose', 'Carrier name', 'Carrier I/C no', 'Company', 'Vehicle no', 'Purpose of taking out', 'EcoOils dept', 'IC rep name', 'IC rep position', 'Items', 'Status', 'Token hash',
@@ -167,6 +167,7 @@ function route_(b) {
   if (a === 'get') return get_(b);
   if (a === 'photos') return photos_(b);
   if (a === 'find') return find_(b);
+  if (a === 'lookup') return lookup_(b);
   if (a === 'signed') return signed_(b);
   if (a === 'cancel') return cancel_(b);
   if (a === 'verify') return verify_(b);
@@ -296,6 +297,25 @@ function find_(b) {
   ROWS_ = null;
   return {ok: true, ref: String(hit.v[0]), token: tok, pass: summary_(hit.v, Date.now())};
 }
+/* Find by pass number or by the KTP/SIM number (or the QR text). Returns status-level facts only, same as the public QR page: no names, no ID numbers, no photos. Taking a pass over on a phone still needs the vehicle number (find_). */
+function lookup_(b) {
+  if (!hits_('lookup', 60, 600)) return {ok: false, err: 'busy'};
+  var q = String(b.q || '').trim(), now = Date.now(), out = [];
+  var m = q.toUpperCase().match(/MGP-[A-Z0-9]{1,8}-\d{4}-\d{3,}/);
+  if (m) {
+    var hit = rowOf_(m[0]);
+    if (hit) out.push(pub_(summary_(hit.v, now)));
+  } else {
+    var d = q.replace(/\D/g, '');
+    if (d.length === 12 || d.length === 16) {
+      rows_().slice().reverse().forEach(function (v) {
+        if (out.length < 10 && String(v[PC['Carrier I/C no']]).replace(/\D/g, '') === d) out.push(pub_(summary_(v, now)));
+      });
+    } else return {ok: false, err: 'bad_query'};
+  }
+  return {ok: true, list: out};
+}
+function pub_(s) { return {ref: s.ref, status: s.status, date: s.date, company: s.company, vehicle: s.vehicle, items: s.items}; }
 function signed_(b) {
   var imgs = Array.isArray(b.photos) ? b.photos.slice(0, 2) : [];
   if (!imgs.length) return {ok: false, err: 'bad_photo'};
@@ -374,6 +394,26 @@ function admin_(a, b) {
     setCell_(h2.row, 'Status', ST_CAN); setCell_(h2.row, 'Cancelled reason', clean_(b.reason, 200) || 'Cancelled by admin'); setCell_(h2.row, 'Decided at (WIB)', ymdhms_(now)); setCell_(h2.row, 'Decided ms', now);
     log_(String(h2.v[0]), 'CANCELLED_ADMIN', 'Admin', clean_(b.reason, 200));
     return {ok: true};
+  }
+  if (a === 'a_delete') {
+    var refs = (Array.isArray(b.refs) ? b.refs : [b.ref]).map(function (x) { return String(x || '').trim().toUpperCase(); }).filter(function (x) { return x; }).slice(0, 50);
+    var lock = LockService.getScriptLock(), gone = [];
+    lock.waitLock(25000);
+    try {
+      ROWS_ = null;
+      refs.forEach(function (ref) {
+        var hit = rowOf_(ref);
+        if (!hit) return;
+        var ps = sh_('Passes'), its = sh_('Items'), n = its.getLastRow();
+        if (n > 1) { var iv = its.getRange(2, 1, n - 1, 1).getValues(); for (var i = iv.length - 1; i >= 0; i--) if (String(iv[i][0]) === String(hit.v[0])) its.deleteRow(i + 2); }
+        ps.deleteRow(hit.row);
+        try { var fi = folder_().getFoldersByName(String(hit.v[0])); while (fi.hasNext()) fi.next().setTrashed(true); } catch (e) { Logger.log('folder: ' + e); }
+        log_(String(hit.v[0]), 'DELETED_ADMIN', 'Admin', 'status was ' + String(hit.v[PC['Status']]) + '; Drive folder moved to Trash');
+        gone.push(String(hit.v[0]));
+        ROWS_ = null;
+      });
+    } finally { lock.releaseLock(); }
+    return {ok: true, deleted: gone};
   }
   if (a === 'a_log') {
     var l = sh_('Log'), m = l.getLastRow(), o = [];

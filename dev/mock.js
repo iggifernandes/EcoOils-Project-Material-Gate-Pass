@@ -14,10 +14,10 @@ function mkSheet(name){const rows=[];return {name,rows,
       getValue:()=>{const v=(rows[r-1]||[])[c-1];return v===undefined?'':v},
       setFontWeight(){return rg},setNumberFormat(){return rg}};return rg}};}
 const sheets={},props={},cache={},files={};let fid=0;
-const folders={};
+const folders={},trashed=[];
 function mkFolder(name){const subs={};const f={name,getId:()=>'folder_'+name,createFile:(blob)=>{const id='f'+(++fid);files[id]=blob;(folders[name]=folders[name]||[]).push(id);return {getId:()=>id,getUrl:()=>'https://drive.example/'+id}},
   getFoldersByName:n=>{const x=subs[n];let used=false;return {hasNext:()=>!!x&&!used,next:()=>{used=true;return x}}},
-  createFolder:n=>{subs[n]=mkFolder(n);return subs[n]}};return f;}
+  createFolder:n=>{subs[n]=mkFolder(n);return subs[n]},setTrashed:t=>{if(t)trashed.push(name)}};return f;}
 const rootF=mkFolder('root');
 const ctx={console,Date,Math,JSON,String,Number,Object,Array,isFinite,parseInt,RegExp,Error,
  SpreadsheetApp:{getActiveSpreadsheet:()=>({getSheetByName:n=>sheets[n]||null,insertSheet:n=>sheets[n]=mkSheet(n),getSheets:()=>Object.values(sheets),deleteSheet(){}})},
@@ -35,5 +35,5 @@ const ctx={console,Date,Math,JSON,String,Number,Object,Array,isFinite,parseInt,R
 vm.createContext(ctx);vm.runInContext(src,ctx);
 ctx.setup();
 const call=b=>JSON.parse(ctx.doPost({postData:{contents:JSON.stringify(b)}}).s);
-return {ctx,sheets,props,files,cache,call,folders};}
+return {ctx,sheets,props,files,cache,call,folders,trashed};}
 module.exports=load;module.exports.load=load;

@@ -74,6 +74,18 @@ ok(pt.includes('UNIT')&&pt.includes('KGS')&&pt.includes('PCS')&&pt.includes('FRO
 ok(!/http|github|script\.google/i.test(pt)&&(await page.locator('#printArea img').count())===4,'print shows no URL anywhere (2 logos + 2 photos)');
 ok(pt.includes('MATERIAL GATE PASS')&&pt.includes('EOSM-HSSE-FM003')&&pt.includes(ref)&&pt.includes('Budi Santoso')&&pt.includes('SENDING BACK REJECTED ITEMS TO SUPPLIER')&&pt.includes('COPY: SECURITY / CARRIER / STORES')&&pt.includes('Approval By'),'print layout follows FM003');
 ok(await page.evaluate(()=>document.querySelector('#printArea .chk').textContent==='X'),'purpose A is ticked');
+ok(/Printed \d\d \w{3} 2026 \d\d:\d\d WIB · Page 1 of 2/.test(pt)&&/Printed \d\d \w{3} 2026 \d\d:\d\d WIB · Page 2 of 2/.test(pt),'every page shows the time of printing (WIB)');
+ok(new RegExp('^'+ref+'_2026-\\d\\d-\\d\\d_\\d\\d-\\d\\d$').test(await page.title()),'tab title = file name when saving the print as PDF: '+await page.title());
+// ----- Download PDF
+const [dlw]=await Promise.all([page.waitForEvent('download',{timeout:60000}),page.click('#dPdf')]);
+const pdfName=dlw.suggestedFilename();await dlw.saveAs('/tmp/gp_dl.pdf');
+ok(new RegExp('^'+ref+'_\\d{4}-\\d\\d-\\d\\d_\\d\\d-\\d\\d\\.pdf$').test(pdfName),'PDF file is named pass number + date + time of printing: '+pdfName);
+const pdfb=fs.readFileSync('/tmp/gp_dl.pdf');
+ok(pdfb.slice(0,5).toString()==='%PDF-'&&pdfb.slice(-6).toString().includes('%%EOF')&&pdfb.length>60000&&pdfb.length<4000000,'PDF is a real PDF ('+pdfb.length+' bytes)');
+ok((pdfb.toString('latin1').match(/\/Type \/Page /g)||[]).length===2,'PDF has 2 pages');
+require('child_process').execSync('pdftoppm -r 60 -png /tmp/gp_dl.pdf /tmp/gp_dl');
+ok(await page.locator('#dPdf').isEnabled()&&(await page.textContent('#dPdf')).includes('Download PDF'),'button comes back after the download');
+
 await page.emulateMedia({media:'print'});
 await page.pdf({path:'/tmp/gp_print.pdf',format:'A4',printBackground:true,preferCSSPageSize:true,margin:{top:'0',bottom:'0',left:'0',right:'0'}});ok((fs.readFileSync('/tmp/gp_print.pdf','latin1').match(/\/Type\s*\/Page[^s]/g)||[]).length===2,'both-sides print is exactly 2 pages (1 sheet, double-sided)');
 const hmm=await page.evaluate(()=>{const r=document.querySelector('#printArea .bigph img').getBoundingClientRect();return r.height/3.7795;});ok(Math.abs(hmm-80)<1.5,'each big photo is 8 cm high ('+hmm.toFixed(1)+' mm)');
@@ -118,14 +130,36 @@ const c2=await br.newContext({viewport:{width:390,height:844}});const p2=await c
 await p2.route('https://gp.test/**',r=>r.fulfill({status:200,contentType:'text/html',body:html}));
 await p2.route('https://gas.test/**',async r=>{await r.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify(m.call(JSON.parse(r.request().postData())))});});
 await p2.route('https://fonts.googleapis.com/**',r=>r.fulfill({status:200,contentType:'text/css',body:''}));await p2.route('https://fonts.gstatic.com/**',r=>r.abort());
+await p2.route('https://gp.test/jsQR.js',r=>r.fulfill({status:200,contentType:'application/javascript',body:fs.readFileSync(path.join(__dirname,'..','jsQR.js'),'utf8')}));
 await p2.goto('https://gp.test/');await p2.waitForSelector('#hFind');await p2.click('#hFind');
-await p2.fill('#fdRef',ref);await p2.fill('#fdVeh','BK1234XY');await p2.click('#fdGo');await p2.waitForSelector('.chip');
-ok((await p2.textContent('#vPass')).includes('Released')&&(await p2.textContent('#vPass')).includes('Dedi'),'new phone: find by reference + vehicle shows the pass and who released it');
+await p2.fill('#fdQ','12345');await p2.click('#fdGo');await p2.waitForFunction(()=>document.querySelector('#fdErr').textContent.length>3);ok((await p2.textContent('#fdErr')).includes('12 or 16'),'find rejects a junk number: '+await p2.textContent('#fdErr'));
+await p2.fill('#fdQ','MGP-GSB-2610-9999');await p2.click('#fdGo');await p2.waitForFunction(()=>/No pass found/.test(document.querySelector('#fdErr').textContent));ok(true,'find says clearly when no pass has that number');
+await p2.fill('#fdQ',ref.toLowerCase());await p2.press('#fdQ','Enter');await p2.waitForSelector('#vVerify .vbox');
+ok((await p2.textContent('#vVerify')).includes(ref)&&(await p2.textContent('#vVerify')).includes('RELEASED')&&!(await p2.textContent('#vVerify')).includes('Budi'),'find by pass number (Enter key) opens the status page, no names shown');
+await p2.click('#vBack');const idNo=String(m.sheets.Passes.rows[1][5]).replace(/\D/g,'');
+await p2.fill('#fdQ',idNo.replace(/(\d{4})/g,'$1 ').trim());await p2.click('#fdGo');await p2.waitForSelector('#vVerify .vbox');
+ok((await p2.textContent('#vVerify')).includes(ref),'find by KTP/SIM number (typed with spaces) finds the pass');
+await p2.click('#vTake');await p2.fill('#fdVeh','wrong 1');await p2.click('#fdTake');await p2.waitForFunction(()=>document.querySelector('#fdErr').textContent.length>3);ok(true,'taking the pass over needs the right vehicle number');
+await p2.fill('#fdVeh','BK1234XY');await p2.click('#fdTake');await p2.waitForSelector('#vPass .chip');
+ok((await p2.textContent('#vPass')).includes('Released')&&(await p2.textContent('#vPass')).includes('Dedi'),'new phone: pass opens after the vehicle number, shows who released it');
+// QR: our own printed QR can be read back, and the scanner reacts to it
+await p2.click('#pBack');await p2.click('#hFind');await p2.click('#fdQr');await p2.waitForSelector('#qrs:not(.hidden)');
+await p2.waitForFunction(()=>{const v=document.querySelector('#qrV');return v&&v.videoWidth>0},null,{timeout:10000});ok(true,'QR scanner opens the camera');
+await p2.evaluate(()=>qrGot('hello'));ok((await p2.textContent('#qrMsg')).includes('not a gate pass'),'a QR that is not a gate pass is refused');
+const dec=await p2.evaluate(async(r)=>{await qrLoadLib();const svg=qrSvg(verifyUrl(r)),im=new Image();await new Promise(k=>{im.onload=k;im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg.replace('<svg ','<svg width="400" height="400" '));});const c=document.createElement('canvas');c.width=c.height=400;const x=c.getContext('2d');x.drawImage(im,0,0,400,400);const d=x.getImageData(0,0,400,400);return jsQR(d.data,400,400).data;},ref);
+ok(dec.endsWith('?v='+ref),'jsQR reads back the QR printed on the pass: '+dec);
+await p2.evaluate((r)=>qrGot('https://iggifernandes.github.io/x/?v='+r),ref);await p2.waitForSelector('#vVerify .vbox');
+ok((await p2.textContent('#vVerify')).includes(ref)&&await p2.locator('#qrs').isHidden(),'scanning the QR opens the pass status and closes the camera');
 // ----- admin
-await p2.click('#pBack');await p2.click('#hAdmin');await p2.fill('#adPin',m.props.ADMIN_PIN);await p2.click('#adGo');await p2.waitForSelector('[data-adopen]');
+await p2.evaluate(()=>homeOpen());await p2.click('#hAdmin');await p2.fill('#adPin',m.props.ADMIN_PIN);await p2.click('#adGo');await p2.waitForSelector('[data-adopen]');
 ok((await p2.textContent('#vAdmin')).includes(ref),'admin list');
 await p2.click('[data-adopen]');await p2.waitForSelector('#adList');
 ok((await p2.textContent('#vAdmin')).includes('RELEASED')&&(await p2.textContent('#vAdmin')).includes('Dedi'),'admin detail shows the audit trail');
+await p2.click('#adList');
+await p2.waitForSelector('[data-adsel]');await p2.check('[data-adsel]');ok((await p2.textContent('#adDelSel')).includes('(1)'),'admin can tick passes and see the Delete selected button');
+p2.once('dialog',d=>d.dismiss());await p2.click('#adDelSel');await p2.waitForTimeout(400);ok(m.sheets.Passes.rows.length===2,'cancelling the confirm deletes nothing');
+p2.once('dialog',d=>d.accept());await p2.click('#adDelSel');await p2.waitForFunction(()=>!document.querySelector('[data-adsel]'));
+ok(m.sheets.Passes.rows.length===1&&m.trashed.includes(ref)&&(await p2.textContent('#vAdmin')).includes('Deleted: 1'),'admin delete removes the pass and trashes its Drive folder');
 await c2.close();
 ok(errs.length===0,'no console or page errors '+errs.join(' | '));
 await br.close();console.log(fails?'FAILED':'ALL PASSED');process.exit(fails?1:0);
