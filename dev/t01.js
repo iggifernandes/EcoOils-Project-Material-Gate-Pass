@@ -105,3 +105,13 @@ ok(m.trashed.includes(r2.ref)&&m.call({action:'verify',ref:r2.ref}).found===fals
 m.sheets.Config.rows.forEach(r=>{if(r[0]==='COMPANY_DAILY_CAP')r[1]='40'});
 const nx=m.call({...base,company:'GSB'});
 ok(nx.ok&&!nx.ref.endsWith('-0002')&&!nx.ref.endsWith('-0003'),'a deleted number is never reused: '+nx.ref);
+// QR key: scanning the paper QR can upload the first signed copy (v1.5)
+m.sheets.Config.rows.forEach(r=>{if(r[0]==='COMPANY_DAILY_CAP')r[1]='40'});
+const q1=m.call({...base,company:'KKS'});
+ok(q1.ok&&/^[0-9a-f]{12}$/.test(q1.qk)&&m.call({action:'get',ref:q1.ref,token:q1.token}).pass.qk===q1.qk,'create and get hand out the QR key');
+ok(m.call({action:'verify',ref:q1.ref,k:q1.qk}).upload===true&&m.call({action:'verify',ref:q1.ref,k:'000000000000'}).upload===false&&m.call({action:'verify',ref:q1.ref}).upload===false,'verify tells the scanner to upload only with the right key');
+ok(JSON.stringify(m.call({action:'verify',ref:q1.ref,k:q1.qk})).indexOf('Budi')<0,'verify with the key still shows no names');
+ok(m.call({action:'signed',ref:q1.ref,k:'bad',photos:[jpg]}).err==='notfound','wrong QR key cannot upload');
+const qs=m.call({action:'signed',ref:q1.ref,k:q1.qk,photos:[jpg]});
+ok(qs.ok&&qs.status==='Pending release'&&m.call({action:'a_get',pin:m.props.ADMIN_PIN,ref:q1.ref}).log.some(l=>l.ev==='SIGNED_UPLOADED'&&/via QR scan/.test(l.d)),'scan + key uploads the signed copy and the audit trail says via QR scan');
+ok(m.call({action:'signed',ref:q1.ref,k:q1.qk,photos:[jpg]}).err==='not_open'&&m.call({action:'verify',ref:q1.ref,k:q1.qk}).upload===false,'the QR key cannot replace a signed copy that is already there');

@@ -1,4 +1,4 @@
-var VERSION='v1.7';
+var VERSION='v1.8';
 var PHV=['front','load'];
 var APP_URL='https://iggifernandes.github.io/EcoOils-Project-Material-Gate-Pass/';
 var API_URL='https://script.google.com/macros/s/AKfycbxULvNJReaniGRTFWKY507I0AZD5YLP3mBBjAyFFA-7z4nI0-LPncZbPZTajS89Jp0Z/exec';
@@ -217,7 +217,7 @@ function submit(){
     BUSY=false;
     if(!r){var e1=$('nErr');if(e1)e1.textContent=tr('err_net');var b=$('nSubmit');if(b)b.disabled=false;return;}
     if(!r.ok){var e2=$('nErr');if(e2)e2.textContent=errText(r.err);var b2=$('nSubmit');if(b2)b2.disabled=false;return;}
-    LAST={ref:r.ref,date:r.date,purpose:D.purpose,carrier:body.carrier,icNo:body.icNo,company:body.company,vehicle:body.vehicle.toUpperCase(),purposeText:body.purposeText,dept:body.dept,icRep:body.icRep,icPos:body.icPos,icPhone:body.icPhone,items:its,siteLead:CFG.siteLead,photos:{front:D.photos.front,load:D.photos.load}};
+    LAST={ref:r.ref,qk:r.qk,date:r.date,purpose:D.purpose,carrier:body.carrier,icNo:body.icNo,company:body.company,vehicle:body.vehicle.toUpperCase(),purposeText:body.purposeText,dept:body.dept,icRep:body.icRep,icPos:body.icPos,icPhone:body.icPhone,items:its,siteLead:CFG.siteLead,photos:{front:D.photos.front,load:D.photos.load}};
     MINE.unshift({ref:r.ref,token:r.token,vehicle:LAST.vehicle,company:LAST.company,ts:Date.now()});saveMine();
     SUM[r.ref]={ref:r.ref,status:'Awaiting signatures'};
     D=newDraft();ls('gp_draft',null);
@@ -229,14 +229,14 @@ function submit(){
 function doneOpen(){show('vDone');doneDraw();}
 function doneDraw(){
   if(!LAST){homeOpen();return;}
-  var h=h1(tr('doneTitle'))+'<div class="note" style="text-align:center">'+esc(tr('refLbl'))+'</div><div class="ref">'+esc(LAST.ref)+'</div>'+'<div class="qr">'+qrSvg(verifyUrl(LAST.ref))+'</div>';
+  var h=h1(tr('doneTitle'))+'<div class="note" style="text-align:center">'+esc(tr('refLbl'))+'</div><div class="ref">'+esc(LAST.ref)+'</div>'+'<div class="qr">'+qrSvg(verifyUrl(LAST.ref,LAST.qk))+'</div>';
   h+='<p>'+esc(tr('doneNext'))+'</p><button class="btn amber" id="dPrint" type="button">'+esc(tr('printBoth'))+'</button><button class="btn ghost" id="dPrint1" type="button">'+esc(tr('printOne'))+'</button><button class="btn ghost" id="dPdf" type="button">'+esc(tr('dlPdf'))+'</button><div class="note">'+esc(tr('printHint'))+'</div><button class="btn ghost" id="dOpen" type="button">'+esc(tr('openPass'))+'</button>';
   $('vDone').innerHTML=h;
 }
 $('vDone').addEventListener('click',function(e){var t=e.target.closest('button');if(!t)return;if(t.id==='dPrint')printPass(LAST);else if(t.id==='dPrint1')printPass(LAST,true);else if(t.id==='dPdf')pdfPass(LAST,t);else if(t.id==='dOpen')passOpen(LAST.ref);});
 
 /* ===== QR and print ===== */
-function verifyUrl(ref){return APP_URL+'?v='+encodeURIComponent(ref);}
+function verifyUrl(ref,qk){return APP_URL+'?v='+encodeURIComponent(ref)+(qk?'&k='+encodeURIComponent(qk):'');}
 function qrSvg(text){
   try{var q=qrcode(0,'M');q.addData(text);q.make();var n=q.getModuleCount(),p='';
     for(var r=0;r<n;r++)for(var c=0;c<n;c++)if(q.isDark(r,c))p+='M'+c+' '+r+'h1v1h-1z';
@@ -272,7 +272,7 @@ function passHtml(p,ph,one,st){
   h+='<div class="addr">PT EcoOils Jaya Indonesia, Jl Kelapa Sawit II,<br>Kav 6 Kawasan Ekonomi Khusus<br>Sei Mangkei &ndash; Bosar Maligas<br>Simalungun 21183</div>';
   h+='<div class="ttl">MATERIAL GATE PASS</div>';
   h+='<div class="top"><div><div class="ln">SR NO: <span class="u" style="min-width:48mm">'+esc(p.ref)+'</span></div><div class="ln">DATE: <span class="u" style="min-width:48mm">'+esc(fmtD(p.date))+'</span></div>';
-  h+='<div class="ln" style="margin-top:3mm">THIS NON-RETURNABLE GATE PASS IS USED FOR</div><div class="ln" style="margin-left:6mm"><span class="chk">'+(p.purpose==='A'?'X':'')+'</span>A.&nbsp; SENDING BACK REJECTED ITEMS TO SUPPLIER</div><div class="ln" style="margin-left:6mm"><span class="chk">'+(p.purpose==='B'?'X':'')+'</span>B.&nbsp; SENDING BACK CONTRACTOR&rsquo;S OWN MATERIAL</div></div><div>'+qrSvg(verifyUrl(p.ref))+'</div></div>';
+  h+='<div class="ln" style="margin-top:3mm">THIS NON-RETURNABLE GATE PASS IS USED FOR</div><div class="ln" style="margin-left:6mm"><span class="chk">'+(p.purpose==='A'?'X':'')+'</span>A.&nbsp; SENDING BACK REJECTED ITEMS TO SUPPLIER</div><div class="ln" style="margin-left:6mm"><span class="chk">'+(p.purpose==='B'?'X':'')+'</span>B.&nbsp; SENDING BACK CONTRACTOR&rsquo;S OWN MATERIAL</div></div><div>'+qrSvg(verifyUrl(p.ref,p.qk))+'</div></div>';
   h+='<div class="ln" style="margin-top:3mm">TO: SECURITY</div><div class="ln">PLEASE ALLOWS MR/MISS: <span class="u" style="min-width:50mm">'+esc(p.carrier)+'</span> &nbsp;ID NO (KTP/SIM): <span class="u" style="min-width:48mm;white-space:nowrap">'+esc(p.icNo)+'</span></div>';
   h+='<div class="ln">COMPANY NAME: <span class="u" style="min-width:140mm">'+esc(p.company)+'</span></div><div class="ln">VEHICLE NO: <span class="u" style="min-width:140mm">'+esc(p.vehicle)+'</span></div>';
   h+='<div class="ln">PURPOSE OF TAKING THE ITEM OUT: <span class="u" style="display:block;margin-top:1mm;min-width:0;font-weight:600">'+esc(p.purposeText)+'</span></div>';
@@ -284,7 +284,7 @@ function passHtml(p,ph,one,st){
   if(!one){
     h+='<div class="pg pg2"><table class="hd"><tr><td class="lg" rowspan="3"><img alt="" src="'+LOGO+'"></td><td class="k">Item</td><td class="v">: EOSM-HSSE-FM003</td></tr><tr><td class="k">SR NO</td><td class="v">: '+esc(p.ref)+'</td></tr><tr><td class="k">Date</td><td class="v">: '+esc(fmtD(p.date))+'</td></tr></table>';
     h+='<div class="ttl">MATERIAL GATE PASS &ndash; VEHICLE AND MATERIAL PHOTOS</div>';
-    h+='<div class="top"><div><div class="ln">COMPANY: <b>'+esc(p.company)+'</b></div><div class="ln">VEHICLE NO: <b>'+esc(p.vehicle)+'</b></div><div class="ln">CARRIED BY: <b>'+esc(p.carrier)+'</b></div></div><div>'+qrSvg(verifyUrl(p.ref))+'</div></div>';
+    h+='<div class="top"><div><div class="ln">COMPANY: <b>'+esc(p.company)+'</b></div><div class="ln">VEHICLE NO: <b>'+esc(p.vehicle)+'</b></div><div class="ln">CARRIED BY: <b>'+esc(p.carrier)+'</b></div></div><div>'+qrSvg(verifyUrl(p.ref,p.qk))+'</div></div>';
     h+='<div class="bigph"><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>FRONT VIEW OF THE VEHICLE</small></div>';
     h+='<div class="bigph"><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>MATERIAL LOADED IN THE TRUCK</small></div>';
     h+='<div class="ft"><span>'+esc(p.ref)+'</span><span class="pn">'+esc(tr('printedAt'))+' '+esc(st.txt)+' &middot; Page 2 of 2</span></div></div>';
@@ -529,7 +529,13 @@ function qrLoop(){
 
 /* ===== public verify (QR from a phone camera) ===== */
 var VREF='',VRES=null;
-function verifyOpen(ref){VREF=ref;VRES=null;show('vVerify');verifyDraw();api({action:'verify',ref:ref}).then(function(r){VRES=r||{ok:false};verifyDraw();},function(){VRES={ok:false,err:'net'};verifyDraw();});}
+var VK='',VSG=[],VAUTO=false,VMSG='';
+function verifyOpen(ref,k){
+  if(ref!==VREF){VSG=[];VAUTO=false;VMSG='';}
+  VREF=ref;VK=k||'';VRES=null;$('vPass').innerHTML='';show('vVerify');verifyDraw();api({action:'verify',ref:ref,k:VK}).then(function(r){VRES=r||{ok:false};verifyDraw();
+    /* scanned from the paper and not yet signed-and-uploaded: go straight to the scanner */
+    if(VRES.ok&&VRES.upload&&!VAUTO&&!VSG.length){VAUTO=true;scanOpen(function(p){VSG.push(p);verifyDraw();});}
+  },function(){VRES={ok:false,err:'net'};verifyDraw();});}
 function verifyDraw(){
   var h=h1(tr('title'))+'<div class="ref" style="font-size:24px">'+esc(VREF)+'</div>';
   if(!VRES)h+='<p style="text-align:center"><span class="sp"></span>'+esc(tr('loading'))+'</p>';
@@ -541,6 +547,12 @@ function verifyDraw(){
     h+='<div class="vbox '+cls+'"><div class="big">'+esc(tr(k[0]))+'</div>'+(k[1]?'<div>'+esc(tr(k[1]))+'</div>':'')+(s==='Released'&&VRES.decidedAt?'<div>'+esc(VRES.decidedAt)+' WIB</div>':'')+'</div>';
     h+='<div class="card"><div class="kv"><span>'+esc(tr('date'))+'</span><span>'+esc(fmtD(VRES.date))+'</span><span>'+esc(tr('compShort'))+'</span><span>'+esc(VRES.company)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(VRES.vehicle)+'</span><span>'+esc(tr('items'))+'</span><span>'+esc(VRES.items)+'</span></div></div>';
   }
+  if(VRES&&VRES.ok&&VRES.found&&VRES.upload){
+    h+='<div class="card"><h2 style="margin-top:0">'+esc(tr('upload'))+'</h2><p class="note">'+esc(tr('vUpHelp'))+'</p>';
+    h+='<div class="tiles">'+VSG.map(function(x,i){return '<div class="tile on" style="cursor:default"><img alt="" data-zoom="data:image/jpeg;base64,'+x+'" src="data:image/jpeg;base64,'+x+'"><button class="btn danger sm" type="button" data-vsgrm="'+i+'">'+esc(tr('remove'))+'</button></div>';}).join('')+(VSG.length<2?'<button type="button" class="tile ph" style="margin:0;font:inherit;color:inherit" data-vscan="1"><span style="font-size:28px">&#128247;</span><span>'+esc(VSG.length?tr('scanNext'):tr('scanBtn'))+'</span></button>':'')+'</div><input type="file" accept="image/*" id="sgIn" class="hidden">';
+    if(VSG.length<2)h+='<button class="btn ghost sm" type="button" id="vFile">'+esc(tr('scanFile'))+'</button>';
+    h+='<div class="err" id="vErr">'+esc(VMSG)+'</div>'+(VSG.length?'<button class="btn amber" id="vSend" type="button">'+esc(tr('sendSigned'))+'</button>':'')+'</div>';
+  }
   if(VRES&&VRES.ok&&VRES.found){
     if(tokenOf(VREF))h+='<button class="btn" id="vOpen" type="button">'+esc(tr('openPass'))+'</button>';
     else h+='<button class="btn" id="vTake" type="button">'+esc(tr('takeOver'))+'</button>';
@@ -550,8 +562,24 @@ function verifyDraw(){
   $('vVerify').innerHTML=h;
 }
 
+$('vVerify').addEventListener('change',function(e){
+  if(e.target.id==='sgIn'){var f=e.target.files&&e.target.files[0];if(!f)return;shrink(f,null,1600,0.7).then(function(p){VSG.push(p);verifyDraw();},function(){VMSG=tr('err_bad_photo');verifyDraw();});}
+});
 $('vVerify').addEventListener('click',function(e){
   var t=e.target.closest('button');if(!t)return;
+  if(t.getAttribute('data-vscan')){scanOpen(function(p){VSG.push(p);VMSG='';verifyDraw();});return;}
+  if(t.getAttribute('data-vsgrm')!==null){VSG.splice(+t.getAttribute('data-vsgrm'),1);verifyDraw();return;}
+  if(t.id==='vFile'){var fi=$('sgIn');if(fi)fi.click();return;}
+  if(t.id==='vSend'){
+    if(BUSY||!VSG.length)return;BUSY=true;t.disabled=true;$('vErr').innerHTML='<span class="sp"></span>'+esc(tr('sending'));
+    api({action:'signed',ref:VREF,k:VK,photos:VSG},120000).then(function(r){return r;},function(){return null;}).then(function(r){
+      BUSY=false;
+      if(!r){VMSG=tr('err_net');verifyDraw();return;}
+      if(!r.ok){VMSG=errText(r.err);verifyDraw();return;}
+      VSG=[];VMSG='';var ref=VREF;verifyOpen(ref,'');
+    });
+    return;
+  }
   if(t.id==='vOpen')passOpen(VREF);
   else if(t.id==='vTake'){FD.take=VREF;FD.err='';show('vFind');findDraw();}
   else if(t.id==='vBack'){FD.take='';findDraw();show('vFind');}
@@ -626,7 +654,8 @@ function csv(){
 (function(){
   applyLang();
   var m=/[?&]v=([^&#]+)/.exec(location.search);
-  if(m){verifyOpen(decodeURIComponent(m[1]).toUpperCase());return;}
+  var mk=/[?&]k=([A-Za-z0-9]+)/.exec(location.search);
+  if(m){verifyOpen(decodeURIComponent(m[1]).toUpperCase(),mk?mk[1]:'');return;}
   homeOpen();
 })();
 setInterval(function(){if(!document.hidden&&!$('vHome').classList.contains('hidden'))homeLoad();},60000);

@@ -6,7 +6,7 @@
    - Public QR check: action 'verify' returns status only (no names, no ID numbers, no photos).
    - Patroli (guards): actions b_list / b_get / b_release, protected by the shared secret BRIDGE_SECRET (script property). The guard's name comes from Patroli's PIN login.
    - Admin (you): actions a_*, protected by the script property ADMIN_PIN. */
-var VERSION = 'v1.4';
+var VERSION = 'v1.5';
 var OFF = 7 * 3600000;      // Jakarta (WIB), no daylight saving
 var TZ = 'Asia/Jakarta';
 var P_HEAD = ['Ref', 'Created (WIB)', 'Date', 'Purpose', 'Carrier name', 'Carrier I/C no', 'Company', 'Vehicle no', 'Purpose of taking out', 'EcoOils dept', 'IC rep name', 'IC rep position', 'Items', 'Status', 'Token hash',
@@ -142,7 +142,7 @@ function full_(v, now) {
   var o = summary_(v, now);
   o.icNo = String(v[PC['Carrier I/C no']]); o.purposeText = String(v[PC['Purpose of taking out']]); o.dept = String(v[PC['EcoOils dept']]);
   o.icRep = String(v[PC['IC rep name']]); o.icPos = String(v[PC['IC rep position']]); o.icPhone = String(v[PC['IC rep phone']] || ''); o.items = itemsOf_(o.ref); o.itemCount = o.items.length; o.decidedRole = String(v[PC['Decider role']] || '');
-  o.cancelReason = String(v[PC['Cancelled reason']] || ''); o.siteLead = cfg_('SITE_LEAD_NAME', '');
+  o.cancelReason = String(v[PC['Cancelled reason']] || ''); o.siteLead = cfg_('SITE_LEAD_NAME', ''); o.qk = key_(o.ref);
   return o;
 }
 function tokenOk_(hit, tok) {
@@ -178,6 +178,8 @@ function route_(b) {
 function config_() {
   return {ok: true, version: VERSION, units: cfgList_('UNITS', UNITS_DEF), companies: cfgList_('COMPANIES', 'GSB,WEN,KKS,PBS'), depts: cfgList_('DEPTS', 'Project Eng,Discipline Eng,HSSE,Stores'), validHours: cfgNum_('VALID_HOURS', 48), signHours: cfgNum_('SIGN_WINDOW_HOURS', 72), maxItems: 15, siteLead: cfg_('SITE_LEAD_NAME', ''), now: Date.now()};
 }
+/* Short key printed inside the pass QR. Whoever scans the paper QR may upload the signed copy of a pass that is still Awaiting signatures; nothing else. */
+function key_(ref) { return hash_('QK|' + String(ref).toUpperCase()).slice(0, 12); }
 function coCode_(company) { var c = String(company || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); return c || 'XXX'; }
 function nextRef_(now, company) {
   var cc = coCode_(company), iso = new Date(now + OFF).toISOString(), ym = iso.slice(2, 4) + iso.slice(5, 7), pre = 'MGP-' + cc + '-' + ym + '-', max = 0;
@@ -239,7 +241,7 @@ function create_(b) {
         /* the phone re-sent a request whose answer was lost: do not create a second pass; hand this phone a fresh token for the one that exists */
         var dt = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '').slice(0, 32), dh = rowOf_(String(dup[0]));
         setCell_(dh.row, 'Token hash', hash_(dt)); ROWS_ = null;
-        return {ok: true, ref: String(dup[0]), token: dt, createdAt: String(dup[PC['Created (WIB)']]), date: String(dup[PC['Date']]), now: now, dup: true};
+        return {ok: true, ref: String(dup[0]), token: dt, qk: key_(String(dup[0])), createdAt: String(dup[PC['Created (WIB)']]), date: String(dup[PC['Date']]), now: now, dup: true};
       }
     }
     var today = ymd_(now), cnt = 0;
@@ -260,7 +262,7 @@ function create_(b) {
     log_(ref, 'CREATED', carrier, company + ' / ' + vehicle + ' / ' + items.length + ' items');
     ROWS_ = null;
   } finally { lock.releaseLock(); }
-  return {ok: true, ref: ref, token: token, createdAt: ymdhms_(now), date: ymd_(now), now: now};
+  return {ok: true, ref: ref, token: token, qk: key_(ref), createdAt: ymdhms_(now), date: ymd_(now), now: now};
 }
 function mine_(b) {
   var list = Array.isArray(b.list) ? b.list.slice(0, 40) : [], now = Date.now(), out = [];
@@ -326,16 +328,18 @@ function signed_(b) {
   try {
     ROWS_ = null;
     var hit = rowOf_(b.ref);
-    if (!hit || !tokenOk_(hit, b.token)) return {ok: false, err: 'notfound'};
+    var viaKey = !!hit && !!b.k && String(b.k) === key_(String(hit.v[0])), viaTok = !!hit && tokenOk_(hit, b.token);
+    if (!viaKey && !viaTok) return {ok: false, err: 'notfound'};
     var now = Date.now(), st = statusNow_(hit.v, now);
     if (st !== ST_WAIT && st !== ST_PEND) return {ok: false, err: 'not_open', status: st};
+    if (!viaTok && st !== ST_WAIT) return {ok: false, err: 'not_open', status: st};   /* the QR key can only add the first signed copy, never replace one */
     var ref = String(hit.v[0]), saved = imgs.map(function (x, k) { return saveImg_(x, ref + '_signed_' + now + '_' + (k + 1) + '.jpg', ref); });
     setCell_(hit.row, 'Signed copy links', saved.map(function (s) { return s.url; }).join(' '));
     setCell_(hit.row, 'Signed IDs', saved.map(function (s) { return s.id; }).join(','));
     setCell_(hit.row, 'Signed at (WIB)', ymdhms_(now));
     setCell_(hit.row, 'Signed ms', now);
     setCell_(hit.row, 'Status', ST_PEND);
-    log_(ref, st === ST_PEND ? 'SIGNED_REPLACED' : 'SIGNED_UPLOADED', String(hit.v[PC['Carrier name']]), imgs.length + ' page(s)');
+    log_(ref, st === ST_PEND ? 'SIGNED_REPLACED' : 'SIGNED_UPLOADED', String(hit.v[PC['Carrier name']]), imgs.length + ' page(s)' + (viaTok ? '' : ' via QR scan'));
     ROWS_ = null;
     return {ok: true, ref: ref, status: ST_PEND, signedAt: ymdhms_(now), validUntil: 0};
   } finally { lock.releaseLock(); }
@@ -362,7 +366,7 @@ function verify_(b) {
   var hit = rowOf_(b.ref);
   if (!hit) return {ok: true, found: false};
   var s = summary_(hit.v, Date.now());
-  return {ok: true, found: true, ref: s.ref, status: s.status, date: s.date, company: s.company, vehicle: s.vehicle, items: s.items, validUntil: s.validUntil, decidedAt: s.status === ST_REL ? s.decidedAt : '', ready: s.status === ST_PEND, purpose: s.purpose};
+  return {ok: true, found: true, ref: s.ref, status: s.status, date: s.date, company: s.company, vehicle: s.vehicle, items: s.items, validUntil: s.validUntil, decidedAt: s.status === ST_REL ? s.decidedAt : '', ready: s.status === ST_PEND, purpose: s.purpose, upload: !!b.k && String(b.k) === key_(s.ref) && s.status === ST_WAIT};
 }
 
 /* ---------- admin (Admin PIN) ---------- */
