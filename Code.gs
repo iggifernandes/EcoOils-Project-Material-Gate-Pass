@@ -6,7 +6,7 @@
    - Public QR check: action 'verify' returns status only (no names, no ID numbers, no photos).
    - Patroli (guards): actions b_list / b_get / b_release, protected by the shared secret BRIDGE_SECRET (script property). The guard's name comes from Patroli's PIN login.
    - Admin (you): actions a_*, protected by the script property ADMIN_PIN. */
-var VERSION = 'v1.5';
+var VERSION = 'v1.6';
 var OFF = 7 * 3600000;      // Jakarta (WIB), no daylight saving
 var TZ = 'Asia/Jakarta';
 var P_HEAD = ['Ref', 'Created (WIB)', 'Date', 'Purpose', 'Carrier name', 'Carrier I/C no', 'Company', 'Vehicle no', 'Purpose of taking out', 'EcoOils dept', 'IC rep name', 'IC rep position', 'Items', 'Status', 'Token hash',
@@ -215,6 +215,7 @@ function create_(b) {
   if (vehicle.length < 2) return {ok: false, err: 'bad_vehicle'};
   if (ptxt.length < 3) return {ok: false, err: 'bad_purposetext'};
   if (icRep.length < 2) return {ok: false, err: 'bad_icrep'};
+  if (icPos.length < 2) return {ok: false, err: 'bad_icpos'};
   if (!/^\+?[0-9][0-9 \-]{6,18}$/.test(icPhone) || icPhone.replace(/\D/g, '').length < 8 || icPhone.replace(/\D/g, '').length > 15) return {ok: false, err: 'bad_icphone'};
   if (cfgList_('DEPTS', 'Project Eng,Discipline Eng,HSSE,Stores').indexOf(dept) < 0) return {ok: false, err: 'bad_dept'};
   var its = b.items;

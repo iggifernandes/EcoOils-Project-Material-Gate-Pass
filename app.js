@@ -1,4 +1,4 @@
-var VERSION='v1.8';
+var VERSION='v1.9';
 var PHV=['front','load'];
 var APP_URL='https://iggifernandes.github.io/EcoOils-Project-Material-Gate-Pass/';
 var API_URL='https://script.google.com/macros/s/AKfycbxULvNJReaniGRTFWKY507I0AZD5YLP3mBBjAyFFA-7z4nI0-LPncZbPZTajS89Jp0Z/exec';
@@ -38,6 +38,13 @@ var REASONS={A:['rA1','rA2','rA3','rA4','rA5','rA6'],B:['rB1','rB2','rB3','rB4',
 /* The printed form is in English, so the stored reason is the English text whatever language the screen is in. */
 function purposeFull(){var d=String(D.purposeText||'').trim();if(!D.reason||D.reason==='rOther')return d;var r=T.en[D.reason]||'';return d?r+' - '+d:r;}
 function icNeed(){return D.icType==='KTP'?16:D.icType==='SIM'?12:0;}
+/* the number box takes exactly as many digits as the document: SIM 12, KTP 16 (digits only) */
+function icApply(){
+  var el=$('fIcNo');if(!el)return;var n=icNeed();
+  D.icNo=String(D.icNo||'').replace(/\D/g,'').slice(0,n||16);
+  /* no maxlength attribute: it would count the spaces of a pasted '1271 0123 4567'; the digits are cut here instead */el.disabled=!n;el.placeholder=n?n+' digits':'';if(el.value!==D.icNo)el.value=D.icNo;
+  var c=$('icCnt');if(c)c.textContent=icCntText();
+}
 function icCntText(){var n=icNeed(),d=String(D.icNo||'').replace(/\D/g,'').length;return n?(tr('icDigits').replace('{n}',d).replace('{m}',n)):tr('icPickFirst');}
 function icPhoneOk(){var t=String(D.icPhone||'').trim(),d=t.replace(/\D/g,'');return /^\+?[0-9][0-9 \-]{6,18}$/.test(t)&&d.length>=8&&d.length<=15;}
 function icFull(){var d=icDigits();return (D.icType||'')+' '+d;}
@@ -102,13 +109,14 @@ function newDraw(keep){
   h+=h1(tr('newPass'));
   h+='<div class="steps">'+[1,2,3,4].map(function(i){return '<i class="'+(i<=st?'on':'')+'"></i>';}).join('')+'</div><div class="stepl">'+esc(tr('stepOf').replace('{a}',st).replace('{b}',4))+' · '+esc(tr('s'+st))+'</div>';
   if(st===1){
+    h+='<p class="note">'+esc(tr('allReq'))+'</p>';
     h+='<label>'+esc(tr('purposeLbl'))+'</label>'+opt(D.purpose==='A','A','A.',tr('purA'))+opt(D.purpose==='B','B','B.',tr('purB'));
     h+='<label for="fCompany">'+esc(tr('company'))+'</label><select id="fCompany" data-f="company"><option value="">'+esc(tr('companyPick'))+'</option>'+CFG.companies.map(function(c){return '<option value="'+esc(c)+'"'+(D.company===c?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'<option value="__other"'+(D.company==='__other'?' selected':'')+'>'+esc(tr('other'))+'</option></select>';
     if(D.company==='__other')h+='<label for="fCompanyOther">'+esc(tr('companyOther'))+'</label><input id="fCompanyOther" data-f="companyOther" maxlength="60" value="'+esc(D.companyOther)+'">';
     h+='<label for="fVehicle">'+esc(tr('vehicle'))+'</label><input id="fVehicle" data-f="vehicle" maxlength="20" autocapitalize="characters" autocomplete="off" value="'+esc(D.vehicle)+'"><div class="note">'+esc(tr('vehicleHelp'))+'</div>';
     h+='<label for="fCarrier">'+esc(tr('carrier'))+'</label><input id="fCarrier" data-f="carrier" maxlength="60" autocomplete="off" value="'+esc(D.carrier)+'">';
     h+='<label for="fIcType">'+esc(tr('icType'))+'</label><select id="fIcType" data-f="icType"><option value="">'+esc(tr('icTypePick'))+'</option><option value="KTP"'+(D.icType==='KTP'?' selected':'')+'>'+esc(tr('icTypeKTP'))+'</option><option value="SIM"'+(D.icType==='SIM'?' selected':'')+'>'+esc(tr('icTypeSIM'))+'</option></select>';
-    h+='<label for="fIcNo">'+esc(tr('icNo'))+'</label><input id="fIcNo" data-f="icNo" inputmode="numeric" maxlength="24" autocomplete="off" value="'+esc(D.icNo)+'"><div class="note">'+esc(tr('icHelp'))+'</div><div class="note" id="icCnt">'+esc(icCntText())+'</div>';
+    h+='<label for="fIcNo">'+esc(tr('icNo'))+'</label><input id="fIcNo" data-f="icNo" inputmode="numeric" pattern="[0-9]*" autocomplete="off"'+(icNeed()?'':' disabled')+' placeholder="'+(icNeed()?icNeed()+' digits':'')+'" value="'+esc(D.icNo)+'"><div class="note">'+esc(tr('icHelp'))+'</div><div class="note" id="icCnt">'+esc(icCntText())+'</div>';
     h+='<label for="fReason">'+esc(tr('reasonLbl'))+'</label>';
     if(!D.purpose)h+='<div class="note">'+esc(tr('purposeFirst'))+'</div>';
     else h+='<select id="fReason" data-f="reason"><option value="">'+esc(tr('reasonPick'))+'</option>'+REASONS[D.purpose].map(function(k){return '<option value="'+k+'"'+(D.reason===k?' selected':'')+'>'+esc(tr(k))+'</option>';}).join('')+'<option value="rOther"'+(D.reason==='rOther'?' selected':'')+'>'+esc(tr('rOther'))+'</option></select>';
@@ -153,9 +161,10 @@ function stepOk(){
     if(!D.icNo.trim()){nerr('f_icNo','#fIcNo');return false;}
     if(!/^\d+$/.test(icDigits())||icDigits().length!==(D.icType==='KTP'?16:12)){nerr(D.icType==='KTP'?'f_icKTP':'f_icSIM','#fIcNo');return false;}
     if(!D.reason){nerr('f_reason','#fReason');return false;}
-    if(D.reason==='rOther'&&D.purposeText.trim().length<3){nerr('f_reasonOther','#fPT');return false;}
+    if(D.purposeText.trim().length<3){nerr('f_reasonOther','#fPT');return false;}
     if(!D.dept){nerr('f_dept','#fDept');return false;}
     if(D.icRep.trim().length<2){nerr('f_icRep','#fRep');return false;}
+    if(D.icPos.trim().length<2){nerr('f_icPos','#fPos');return false;}
     if(!icPhoneOk()){nerr('f_icPhone','#fPhone');return false;}
   }else if(s===2){
     var nu=D.items.some(function(it){return String(it.item).trim().length>=2&&Number(String(it.qty).replace(',','.'))>0&&CFG.units.indexOf(String(it.unit||''))<0;});
@@ -164,9 +173,10 @@ function stepOk(){
   else if(s===3){if(!PHV.every(function(v){return D.photos[v];})){nerr('f_photos');return false;}}
   return true;
 }
+$('vNew').addEventListener('change',function(e){if(e.target.id==='fIcType'){D.icType=e.target.value;icApply();saveDraft();}});
 $('vNew').addEventListener('input',function(e){
   var t=e.target,f=t.getAttribute('data-f'),i=t.getAttribute('data-i');
-  if(f){D[f]=t.value;t.classList.remove('bad');saveDraft();if(f==='icNo'){var c0=$('icCnt');if(c0)c0.textContent=icCntText();}}
+  if(f){D[f]=t.value;t.classList.remove('bad');if(f==='icNo'||f==='icType')icApply();saveDraft();}
   else if(i!==null){D.items[+i][t.getAttribute('data-k')]=t.value;saveDraft();}
 });
 $('vNew').addEventListener('change',function(e){
@@ -198,9 +208,10 @@ function shrink(file,lines,max,q,landscape){
       var k=Math.min(1,(max||1100)/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');
       c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);var x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);
       if(lines&&lines.length){
-        var fs=Math.max(15,Math.round(c.width/24)),pd=Math.round(fs*0.45),bh=lines.length*Math.round(fs*1.25)+pd*2;
-        x.fillStyle='rgba(0,0,0,0.62)';x.fillRect(0,c.height-bh,c.width,bh);x.fillStyle='#fff';x.textBaseline='top';
-        lines.forEach(function(t,i){x.font=(i===0?'bold ':'')+fs+'px Arial,Helvetica,sans-serif';var s=t;while(s.length>4&&x.measureText(s).width>c.width-pd*2)s=s.slice(0,-2);if(s!==t)s=s.replace(/\s+$/,'')+'...';x.fillText(s,pd,c.height-bh+pd+i*Math.round(fs*1.25));});
+        var f0=Math.max(18,Math.round(c.width/16)),f1=Math.max(14,Math.round(c.width/26)),pd=Math.round(f0*0.35),lh=[Math.round(f0*1.2),Math.round(f1*1.25)],bh=pd*2+lh[0]+(lines.length>1?lh[1]:0),yy=c.height-bh;
+        /* time stamp: solid black bar, big bold white date and time, smaller second line (vehicle, company) */
+        x.fillStyle='rgba(0,0,0,0.88)';x.fillRect(0,yy,c.width,bh);x.fillStyle='#fff';x.textBaseline='top';
+        lines.forEach(function(t,i){var fz=i===0?f0:f1;x.font=(i===0?'bold ':'')+fz+'px Arial,Helvetica,sans-serif';var s=t;while(s.length>4&&x.measureText(s).width>c.width-pd*2)s=s.slice(0,-2);if(s!==t)s=s.replace(/\s+$/,'')+'...';x.fillText(s,pd,yy+pd+(i?lh[0]:0));});
       }
       res(c.toDataURL('image/jpeg',q||0.6).split(',')[1]);
     };
@@ -730,16 +741,7 @@ function scanShot(){
   var sx=Math.max(0,(fr.left-cr.left+ox)/sc),sy=Math.max(0,(fr.top-cr.top+oy)/sc),sw=Math.min(vw-sx,fr.width/sc),sh=Math.min(vh-sy,fr.height/sc);
   var k=Math.min(1,1700/Math.max(sw,sh)),c=document.createElement('canvas');c.width=Math.round(sw*k);c.height=Math.round(sh*k);
   var x=c.getContext('2d');x.drawImage(v,sx,sy,sw,sh,0,0,c.width,c.height);
-  scanClean(c);SC.shot=c.toDataURL('image/jpeg',0.72).split(',')[1];
+  SC.shot=c.toDataURL('image/jpeg',0.8).split(',')[1];   /* colour copy: no grey, no black-and-white */
   d.querySelector('#scP').src='data:image/jpeg;base64,'+SC.shot;scanMode('prev');
 }
-/* grey, then stretch the levels so the paper turns white and the ink stays dark (like a scanner app) */
-function scanClean(c){
-  var x=c.getContext('2d'),im=x.getImageData(0,0,c.width,c.height),p=im.data,h=new Uint32Array(256),n=p.length/4,i,g;
-  for(i=0;i<p.length;i+=4){g=(p[i]*299+p[i+1]*587+p[i+2]*114)/1000|0;p[i]=g;h[g]++;}
-  var lo=0,hi=255,acc=0;for(i=0;i<256;i++){acc+=h[i];if(acc>n*0.02){lo=i;break;}}
-  acc=0;for(i=255;i>=0;i--){acc+=h[i];if(acc>n*0.35){hi=i;break;}}   /* paper is the brightest large area */
-  if(hi-lo<30){lo=Math.max(0,hi-60);}
-  for(i=0;i<p.length;i+=4){g=(p[i]-lo)*255/(hi-lo);g=g<0?0:g>255?255:g;g=255*Math.pow(g/255,1.25);p[i]=p[i+1]=p[i+2]=g;}
-  x.putImageData(im,0,0);
-}
+

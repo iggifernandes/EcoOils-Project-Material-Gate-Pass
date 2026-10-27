@@ -49,7 +49,7 @@ input.bad,select.bad,textarea.bad{border-color:var(--bad);border-width:2px}
 .tile{border:2px solid var(--fld);border-radius:var(--r);padding:8px;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;background:var(--panel);font-weight:500;position:relative}
 .tile.on{border-color:var(--green)}
 .tile.sel{background:var(--green);border-color:var(--green)}
-.tile img{width:100%;height:110px;object-fit:cover;border-radius:6px;margin-bottom:4px}
+.tile img{width:100%;height:110px;object-fit:contain;background:#111;border-radius:6px;margin-bottom:4px}
 .tile small{color:var(--mute);font-weight:400}.tile.sel small{color:var(--text)}
 .tile .ck{position:absolute;top:6px;right:8px;color:var(--ok);font-weight:700;font-size:20px}
 .tile input[type=file]{position:absolute;inset:0;opacity:0;width:100%;height:100%;min-height:0;cursor:pointer}
@@ -126,7 +126,7 @@ img[data-zoom]{cursor:zoom-in}
 #printArea .sig .l{border-bottom:1px solid #000;height:11mm;margin-bottom:2px}
 #printArea .sig small{font-size:8.5pt;font-style:italic;display:block}
 #printArea .ft{margin-top:3mm;font-size:9pt;display:flex;justify-content:space-between;align-items:flex-end}
-#printArea .ph2{display:flex;gap:6mm;margin-top:3mm}#printArea .ph2>div{flex:1}#printArea .ph2 .pi{height:40mm;border:1px solid #000;overflow:hidden;display:flex;align-items:center;justify-content:center}#printArea .ph2 img{width:100%;height:100%;object-fit:cover;display:block}#printArea .ph2 small{font-size:8pt;font-style:italic;display:block;text-align:center}
+#printArea .ph2{display:flex;gap:6mm;margin-top:3mm}#printArea .ph2>div{flex:1}#printArea .ph2 .pi{height:40mm;border:1px solid #000;overflow:hidden;display:flex;align-items:center;justify-content:center}#printArea .ph2 img{width:100%;height:100%;object-fit:contain;display:block}#printArea .ph2 small{font-size:8pt;font-style:italic;display:block;text-align:center}
 #printArea .pg.cmp .ph2 .pi{height:30mm}
 #printArea .pg.cmp{font-size:9pt}
 #printArea .pg.cmp .items th,#printArea .pg.cmp .items td{font-size:8pt;padding:1px 4px;height:4.9mm;line-height:1.15}
@@ -141,10 +141,10 @@ img[data-zoom]{cursor:zoom-in}
 #printArea .pn{font-size:9pt}
 #printArea .pg+.pg{page-break-before:always;break-before:page}
 #printArea .pg2 .ttl{margin:6mm 0 4mm}
-#printArea .bigph{margin-top:5mm;text-align:center}#printArea .bigph .pi{height:80mm;display:flex;justify-content:center}#printArea .bigph img{height:80mm;width:auto;max-width:190mm;display:block;border:1px solid #000}#printArea .bigph small{display:block;font-size:9pt;font-style:italic;margin-top:1.5mm}
+#printArea .bigph{margin-top:5mm;text-align:center}#printArea .bigph .pi{width:107mm;height:80mm;margin:0 auto;border:1px solid #000;display:flex;align-items:center;justify-content:center;overflow:hidden;box-sizing:border-box}#printArea .bigph img{width:100%;height:100%;object-fit:contain;display:block}#printArea .bigph small{display:block;font-size:9pt;font-style:italic;margin-top:1.5mm}
 </style></head><body>
 <header><div class="brand" role="img" aria-label="EcoOils Mentari"><img src="%%LOGO%%" alt=""></div>
-<div class="right"><span id="ver">v1.8</span><div class="lang" role="group" aria-label="Language"><button id="lEN" type="button">EN</button><button id="lID" type="button">ID</button><button id="lMS" type="button">MS</button></div></div></header>
+<div class="right"><span id="ver">v1.9</span><div class="lang" role="group" aria-label="Language"><button id="lEN" type="button">EN</button><button id="lID" type="button">ID</button><button id="lMS" type="button">MS</button></div></div></header>
 <main>
 <div id="banner"></div>
 <section id="vHome" class="hidden"></section>
