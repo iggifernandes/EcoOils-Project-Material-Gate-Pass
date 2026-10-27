@@ -29,7 +29,7 @@ await page.click('#hNew');
 await page.click('#nNext');ok((await page.textContent('#nErr')).length>3,'step 1 blocks until A/B is chosen: '+await page.textContent('#nErr'));
 await page.click('[data-purpose=A]');
 await page.selectOption('#fCompany','GSB');
-await page.fill('#fVehicle','bk 1234 xy');await page.fill('#fCarrier','Budi Santoso');await page.selectOption('#fIcType','KTP');await page.fill('#fIcNo','1271 0123 4567 8901');
+await page.fill('#fVehicle','bk 1234 xy');await page.fill('#fCarrier','Budi Santoso');await page.selectOption('#fIcType','SIM');await page.fill('#fIcNo','1271 0123 4567');ok((await page.textContent('#icCnt')).includes('12 of 12'),'SIM counter: '+await page.textContent('#icCnt'));await page.selectOption('#fIcType','KTP');ok((await page.textContent('#icCnt')).includes('12 of 16'),'switching to KTP needs 16: '+await page.textContent('#icCnt'));await page.fill('#fIcNo','1271 0123 4567 8901');ok((await page.textContent('#icCnt')).includes('16 of 16'),'KTP counter reaches 16 of 16');
 await page.selectOption('#fReason','rOther');await page.fill('#fPT','');await page.click('#nNext');ok((await page.textContent('#nErr')).includes('Describe'),'Other reason needs a description: '+await page.textContent('#nErr'));
 ok((await page.locator('#fReason option').allTextContents()).join().includes('Rejected on receipt'),'quick reasons offered for purpose A');
 await page.selectOption('#fReason','rA1');await page.fill('#fPT','6in pipes');await page.selectOption('#fDept','Stores');await page.fill('#fRep','Andi Wijaya');await page.fill('#fPos','Store lead');

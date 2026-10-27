@@ -1,4 +1,4 @@
-var VERSION='v1.5';
+var VERSION='v1.6';
 var PHV=['front','load'];
 var APP_URL='https://iggifernandes.github.io/EcoOils-Project-Material-Gate-Pass/';
 var API_URL='https://script.google.com/macros/s/AKfycbxULvNJReaniGRTFWKY507I0AZD5YLP3mBBjAyFFA-7z4nI0-LPncZbPZTajS89Jp0Z/exec';
@@ -37,6 +37,8 @@ function icDigits(){return String(D.icNo||'').replace(/[\s.\-]/g,'');}
 var REASONS={A:['rA1','rA2','rA3','rA4','rA5','rA6'],B:['rB1','rB2','rB3','rB4','rB5','rB6','rB7']};
 /* The printed form is in English, so the stored reason is the English text whatever language the screen is in. */
 function purposeFull(){var d=String(D.purposeText||'').trim();if(!D.reason||D.reason==='rOther')return d;var r=T.en[D.reason]||'';return d?r+' - '+d:r;}
+function icNeed(){return D.icType==='KTP'?16:D.icType==='SIM'?12:0;}
+function icCntText(){var n=icNeed(),d=String(D.icNo||'').replace(/\D/g,'').length;return n?(tr('icDigits').replace('{n}',d).replace('{m}',n)):tr('icPickFirst');}
 function icPhoneOk(){var t=String(D.icPhone||'').trim(),d=t.replace(/\D/g,'');return /^\+?[0-9][0-9 \-]{6,18}$/.test(t)&&d.length>=8&&d.length<=15;}
 function icFull(){var d=icDigits();return (D.icType||'')+' '+d;}
 function newDraft(){return {purpose:'',company:'',companyOther:'',vehicle:'',carrier:'',icType:'',icNo:'',icPhone:'',purposeText:'',reason:'',dept:'',icRep:'',icPos:'',items:[{item:'',qty:'',unit:''}],photos:{},cid:Date.now().toString(36)+Math.random().toString(36).slice(2,10),step:1};}
@@ -106,7 +108,7 @@ function newDraw(keep){
     h+='<label for="fVehicle">'+esc(tr('vehicle'))+'</label><input id="fVehicle" data-f="vehicle" maxlength="20" autocapitalize="characters" autocomplete="off" value="'+esc(D.vehicle)+'"><div class="note">'+esc(tr('vehicleHelp'))+'</div>';
     h+='<label for="fCarrier">'+esc(tr('carrier'))+'</label><input id="fCarrier" data-f="carrier" maxlength="60" autocomplete="off" value="'+esc(D.carrier)+'">';
     h+='<label for="fIcType">'+esc(tr('icType'))+'</label><select id="fIcType" data-f="icType"><option value="">'+esc(tr('icTypePick'))+'</option><option value="KTP"'+(D.icType==='KTP'?' selected':'')+'>'+esc(tr('icTypeKTP'))+'</option><option value="SIM"'+(D.icType==='SIM'?' selected':'')+'>'+esc(tr('icTypeSIM'))+'</option></select>';
-    h+='<label for="fIcNo">'+esc(tr('icNo'))+'</label><input id="fIcNo" data-f="icNo" inputmode="numeric" maxlength="24" autocomplete="off" value="'+esc(D.icNo)+'"><div class="note">'+esc(tr('icHelp'))+'</div>';
+    h+='<label for="fIcNo">'+esc(tr('icNo'))+'</label><input id="fIcNo" data-f="icNo" inputmode="numeric" maxlength="24" autocomplete="off" value="'+esc(D.icNo)+'"><div class="note">'+esc(tr('icHelp'))+'</div><div class="note" id="icCnt">'+esc(icCntText())+'</div>';
     h+='<label for="fReason">'+esc(tr('reasonLbl'))+'</label>';
     if(!D.purpose)h+='<div class="note">'+esc(tr('purposeFirst'))+'</div>';
     else h+='<select id="fReason" data-f="reason"><option value="">'+esc(tr('reasonPick'))+'</option>'+REASONS[D.purpose].map(function(k){return '<option value="'+k+'"'+(D.reason===k?' selected':'')+'>'+esc(tr(k))+'</option>';}).join('')+'<option value="rOther"'+(D.reason==='rOther'?' selected':'')+'>'+esc(tr('rOther'))+'</option></select>';
@@ -164,13 +166,14 @@ function stepOk(){
 }
 $('vNew').addEventListener('input',function(e){
   var t=e.target,f=t.getAttribute('data-f'),i=t.getAttribute('data-i');
-  if(f){D[f]=t.value;t.classList.remove('bad');saveDraft();}
+  if(f){D[f]=t.value;t.classList.remove('bad');saveDraft();if(f==='icNo'){var c0=$('icCnt');if(c0)c0.textContent=icCntText();}}
   else if(i!==null){D.items[+i][t.getAttribute('data-k')]=t.value;saveDraft();}
 });
 $('vNew').addEventListener('change',function(e){
   var t=e.target,f=t.getAttribute('data-f');
   if(f==='company'){D.company=t.value;saveDraft();newDraw(true);}
   if(f==='reason'){D.reason=t.value;saveDraft();newDraw(true);}
+  if(f==='icType'){D.icType=t.value;saveDraft();newDraw(true);}
   if(t.getAttribute('data-view')){
     var f0=t.files&&t.files[0],v=t.getAttribute('data-view');if(!f0)return;
     var co=D.company==='__other'?D.companyOther:D.company;
