@@ -1,4 +1,4 @@
-var VERSION='v1.12';
+var VERSION='v1.13';
 var PHV=['front','load'];
 var APP_URL='https://iggifernandes.github.io/EcoOils-Project-Material-Gate-Pass/';
 var API_URL='https://script.google.com/macros/s/AKfycbxULvNJReaniGRTFWKY507I0AZD5YLP3mBBjAyFFA-7z4nI0-LPncZbPZTajS89Jp0Z/exec';
@@ -269,7 +269,7 @@ function qrSvg(text){
     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 '+(n+4)+' '+(n+4)+'" shape-rendering="crispEdges"><rect x="-2" y="-2" width="'+(n+4)+'" height="'+(n+4)+'" fill="#fff"/><path d="'+p+'" fill="#000"/></svg>';
   }catch(e){return '';}
 }
-var LOGO=document.querySelector('.brand img').getAttribute('src');
+var LOGO=document.querySelector('.eh-logo').getAttribute('src');
 function dataUri(b){b=String(b||'');return !b?'':(b.indexOf('data:')===0?b:'data:image/jpeg;base64,'+b);}
 var PHC={};
 /* Pictures for the printout and the viewer: just-submitted passes keep them in memory; otherwise they come from the server (pass token, or the Admin PIN in the Admin view). */
