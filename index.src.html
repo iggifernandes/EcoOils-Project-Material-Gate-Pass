@@ -93,6 +93,10 @@ table.it{border-collapse:collapse;width:100%;font-size:14px;margin-top:6px}table
 #scShot{width:68px;height:68px;border-radius:50%;border:5px solid #fff;background:#fff3;cursor:pointer}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 img[data-zoom]{cursor:zoom-in}
+.gstep{display:flex;gap:12px;margin:10px 0}.gstep i{flex:none;width:30px;height:30px;border-radius:50%;background:var(--green);color:#fff;font-style:normal;font-weight:600;display:flex;align-items:center;justify-content:center}.gstep b{display:block;font-weight:600}.gstep span{font-size:15px}
+.gl{list-style:none;margin:8px 0 0;padding:0}.gl li{position:relative;padding:8px 0 8px 32px;border-top:1px solid var(--line);font-size:16px}.gl li:first-child{border-top:0}.gl li:before{position:absolute;left:2px;top:6px;font-weight:700;font-size:20px}
+.gdo{border-left:5px solid var(--green)}.gdo .gl li:before{content:"\2713";color:var(--ok)}.gdn{border-left:5px solid var(--bad)}.gdn .gl li:before{content:"\2717";color:var(--bad)}
+
 #qrs video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 #qrBox{position:absolute;left:50%;top:50%;width:62vmin;height:62vmin;transform:translate(-50%,-50%);border:3px solid #fff;border-radius:10px;box-shadow:0 0 0 100vmax #0007;z-index:2;pointer-events:none}
 #qrMsg{position:absolute;left:12px;right:12px;bottom:40px;text-align:center;font-size:15px;z-index:3;text-shadow:0 1px 3px #000}
@@ -144,7 +148,7 @@ img[data-zoom]{cursor:zoom-in}
 #printArea .bigph{margin-top:5mm;text-align:center}#printArea .bigph .pi{width:107mm;height:80mm;margin:0 auto;border:1px solid #000;display:flex;align-items:center;justify-content:center;overflow:hidden;box-sizing:border-box}#printArea .bigph img{width:100%;height:100%;object-fit:contain;display:block}#printArea .bigph small{display:block;font-size:9pt;font-style:italic;margin-top:1.5mm}
 </style></head><body>
 <header><div class="brand" role="img" aria-label="EcoOils Mentari"><img src="%%LOGO%%" alt=""></div>
-<div class="right"><span id="ver">v1.11</span><div class="lang" role="group" aria-label="Language"><button id="lEN" type="button">EN</button><button id="lID" type="button">ID</button><button id="lMS" type="button">MS</button></div></div></header>
+<div class="right"><span id="ver">v1.12</span><div class="lang" role="group" aria-label="Language"><button id="lEN" type="button">EN</button><button id="lID" type="button">ID</button><button id="lMS" type="button">MS</button></div></div></header>
 <main>
 <div id="banner"></div>
 <section id="vHome" class="hidden"></section>
@@ -154,6 +158,7 @@ img[data-zoom]{cursor:zoom-in}
 <section id="vFind" class="hidden"></section>
 <section id="vVerify" class="hidden"></section>
 <section id="vAdmin" class="hidden"></section>
+<section id="vGuide" class="hidden"></section>
 </main>
 <div id="printArea"></div>
 <script>

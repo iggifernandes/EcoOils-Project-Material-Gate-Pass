@@ -1,4 +1,4 @@
-var VERSION='v1.11';
+var VERSION='v1.12';
 var PHV=['front','load'];
 var APP_URL='https://iggifernandes.github.io/EcoOils-Project-Material-Gate-Pass/';
 var API_URL='https://script.google.com/macros/s/AKfycbxULvNJReaniGRTFWKY507I0AZD5YLP3mBBjAyFFA-7z4nI0-LPncZbPZTajS89Jp0Z/exec';
@@ -53,7 +53,7 @@ function saveDraft(){var o={};Object.keys(D).forEach(function(k){if(k!=='photos'
 try{var d0=JSON.parse(ls('gp_draft')||'null');if(d0&&d0.items){D=Object.assign(newDraft(),d0);D.photos={};}}catch(e){}
 
 /* ===== views ===== */
-var VIEWS=['vHome','vNew','vDone','vPass','vFind','vVerify','vAdmin'];
+var VIEWS=['vHome','vNew','vDone','vPass','vFind','vVerify','vAdmin','vGuide'];
 function show(id){VIEWS.forEach(function(v){$(v).classList.toggle('hidden',v!==id);});window.scrollTo(0,0);}
 function h1(t){return '<h1>'+esc(t)+'</h1>';}
 function applyLang(){
@@ -70,14 +70,28 @@ function rerender(){
   else if(!$('vFind').classList.contains('hidden'))findDraw();
   else if(!$('vVerify').classList.contains('hidden'))verifyDraw();
   else if(!$('vAdmin').classList.contains('hidden'))adminDraw();
+  else if(!$('vGuide').classList.contains('hidden'))guideDraw();
 }
 ['EN','ID','MS'].forEach(function(l){$('l'+l).addEventListener('click',function(){setLang(l.toLowerCase());});});
+
+/* ===== guide: the process with do and don't, in the chosen language ===== */
+function trl(k){return (T[lang]&&T[lang][k])||T.en[k]||[];}
+function guideOpen(){show('vGuide');guideDraw();}
+function guideDraw(){
+  var h=h1(tr('guideTitle'))+'<p class="note">'+esc(tr('guideIntro'))+'</p><h2>'+esc(tr('gdStepsH'))+'</h2><div class="card">';
+  trl('gdSteps').forEach(function(s,i){h+='<div class="gstep"><i>'+(i+1)+'</i><div><b>'+esc(s[0])+'</b><span>'+esc(s[1])+'</span></div></div>';});
+  h+='</div><div class="card gdo"><h2 style="margin:0">'+esc(tr('gdDoH'))+'</h2><ul class="gl">'+trl('gdDo').map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';
+  h+='<div class="card gdn"><h2 style="margin:0">'+esc(tr('gdDontH'))+'</h2><ul class="gl">'+trl('gdDont').map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';
+  h+='<div class="banner" style="margin-top:12px">'+esc(tr('gdKey'))+'</div><button class="btn" id="gdBack" type="button">'+esc(tr('back'))+'</button>';
+  $('vGuide').innerHTML=h;
+}
+$('vGuide').addEventListener('click',function(e){var t=e.target.closest('button');if(t&&t.id==='gdBack')homeOpen();});
 
 /* ===== home ===== */
 function homeOpen(){show('vHome');homeDraw();homeLoad();}
 function homeDraw(){
   var h=h1(tr('title'))+'<button class="btn" id="hNew" type="button">'+esc(tr('newPass'))+'</button>';
-  h+='<div class="card"><b>'+esc(tr('how'))+'</b><ol style="margin:8px 0 0;padding-left:20px"><li>'+esc(tr('how1'))+'</li><li>'+esc(tr('how2'))+'</li><li>'+esc(tr('how3'))+'</li><li>'+esc(tr('how4'))+'</li></ol></div>';
+  h+='<div class="card"><b>'+esc(tr('how'))+'</b><ol style="margin:8px 0 0;padding-left:20px"><li>'+esc(tr('how1'))+'</li><li>'+esc(tr('how2'))+'</li><li>'+esc(tr('how3'))+'</li><li>'+esc(tr('how4'))+'</li></ol></div><button class="btn ghost" id="hGuide" type="button">'+esc(tr('guide'))+'</button>';
   h+='<h2>'+esc(tr('mine'))+'</h2>';
   if(!MINE.length)h+='<p class="note">'+esc(tr('noneMine'))+'</p>';
   MINE.slice(0,30).forEach(function(m){var s=SUM[m.ref];h+='<button class="pas" type="button" data-open="'+esc(m.ref)+'"><span><b>'+esc(m.ref)+'</b><small>'+esc((m.company||'')+' · '+(m.vehicle||''))+'</small></span>'+(s&&!s.gone?chip(s.status):'')+'</button>';});
@@ -97,6 +111,7 @@ $('vHome').addEventListener('click',function(e){
   if(t.id==='hNew'){newOpen();}
   else if(t.id==='hRefresh'){homeLoad();}
   else if(t.id==='hFind'){findOpen();}
+  else if(t.id==='hGuide'){guideOpen();}
   else if(t.id==='hAdmin'){adminOpen();}
   else if(t.getAttribute('data-open')){passOpen(t.getAttribute('data-open'));}
 });
