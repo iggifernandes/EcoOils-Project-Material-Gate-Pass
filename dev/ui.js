@@ -179,6 +179,7 @@ ok((await p2.textContent('#vAdmin')).includes(ref),'admin list');
 await p2.click('[data-adopen="'+ref+'"]');await p2.waitForSelector('#adList');
 ok((await p2.locator('#adPics img').count())===0,'admin pass screen does not load the pictures by itself');await p2.click('#adPicsBtn');await p2.waitForFunction(()=>document.querySelectorAll('#adPics img').length>=3,null,{timeout:8000}).catch(()=>{});ok((await p2.locator('#adPics img').count())>=3,'admin sees the signed copy page(s) and the photos inside the pass: '+await p2.locator('#adPics img').count());
 ok((await p2.textContent('#vAdmin')).includes('RELEASED')&&(await p2.textContent('#vAdmin')).includes('Dedi'),'admin detail shows the audit trail');
+ok(await p2.evaluate(()=>{var b=document.getElementById('adList');return b&&document.getElementById('vAdmin').firstElementChild===b;}),'Admin pass screen: the back-to-list button is at the top');
 await p2.click('#adList');
 await p2.waitForSelector('[data-adsel]');const nRows=m.sheets.Passes.rows.length;await p2.check('[data-adsel="'+ref+'"]');ok((await p2.textContent('#adDelSel')).includes('(1)'),'admin can tick passes and see the Delete selected button');
 p2.once('dialog',d=>d.dismiss());await p2.click('#adDelSel');await p2.waitForTimeout(400);ok(m.sheets.Passes.rows.length===nRows,'cancelling the confirm deletes nothing');

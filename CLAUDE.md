@@ -43,3 +43,4 @@ Owner: Iggy (Ignatius Ambrosio Viegas e Fernandes), HSSE Manager, Mentari Projec
 • v1.18 (29 Oct 2026): Admin pass screen shows the signed copy pages and the photos inline (tap to zoom) instead of only Drive links, loaded with the 'photos' action + signed:true (Admin PIN only). Code.gs v1.8 (owner pastes it; header line and VERSION bumped). Older backend: the screen says to update.
 • v1.19 (29 Oct 2026): the Back button is top right on every screen (right-aligned above the title on phones, level with the title on tablet and laptop). Front end only; Code.gs v1.8.
 • v1.20 (29 Oct 2026): Admin pass screen no longer loads the signed copy and photos by itself; a 'Show signed copy and photos' button loads them on tap. Front end only; Code.gs v1.8.
+• v1.21 (29 Oct 2026): the Admin pass screen's back-to-list button (#adList) also moves to the top right like every other Back button. Front end only; Code.gs v1.8.
