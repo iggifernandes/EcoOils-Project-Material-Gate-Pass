@@ -1,4 +1,4 @@
-var VERSION='v1.19';
+var VERSION='v1.20';
 var PHV=['front','load'];
 var HC='HAND CARRY';
 function isHC(v){return String(v||'').toUpperCase()===HC;}
@@ -647,6 +647,7 @@ function adminDraw(){
 }
 /* v1.18: the Admin sees the signed copy pages (and the photos) right inside the pass, tap to zoom */
 function adPicsLoad(ref){
+  var bt=$('adPicsBtn');if(bt)bt.style.display='none';var e0=$('adPics');if(e0)e0.innerHTML='<span class="sp"></span>';
   api({action:'photos',ref:ref,pin:AD.pin,signed:true},60000).then(function(r){
     var el=$('adPics');if(!el||!AD.sel||AD.sel.pass.ref!==ref)return;
     if(!r||!r.ok||!r.images){el.innerHTML='<p class="note">'+esc(tr('picsFail'))+'</p>';return;}
@@ -663,11 +664,11 @@ function adminDetailDraw(h){
   h+='<div class="ref" style="font-size:24px">'+esc(p.ref)+'</div><div>'+chip(p.status)+'</div><div class="card"><div class="kv"><span>'+esc(tr('compShort'))+'</span><span>'+esc(p.company)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(vehTxt(p.vehicle))+'</span><span>'+esc(tr('driver'))+'</span><span>'+esc(p.carrier+' ('+p.icNo+')')+'</span><span>'+esc(tr('ecoDept'))+'</span><span>'+esc(p.dept)+'</span><span>'+esc(tr('icRepShort'))+'</span><span>'+esc(p.icRep+' '+p.icPos)+'</span><span>'+esc(tr('purposeText'))+'</span><span>'+esc(p.purposeText)+'</span>'+(p.decidedBy?'<span>'+esc(tr('releasedBy'))+'</span><span>'+esc(p.decidedBy+' · '+p.decidedAt)+(p.note?' · '+esc(p.note):'')+'</span>':'')+(d.lat!==''&&d.lat!=null?'<span>GPS</span><span>'+esc(d.lat+', '+d.lng)+'</span>':'')+'</div>';
   h+='<table class="it"><tr><th>#</th><th>'+esc(tr('itemName'))+'</th><th>'+esc(tr('qty'))+'</th><th>'+esc(tr('unit'))+'</th></tr>'+p.items.map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(it.item)+'</td><td>'+esc(it.qty)+'</td><td>'+esc(it.unit)+'</td></tr>';}).join('')+'</table></div>';
   h+='<h2>'+esc(tr('links'))+'</h2><div>'+[['front',d.links.front],['load',d.links.load],['top',(d.links.old||[])[0]],['left',(d.links.old||[])[1]],['right',(d.links.old||[])[2]]].filter(function(x){return x[1]&&/^http/.test(x[1])&&!(x[0]==='top'&&x[1]===d.links.load);}).map(function(x){return '<a class="btn ghost sm" target="_blank" rel="noopener" href="'+esc(x[1])+'">'+esc(tr('ph_'+x[0]))+'</a>';}).join('')+d.links.signed.map(function(u,i){return '<a class="btn sm" target="_blank" rel="noopener" href="'+esc(u)+'">'+esc(tr('upload'))+' '+(i+1)+'</a>';}).join('')+'</div>';
-  h+='<h2>'+esc(tr('signedCopy'))+'</h2><div id="adPics" class="row2"><span class="sp"></span></div>';
+  h+='<h2>'+esc(tr('signedCopy'))+'</h2><button class="btn ghost" id="adPicsBtn" type="button">'+esc(tr('showPics'))+'</button><div id="adPics" class="row2"></div>';
   h+='<h2>'+esc(tr('auditLog'))+'</h2><table class="it adm"><tr><th>Time</th><th>Event</th><th>By</th><th>Detail</th></tr>'+d.log.map(function(l){return '<tr><td>'+esc(l.t)+'</td><td>'+esc(l.ev)+'</td><td>'+esc(l.by)+'</td><td>'+esc(l.d)+'</td></tr>';}).join('')+'</table>';
   if(p.status==='Awaiting signatures'||p.status==='Pending release')h+='<button class="btn danger" id="adCancel" type="button">'+esc(tr('adminCancel'))+'</button>';
   h+='<button class="btn" id="adPrint" type="button">'+esc(tr('printAgain'))+'</button><button class="btn ghost" id="adPdf" type="button">'+esc(tr('dlPdf'))+'</button><button class="btn danger" id="adDel" type="button">'+esc(tr('adDelete'))+'</button><button class="btn ghost" id="adList" type="button">'+esc(tr('back'))+'</button>';
-  $('vAdmin').innerHTML=h;adPicsLoad(p.ref);
+  $('vAdmin').innerHTML=h;
 }
 $('vAdmin').addEventListener('input',function(e){if(e.target.id==='adQ'){AD.note='';AD.q=e.target.value;clearTimeout(AD.tm);AD.tm=setTimeout(adminLoad,400);}});
 $('vAdmin').addEventListener('change',function(e){
@@ -689,6 +690,7 @@ $('vAdmin').addEventListener('click',function(e){
   else if(t.id==='adGo'){AD.pin=$('adPin').value.trim();ls('gp_apin',AD.pin);adminLoad();}
   else if(t.id==='adOut'){AD.pin='';AD.list=null;ls('gp_apin',null);adminDraw();}
   else if(t.id==='adList'){AD.sel=null;adminDraw();}
+  else if(t.id==='adPicsBtn'){adPicsLoad(AD.sel.pass.ref);}
   else if(t.getAttribute('data-adopen')){api({action:'a_get',pin:AD.pin,ref:t.getAttribute('data-adopen')}).then(function(r){if(r&&r.ok){AD.sel=r;adminDraw();}else{AD.err=errText(r&&r.err);adminDraw();}});}
   else if(t.id==='adCancel'){var why=window.prompt(tr('cancelWhy'),'');if(why===null)return;api({action:'a_cancel',pin:AD.pin,ref:AD.sel.pass.ref,reason:why}).then(function(r){AD.sel=null;adminLoad();});}
   else if(t.id==='adPrint'){var p=AD.sel.pass;p.siteLead=p.siteLead||CFG.siteLead;printPass(p);}
