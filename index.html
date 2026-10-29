@@ -13,6 +13,8 @@
 html,body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.45 Jost,system-ui,Arial,sans-serif}
 input,select,button,textarea{font-family:Jost,system-ui,Arial,sans-serif}
 main{max-width:640px;margin:0 auto;padding:0 16px 80px}
+#hNew{display:block;width:auto;max-width:none!important;margin:14px 0 -6px auto;padding:10px 20px;min-height:44px}
+@media(min-width:760px){#hNew{margin:22px 0 -48px auto;position:relative;z-index:2}}
 button.topback{width:auto;min-width:96px;min-height:40px;margin:12px 0 0;padding:6px 16px;display:block}
 /* v1.15 screen sizes: phone as before, tablet wider, laptop uses the screen; on wide screens one pass = one line */
 @media(min-width:760px){main{max-width:920px;padding:0 24px 80px}
@@ -2563,7 +2565,7 @@ var T={en:{
  transport:"Bagaimana bahan dibawa keluar?",tVeh:"Kenderaan",tVehSub:"Lori atau kenderaan lain. Nombor plat dan 2 foto kenderaan.",tHand:"Dibawa tangan",tHandSub:"Dibawa seorang dengan berjalan kaki. Tanpa kenderaan, 2 foto bahan.",handNote:"Dibawa tangan: nombor kenderaan tidak diperlukan. Pembawa bahan mesti menunjukkan KTP / SIM di pintu pagar.",handShow:"Dibawa tangan (tanpa kenderaan)",f_mode:"Pilih Kenderaan atau Dibawa tangan.",phh_front:"Bahan dan orang yang membawanya",phh_load:"Foto dekat bahan (label / tag)",photoHelpH:"Ambil 2 foto sekarang dengan kamera: semua bahan bersama orang yang akan membawanya, dan foto dekat bahan dengan label atau tagnya. Setiap foto dicop dengan tarikh dan masa.",gdHandH:"Proses dibawa tangan",gdHandIntro:"Pilih dibawa tangan hanya untuk bahan yang boleh dibawa seorang dengan berjalan kaki, tanpa kenderaan, troli atau forklift.",gdHand:["Pilih Dibawa tangan semasa membuat permohonan. Nombor kenderaan dan foto kenderaan tidak diperlukan.", "Senaraikan setiap barang dengan kuantiti dan unit, tepat seperti yang akan dibawa.", "Ambil 2 foto: semua bahan bersama orang yang membawanya, kemudian foto dekat label atau tag.", "Cetak pas dan dapatkan 4 tandatangan: pembawa, orang bertanggungjawab IC, wakil EcoOils dan Site Lead.", "Imbas pas yang telah ditandatangani dan hantar. Simpan kertas asal bersama pembawa bahan.", "Di pintu pagar pengawal menyemak barang, kad KTP / SIM dan kertas asal berbanding pas, kemudian melepaskan."],
 }};
 
-var VERSION='v1.16';
+var VERSION='v1.17';
 var PHV=['front','load'];
 var HC='HAND CARRY';
 function isHC(v){return String(v||'').toUpperCase()===HC;}
@@ -2663,7 +2665,7 @@ $('vGuide').addEventListener('click',function(e){var t=e.target.closest('button'
 /* ===== home ===== */
 function homeOpen(){show('vHome');homeDraw();homeLoad();}
 function homeDraw(){
-  var h=h1(tr('title'))+'<button class="btn" id="hNew" type="button">'+esc(tr('newPass'))+'</button>';
+  var h='<button class="btn" id="hNew" type="button">+ '+esc(tr('newPass'))+'</button>'+h1(tr('title'));
   h+='<div class="card"><b>'+esc(tr('how'))+'</b><ol style="margin:8px 0 0;padding-left:20px"><li>'+esc(tr('how1'))+'</li><li>'+esc(tr('how2'))+'</li><li>'+esc(tr('how3'))+'</li><li>'+esc(tr('how4'))+'</li></ol></div><button class="btn ghost" id="hGuide" type="button">'+esc(tr('guide'))+'</button>';
   h+='<h2>'+esc(tr('mine'))+'</h2>';
   if(!MINE.length)h+='<p class="note">'+esc(tr('noneMine'))+'</p>';

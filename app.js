@@ -1,4 +1,4 @@
-var VERSION='v1.16';
+var VERSION='v1.17';
 var PHV=['front','load'];
 var HC='HAND CARRY';
 function isHC(v){return String(v||'').toUpperCase()===HC;}
@@ -98,7 +98,7 @@ $('vGuide').addEventListener('click',function(e){var t=e.target.closest('button'
 /* ===== home ===== */
 function homeOpen(){show('vHome');homeDraw();homeLoad();}
 function homeDraw(){
-  var h=h1(tr('title'))+'<button class="btn" id="hNew" type="button">'+esc(tr('newPass'))+'</button>';
+  var h='<button class="btn" id="hNew" type="button">+ '+esc(tr('newPass'))+'</button>'+h1(tr('title'));
   h+='<div class="card"><b>'+esc(tr('how'))+'</b><ol style="margin:8px 0 0;padding-left:20px"><li>'+esc(tr('how1'))+'</li><li>'+esc(tr('how2'))+'</li><li>'+esc(tr('how3'))+'</li><li>'+esc(tr('how4'))+'</li></ol></div><button class="btn ghost" id="hGuide" type="button">'+esc(tr('guide'))+'</button>';
   h+='<h2>'+esc(tr('mine'))+'</h2>';
   if(!MINE.length)h+='<p class="note">'+esc(tr('noneMine'))+'</p>';
