@@ -13,6 +13,20 @@
 html,body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.45 Jost,system-ui,Arial,sans-serif}
 input,select,button,textarea{font-family:Jost,system-ui,Arial,sans-serif}
 main{max-width:640px;margin:0 auto;padding:0 16px 80px}
+/* v1.15 screen sizes: phone as before, tablet wider, laptop uses the screen; on wide screens one pass = one line */
+@media(min-width:760px){main{max-width:920px;padding:0 24px 80px}
+ #vNew,#vGuide,#vDone{max-width:760px;margin-left:auto;margin-right:auto}
+ .tiles{gap:16px}}
+@media(min-width:1100px){main{max-width:min(1500px,96vw);padding:0 32px 80px}
+ #vNew{max-width:860px}#vGuide{max-width:1000px}
+ #vPass{max-width:1000px}.btn#hNew{max-width:420px}}
+@media(min-width:760px){
+ .pas{min-height:52px;padding:10px 16px}
+ .pas>span{display:flex;align-items:baseline;gap:20px;flex:1;min-width:0;flex-wrap:nowrap}
+ .pas>span>b{flex:0 0 190px;white-space:nowrap}
+ .pas>span>small{display:block;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+ .pas>span>small br{display:none}
+ .pas .chip{flex:none;margin-left:auto}}
 h1{font-weight:300;font-size:22px;letter-spacing:.14em;text-transform:uppercase;color:var(--h1);margin:0 0 16px;padding:26px 0 14px;border-bottom:1px solid var(--text);position:relative;line-height:1.25}
 h1::after{content:"";position:absolute;left:0;bottom:-4px;width:44px;height:7px;background:var(--green)}
 @media(max-width:420px){h1{font-size:18px;letter-spacing:.1em}}

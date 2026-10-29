@@ -1,4 +1,4 @@
-var VERSION='v1.14';
+var VERSION='v1.15';
 var PHV=['front','load'];
 var HC='HAND CARRY';
 function isHC(v){return String(v||'').toUpperCase()===HC;}
