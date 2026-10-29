@@ -1,0 +1,45 @@
+const {chromium}=require('playwright');const fs=require('fs'),path=require('path');
+const m=require('./mock.js')();
+let fails=0;const ok=(c,t)=>{console.log((c?'PASS ':'FAIL ')+t);if(!c)fails++};
+const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8').replace(/var API_URL='[^']*';/,"var API_URL='https://gas.test/exec';");
+(async()=>{
+const br=await chromium.launch({args:['--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']});
+const ctx=await br.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,locale:'en-US',permissions:['camera']});
+const page=await ctx.newPage();
+const errs=[];page.on('pageerror',e=>errs.push(String(e)));page.on('console',x=>{if(x.type()==='error')errs.push(x.text())});
+await page.route('https://gp.test/**',r=>r.fulfill({status:200,contentType:'text/html',body:html}));
+await page.route('https://gas.test/**',async r=>{const b=JSON.parse(r.request().postData());const res=m.call(b);await r.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify(res)});});
+await page.route('https://fonts.googleapis.com/**',r=>r.fulfill({status:200,contentType:'text/css',body:''}));
+await page.route('https://fonts.gstatic.com/**',r=>r.abort());
+// a real JPEG made by the browser itself
+const jp=await page.evaluate(async()=>{const c=document.createElement('canvas');c.width=800;c.height=600;const x=c.getContext('2d');x.fillStyle='#8a8';x.fillRect(0,0,800,600);x.fillStyle='#222';x.fillRect(100,200,600,250);return c.toDataURL('image/jpeg',0.8).split(',')[1];}).catch(()=>null);
+const jpgPath='/tmp/gp_test.jpg';
+const pg2=await ctx.newPage();await pg2.goto('about:blank');
+const jb=await pg2.evaluate(()=>{const c=document.createElement('canvas');c.width=800;c.height=600;const x=c.getContext('2d');x.fillStyle='#88aa88';x.fillRect(0,0,800,600);x.fillStyle='#222';x.fillRect(100,200,600,250);return c.toDataURL('image/jpeg',0.8).split(',')[1];});
+fs.writeFileSync(jpgPath,Buffer.from(jb,'base64'));await pg2.close();
+await page.goto('https://gp.test/');
+await page.waitForSelector('#hNew');
+// version above the language toggle, top right
+await page.click('#hNew');
+await page.click('[data-purpose=B]');
+await page.selectOption('#fCompany','KKS');
+await page.click('#nNext');ok((await page.textContent('#nErr')).toLowerCase().includes('hand carry'),'must choose Vehicle or Hand carry: '+await page.textContent('#nErr'));
+await page.click('[data-mode=hand]');
+ok(await page.locator('#fVehicle').count()===0,'hand carry hides the vehicle number box');
+await page.fill('#fCarrier','Dewi Lestari');await page.selectOption('#fIcType','KTP');await page.fill('#fIcNo','1271012345678901');
+await page.selectOption('#fReason',{index:1});await page.fill('#fPT','Tools');await page.selectOption('#fDept','HSSE');await page.fill('#fRep','Andi');await page.fill('#fPos','Lead');await page.fill('#fPhone','+62 812 3456 7890');
+await page.click('#nNext');ok((await page.textContent('.stepl')).includes('2'),'step 1 passes without a vehicle number');
+await page.fill('[data-i="0"][data-k=item]','Torque wrench');await page.fill('[data-i="0"][data-k=qty]','2');await page.selectOption('[data-i="0"][data-k=unit]','Pcs');await page.click('#nNext');
+ok((await page.textContent('#vNew')).includes('person carrying'),'photo step asks for material photos, not vehicle photos');
+ok(!(await page.textContent('#vNew')).includes('Front view of the vehicle'),'no vehicle photo label');
+for(const v of ['front','load'])await page.setInputFiles('[data-view='+v+']',jpgPath);
+await page.waitForSelector('.tile.on >> nth=1');
+await page.click('#nNext');await page.click('#nSubmit');
+await page.waitForSelector('#vDone:not(.hidden)',{timeout:8000}).catch(async()=>{console.log('STUCK',await page.textContent('#nErr'),await page.textContent('.stepl'))});
+const rows=m.rows?m.rows():null;
+const ph=await page.evaluate(()=>passHtml(LAST,{front:'x',load:'y'},false,{txt:'t'}));
+ok(ph.includes('HAND CARRY (NO VEHICLE)')&&ph.includes('MATERIAL AND THE PERSON CARRYING IT')&&ph.includes('CLOSE-UP OF THE MATERIAL')&&!ph.includes('FRONT VIEW OF THE VEHICLE'),'print shows hand carry and material photo captions');
+await page.click('#hGuideDone').catch(()=>{});
+await page.evaluate(()=>{guideOpen()});ok((await page.textContent('#vGuide')).includes('Hand carry process'),'guide has the hand carry process');
+ok(errs.length===0,'no console or page errors '+errs.join('|'));
+console.log(fails?'FAILED '+fails:'ALL PASSED');await br.close();process.exit(fails?1:0);})();

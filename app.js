@@ -1,5 +1,10 @@
-var VERSION='v1.13';
+var VERSION='v1.14';
 var PHV=['front','load'];
+var HC='HAND CARRY';
+function isHC(v){return String(v||'').toUpperCase()===HC;}
+function vehTxt(v){return isHC(v)?tr('handShow'):v;}
+function phl(v,hc){return tr((hc?'phh_':'ph_')+v);}
+function vehVal(){return D.mode==='hand'?HC:D.vehicle.trim();}
 var APP_URL='https://iggifernandes.github.io/EcoOils-Project-Material-Gate-Pass/';
 var API_URL='https://script.google.com/macros/s/AKfycbxULvNJReaniGRTFWKY507I0AZD5YLP3mBBjAyFFA-7z4nI0-LPncZbPZTajS89Jp0Z/exec';
 var lang='en';
@@ -48,7 +53,7 @@ function icApply(){
 function icCntText(){var n=icNeed(),d=String(D.icNo||'').replace(/\D/g,'').length;return n?(tr('icDigits').replace('{n}',d).replace('{m}',n)):tr('icPickFirst');}
 function icPhoneOk(){var t=String(D.icPhone||'').trim(),d=t.replace(/\D/g,'');return /^\+?[0-9][0-9 \-]{6,18}$/.test(t)&&d.length>=8&&d.length<=15;}
 function icFull(){var d=icDigits();return (D.icType||'')+' '+d;}
-function newDraft(){return {purpose:'',company:'',companyOther:'',vehicle:'',carrier:'',icType:'',icNo:'',icPhone:'',purposeText:'',reason:'',dept:'',icRep:'',icPos:'',items:[{item:'',qty:'',unit:''}],photos:{},cid:Date.now().toString(36)+Math.random().toString(36).slice(2,10),step:1};}
+function newDraft(){return {mode:'',purpose:'',company:'',companyOther:'',vehicle:'',carrier:'',icType:'',icNo:'',icPhone:'',purposeText:'',reason:'',dept:'',icRep:'',icPos:'',items:[{item:'',qty:'',unit:''}],photos:{},cid:Date.now().toString(36)+Math.random().toString(36).slice(2,10),step:1};}
 function saveDraft(){var o={};Object.keys(D).forEach(function(k){if(k!=='photos')o[k]=D[k];});ls('gp_draft',JSON.stringify(o));}
 try{var d0=JSON.parse(ls('gp_draft')||'null');if(d0&&d0.items){D=Object.assign(newDraft(),d0);D.photos={};}}catch(e){}
 
@@ -80,7 +85,7 @@ function guideOpen(){show('vGuide');guideDraw();}
 function guideDraw(){
   var h=h1(tr('guideTitle'))+'<p class="note">'+esc(tr('guideIntro'))+'</p><h2>'+esc(tr('gdStepsH'))+'</h2><div class="card">';
   trl('gdSteps').forEach(function(s,i){h+='<div class="gstep"><i>'+(i+1)+'</i><div><b>'+esc(s[0])+'</b><span>'+esc(s[1])+'</span></div></div>';});
-  h+='</div><div class="card gdo"><h2 style="margin:0">'+esc(tr('gdDoH'))+'</h2><ul class="gl">'+trl('gdDo').map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';
+  h+='</div><div class="card"><h2 style="margin:0">'+esc(tr('gdHandH'))+'</h2><p class="note">'+esc(tr('gdHandIntro'))+'</p><ol class="gl gn">'+trl('gdHand').map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol></div><div class="card gdo"><h2 style="margin:0">'+esc(tr('gdDoH'))+'</h2><ul class="gl">'+trl('gdDo').map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';
   h+='<div class="card gdn"><h2 style="margin:0">'+esc(tr('gdDontH'))+'</h2><ul class="gl">'+trl('gdDont').map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';
   h+='<div class="banner" style="margin-top:12px">'+esc(tr('gdKey'))+'</div><button class="btn" id="gdBack" type="button">'+esc(tr('back'))+'</button>';
   $('vGuide').innerHTML=h;
@@ -94,7 +99,7 @@ function homeDraw(){
   h+='<div class="card"><b>'+esc(tr('how'))+'</b><ol style="margin:8px 0 0;padding-left:20px"><li>'+esc(tr('how1'))+'</li><li>'+esc(tr('how2'))+'</li><li>'+esc(tr('how3'))+'</li><li>'+esc(tr('how4'))+'</li></ol></div><button class="btn ghost" id="hGuide" type="button">'+esc(tr('guide'))+'</button>';
   h+='<h2>'+esc(tr('mine'))+'</h2>';
   if(!MINE.length)h+='<p class="note">'+esc(tr('noneMine'))+'</p>';
-  MINE.slice(0,30).forEach(function(m){var s=SUM[m.ref];h+='<button class="pas" type="button" data-open="'+esc(m.ref)+'"><span><b>'+esc(m.ref)+'</b><small>'+esc((m.company||'')+' · '+(m.vehicle||''))+'</small></span>'+(s&&!s.gone?chip(s.status):'')+'</button>';});
+  MINE.slice(0,30).forEach(function(m){var s=SUM[m.ref];h+='<button class="pas" type="button" data-open="'+esc(m.ref)+'"><span><b>'+esc(m.ref)+'</b><small>'+esc((m.company||'')+' · '+vehTxt(m.vehicle||''))+'</small></span>'+(s&&!s.gone?chip(s.status):'')+'</button>';});
   h+='<div class="links"><button id="hRefresh" type="button">'+esc(tr('refresh'))+'</button> · <button id="hFind" type="button">'+esc(tr('find'))+'</button> · <button id="hAdmin" type="button">'+esc(tr('admin'))+'</button></div>';
   $('vHome').innerHTML=h;
 }
@@ -117,7 +122,8 @@ $('vHome').addEventListener('click',function(e){
 });
 
 /* ===== new pass wizard ===== */
-function newOpen(){if(D.done){D=newDraft();}D.step=D.step||1;show('vNew');newDraw();}
+function newOpen(){if(D.done){D=newDraft();}if(!D.mode&&D.vehicle)D.mode='vehicle';D.step=D.step||1;show('vNew');newDraw();}
+function mopt(sel,k,b,txt){return '<button type="button" class="opt'+(sel?' sel':'')+'" data-mode="'+k+'"><b>'+esc(b)+'</b><span>'+esc(txt)+'</span></button>';}
 function opt(sel,k,b,txt){return '<button type="button" class="opt'+(sel?' sel':'')+'" data-purpose="'+k+'"><b>'+b+'</b><span>'+esc(txt)+'</span></button>';}
 function newDraw(keep){
   var st=D.step,sc=window.pageYOffset,h='';
@@ -126,9 +132,11 @@ function newDraw(keep){
   if(st===1){
     h+='<p class="note">'+esc(tr('allReq'))+'</p>';
     h+='<label>'+esc(tr('purposeLbl'))+'</label>'+opt(D.purpose==='A','A','A.',tr('purA'))+opt(D.purpose==='B','B','B.',tr('purB'));
+    h+='<label>'+esc(tr('transport'))+'</label>'+mopt(D.mode==='vehicle','vehicle',tr('tVeh'),tr('tVehSub'))+mopt(D.mode==='hand','hand',tr('tHand'),tr('tHandSub'));
     h+='<label for="fCompany">'+esc(tr('company'))+'</label><select id="fCompany" data-f="company"><option value="">'+esc(tr('companyPick'))+'</option>'+CFG.companies.map(function(c){return '<option value="'+esc(c)+'"'+(D.company===c?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'<option value="__other"'+(D.company==='__other'?' selected':'')+'>'+esc(tr('other'))+'</option></select>';
     if(D.company==='__other')h+='<label for="fCompanyOther">'+esc(tr('companyOther'))+'</label><input id="fCompanyOther" data-f="companyOther" maxlength="60" value="'+esc(D.companyOther)+'">';
-    h+='<label for="fVehicle">'+esc(tr('vehicle'))+'</label><input id="fVehicle" data-f="vehicle" maxlength="20" autocapitalize="characters" autocomplete="off" value="'+esc(D.vehicle)+'"><div class="note">'+esc(tr('vehicleHelp'))+'</div>';
+    if(D.mode==='hand')h+='<div class="note">'+esc(tr('handNote'))+'</div>';
+    else if(D.mode==='vehicle')h+='<label for="fVehicle">'+esc(tr('vehicle'))+'</label><input id="fVehicle" data-f="vehicle" maxlength="20" autocapitalize="characters" autocomplete="off" value="'+esc(D.vehicle)+'"><div class="note">'+esc(tr('vehicleHelp'))+'</div>';
     h+='<label for="fCarrier">'+esc(tr('carrier'))+'</label><input id="fCarrier" data-f="carrier" maxlength="60" autocomplete="off" value="'+esc(D.carrier)+'">';
     h+='<label for="fIcType">'+esc(tr('icType'))+'</label><select id="fIcType" data-f="icType"><option value="">'+esc(tr('icTypePick'))+'</option><option value="KTP"'+(D.icType==='KTP'?' selected':'')+'>'+esc(tr('icTypeKTP'))+'</option><option value="SIM"'+(D.icType==='SIM'?' selected':'')+'>'+esc(tr('icTypeSIM'))+'</option></select>';
     h+='<label for="fIcNo">'+esc(tr('icNo'))+'</label><input id="fIcNo" data-f="icNo" inputmode="numeric" pattern="[0-9]*" autocomplete="off"'+(icNeed()?'':' disabled')+' placeholder="'+(icNeed()?icNeed()+' digits':'')+'" value="'+esc(D.icNo)+'"><div class="note">'+esc(tr('icHelp'))+'</div><div class="note" id="icCnt">'+esc(icCntText())+'</div>';
@@ -146,14 +154,14 @@ function newDraw(keep){
     });
     h+=D.items.length<CFG.maxItems?'<button class="btn ghost" id="addItem" type="button">+ '+esc(tr('addItem'))+'</button>':'<div class="note">'+esc(tr('itemsMax'))+'</div>';
   }else if(st===3){
-    h+='<p class="note">'+esc(tr('photoHelp'))+'</p><div class="tiles">';
+    h+='<p class="note">'+esc(tr(D.mode==='hand'?'photoHelpH':'photoHelp'))+'</p><div class="tiles">';
     PHV.forEach(function(v){h+=tileHtml(v);});h+='</div>'+tilesZoomBar()+'<div>';
     h+='</div>';
   }else{
     var co=D.company==='__other'?D.companyOther:D.company;
     h+='<p class="note">'+esc(tr('reviewHelp'))+'</p><p class="note"><b>'+esc(tr('icCheck'))+'</b></p><div class="card"><div class="kv"><span>'+esc(tr('purposeShort'))+'</span><span>'+esc(D.purpose+'. '+(D.purpose==='A'?tr('purA'):tr('purB')))+'</span><span>'+esc(tr('compShort'))+'</span><span>'+esc(co)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(D.vehicle.toUpperCase())+'</span><span>'+esc(tr('driver'))+'</span><span>'+esc(D.carrier)+' ('+esc(icFull())+')</span><span>'+esc(tr('ecoDept'))+'</span><span>'+esc(D.dept)+'</span><span>'+esc(tr('icRepShort'))+'</span><span>'+esc(D.icRep+(D.icPos?', '+D.icPos:'')+(D.icPhone?', '+D.icPhone:''))+'</span><span>'+esc(tr('purposeText'))+'</span><span>'+esc(purposeFull())+'</span></div>';
     h+='<table class="it"><tr><th>#</th><th>'+esc(tr('itemName'))+'</th><th>'+esc(tr('qty'))+'</th><th>'+esc(tr('unit'))+'</th></tr>'+validItems().map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(it.item)+'</td><td>'+esc(it.qty)+'</td><td>'+esc(it.unit)+'</td></tr>';}).join('')+'</table>';
-    h+='<div class="row2" style="margin-top:10px">'+PHV.map(function(v){return '<div class="pv"><small class="note">'+esc(tr('ph_'+v))+'</small><img alt="" data-zoom="data:image/jpeg;base64,'+D.photos[v]+'" src="data:image/jpeg;base64,'+D.photos[v]+'"></div>';}).join('')+'</div></div>';
+    h+='<div class="row2" style="margin-top:10px">'+PHV.map(function(v){return '<div class="pv"><small class="note">'+esc(phl(v,D.mode==='hand'))+'</small><img alt="" data-zoom="data:image/jpeg;base64,'+D.photos[v]+'" src="data:image/jpeg;base64,'+D.photos[v]+'"></div>';}).join('')+'</div></div>';
   }
   h+='<div class="err" id="nErr"></div>';
   if(st<4)h+='<button class="btn" id="nNext" type="button">'+esc(tr('next'))+'</button>';else h+='<button class="btn amber" id="nSubmit" type="button">'+esc(tr('submit'))+'</button>';
@@ -161,7 +169,7 @@ function newDraw(keep){
   $('vNew').innerHTML=h;
   if(keep)window.scrollTo(0,sc);
 }
-function tileHtml(v){var p=D.photos[v];return '<label class="tile'+(p?' on':' ph')+'" style="margin:0" data-tile="'+v+'">'+(p?'<img alt="" src="data:image/jpeg;base64,'+p+'"><span class="ck">&#10003;</span>':'')+'<span>'+esc(tr('ph_'+v))+'</span><small>'+esc(p?tr('retake'):tr('take'))+'</small><input type="file" accept="image/*" capture="environment" data-view="'+v+'"></label>';}
+function tileHtml(v){var p=D.photos[v];return '<label class="tile'+(p?' on':' ph')+'" style="margin:0" data-tile="'+v+'">'+(p?'<img alt="" src="data:image/jpeg;base64,'+p+'"><span class="ck">&#10003;</span>':'')+'<span>'+esc(phl(v,D.mode==='hand'))+'</span><small>'+esc(p?tr('retake'):tr('take'))+'</small><input type="file" accept="image/*" capture="environment" data-view="'+v+'"></label>';}
 function tilesZoomBar(){return '<div class="row2" style="margin-top:6px">'+PHV.map(function(v){return D.photos[v]?'<button class="btn ghost sm" type="button" data-zv="'+v+'">&#128269; '+esc(tr('zoom'))+'</button>':'<span></span>';}).join('')+'</div>';}
 function validItems(){return D.items.filter(function(it){return String(it.item).trim().length>=2&&Number(String(it.qty).replace(',','.'))>0&&CFG.units.indexOf(String(it.unit||''))>=0;}).map(function(it){return {item:String(it.item).trim(),qty:Number(String(it.qty).replace(',','.')),unit:String(it.unit||'').trim()};});}
 function nerr(k,field){var e=$('nErr');if(e)e.textContent=tr(k);if(field){var f=document.querySelector(field);if(f){f.classList.add('bad');try{f.scrollIntoView({block:'center'});}catch(x){}}}}
@@ -170,7 +178,8 @@ function stepOk(){
   if(s===1){
     if(D.purpose!=='A'&&D.purpose!=='B'){nerr('f_purpose');return false;}
     if(!co||String(co).trim().length<2){nerr('f_company',D.company==='__other'?'#fCompanyOther':'#fCompany');return false;}
-    if(D.vehicle.trim().length<2){nerr('f_vehicle','#fVehicle');return false;}
+    if(D.mode!=='vehicle'&&D.mode!=='hand'){nerr('f_mode');return false;}
+    if(D.mode==='vehicle'&&D.vehicle.trim().length<2){nerr('f_vehicle','#fVehicle');return false;}
     if(D.carrier.trim().length<2){nerr('f_carrier','#fCarrier');return false;}
     if(!D.icType){nerr('f_icType','#fIcType');return false;}
     if(!D.icNo.trim()){nerr('f_icNo','#fIcNo');return false;}
@@ -202,12 +211,13 @@ $('vNew').addEventListener('change',function(e){
   if(t.getAttribute('data-view')){
     var f0=t.files&&t.files[0],v=t.getAttribute('data-view');if(!f0)return;
     var co=D.company==='__other'?D.companyOther:D.company;
-    shrink(f0,[stampTime(),tr('ph_'+v)+' | '+(D.vehicle||'').toUpperCase()+' | '+co],1100,0.6,true).then(function(p){D.photos[v]=p;var el=document.querySelector('[data-tile="'+v+'"]');if(el)el.outerHTML=tileHtml(v);var zb=document.querySelector('.tiles+.row2');if(zb)zb.outerHTML=tilesZoomBar();var er0=$('nErr');if(er0)er0.textContent='';},function(why){var er=$('nErr');if(er)er.textContent=why==='portrait'?tr('err_portrait'):tr('err_bad_photo');});
+    shrink(f0,[stampTime(),phl(v,D.mode==='hand')+' | '+(D.mode==='hand'?HC:(D.vehicle||'').toUpperCase())+' | '+co],1100,0.6,true).then(function(p){D.photos[v]=p;var el=document.querySelector('[data-tile="'+v+'"]');if(el)el.outerHTML=tileHtml(v);var zb=document.querySelector('.tiles+.row2');if(zb)zb.outerHTML=tilesZoomBar();var er0=$('nErr');if(er0)er0.textContent='';},function(why){var er=$('nErr');if(er)er.textContent=why==='portrait'?tr('err_portrait'):tr('err_bad_photo');});
   }
 });
 $('vNew').addEventListener('click',function(e){
   var t=e.target.closest('button');if(!t)return;
   if(t.getAttribute('data-zv')){var pz=D.photos[t.getAttribute('data-zv')];if(pz)zoomOpen('data:image/jpeg;base64,'+pz);return;}
+  if(t.getAttribute('data-mode')){var nm=t.getAttribute('data-mode');if(nm!==D.mode){D.mode=nm;D.photos={};}saveDraft();newDraw(true);return;}
   if(t.getAttribute('data-purpose')){var np=t.getAttribute('data-purpose');if(np!==D.purpose&&D.reason!=='rOther')D.reason='';D.purpose=np;saveDraft();newDraw(true);}
   else if(t.getAttribute('data-rm')!==null){D.items.splice(+t.getAttribute('data-rm'),1);saveDraft();newDraw(true);}
   else if(t.id==='addItem'){D.items.push({item:'',qty:'',unit:''});saveDraft();newDraw(true);}
@@ -237,7 +247,7 @@ var BUSY=false;
 function submit(){
   if(BUSY)return;if(!stepOk())return;BUSY=true;
   var co=D.company==='__other'?D.companyOther:D.company,its=validItems();
-  var body={action:'create',cid:D.cid,hp:'',purpose:D.purpose,company:co.trim(),vehicle:D.vehicle.trim(),carrier:D.carrier.trim(),icNo:icFull(),purposeText:purposeFull(),dept:D.dept,icRep:D.icRep.trim(),icPhone:D.icPhone.trim(),icPos:D.icPos.trim(),items:its,photos:D.photos};
+  var body={action:'create',cid:D.cid,hp:'',purpose:D.purpose,company:co.trim(),vehicle:vehVal(),carrier:D.carrier.trim(),icNo:icFull(),purposeText:purposeFull(),dept:D.dept,icRep:D.icRep.trim(),icPhone:D.icPhone.trim(),icPos:D.icPos.trim(),items:its,photos:D.photos};
   $('nSubmit').disabled=true;$('nErr').innerHTML='<span class="sp"></span>'+esc(tr('sending'));
   api(body,120000).then(function(r){return r;},function(){return null;}).then(function(r){
     BUSY=false;
@@ -300,19 +310,19 @@ function passHtml(p,ph,one,st){
   h+='<div class="top"><div><div class="ln">SR NO: <span class="u" style="min-width:48mm">'+esc(p.ref)+'</span></div><div class="ln">DATE: <span class="u" style="min-width:48mm">'+esc(fmtD(p.date))+'</span></div>';
   h+='<div class="ln" style="margin-top:3mm">THIS NON-RETURNABLE GATE PASS IS USED FOR</div><div class="ln" style="margin-left:6mm"><span class="chk">'+(p.purpose==='A'?'X':'')+'</span>A.&nbsp; SENDING BACK REJECTED ITEMS TO SUPPLIER</div><div class="ln" style="margin-left:6mm"><span class="chk">'+(p.purpose==='B'?'X':'')+'</span>B.&nbsp; SENDING BACK CONTRACTOR&rsquo;S OWN MATERIAL</div></div><div>'+qrSvg(verifyUrl(p.ref,p.qk))+'</div></div>';
   h+='<div class="ln" style="margin-top:3mm">TO: SECURITY</div><div class="ln">PLEASE ALLOWS MR/MISS: <span class="u" style="min-width:50mm">'+esc(p.carrier)+'</span> &nbsp;ID NO (KTP/SIM): <span class="u" style="min-width:48mm;white-space:nowrap">'+esc(p.icNo)+'</span></div>';
-  h+='<div class="ln">COMPANY NAME: <span class="u" style="min-width:140mm">'+esc(p.company)+'</span></div><div class="ln">VEHICLE NO: <span class="u" style="min-width:140mm">'+esc(p.vehicle)+'</span></div>';
+  h+='<div class="ln">COMPANY NAME: <span class="u" style="min-width:140mm">'+esc(p.company)+'</span></div><div class="ln">VEHICLE NO: <span class="u" style="min-width:140mm">'+esc(isHC(p.vehicle)?'HAND CARRY (NO VEHICLE)':p.vehicle)+'</span></div>';
   h+='<div class="ln">PURPOSE OF TAKING THE ITEM OUT: <span class="u" style="display:block;margin-top:1mm;min-width:0;font-weight:600">'+esc(p.purposeText)+'</span></div>';
   h+='<table class="items" style="margin-top:3mm"><tr><th>S/NO</th><th>ITEM</th><th>QTY.</th><th>UNIT</th></tr>'+rows+'</table>';
-  if(one)h+='<div class="ph2"><div><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>FRONT VIEW OF THE VEHICLE</small></div><div><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>MATERIAL LOADED IN THE TRUCK</small></div></div>';
+  if(one)h+='<div class="ph2"><div><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>'+(isHC(p.vehicle)?'MATERIAL AND THE PERSON CARRYING IT':'FRONT VIEW OF THE VEHICLE')+'</small></div><div><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>'+(isHC(p.vehicle)?'CLOSE-UP OF THE MATERIAL (LABELS / TAGS)':'MATERIAL LOADED IN THE TRUCK')+'</small></div></div>';
   h+='<div class="sig"><div><b>CARRIED BY:</b><div class="l"></div><small>(Person taking the material out)</small><div style="font-size:9pt">'+esc(p.carrier)+'</div></div><div><b>CHECKED BY:</b><div class="l"></div><small>(IC responsible Person- Lead/Store in charge)</small><div style="font-size:9pt">'+esc(p.icRep+(p.icPos?', '+p.icPos:''))+(p.icPhone?'<br>Tel: '+esc(p.icPhone):'')+'</div></div></div>';
   h+='<div class="sig" style="margin-top:3mm"><div><b>EcoOils Rep:</b><div class="l"></div><small>(Proj/Eng, Discipline Eng, HSSE, Stores)</small><div style="font-size:9pt">'+esc(p.dept)+'</div></div><div><b>Approval By:</b><div class="l"></div><small>(EcoOils Site Lead)</small><div style="font-size:9pt">'+esc(p.siteLead||'')+'</div></div></div>';
   h+='<div class="ft"><span>COPY: <i>SECURITY / CARRIER / STORES</i></span><span class="pn">'+esc(tr('printedAt'))+' '+esc(st.txt)+' &middot; Page 1 of '+(one?1:2)+'</span></div></div>';
   if(!one){
     h+='<div class="pg pg2"><table class="hd"><tr><td class="lg" rowspan="3"><img alt="" src="'+LOGO+'"></td><td class="k">Item</td><td class="v">: EOSM-HSSE-FM003</td></tr><tr><td class="k">SR NO</td><td class="v">: '+esc(p.ref)+'</td></tr><tr><td class="k">Date</td><td class="v">: '+esc(fmtD(p.date))+'</td></tr></table>';
-    h+='<div class="ttl">MATERIAL GATE PASS &ndash; VEHICLE AND MATERIAL PHOTOS</div>';
-    h+='<div class="top"><div><div class="ln">COMPANY: <b>'+esc(p.company)+'</b></div><div class="ln">VEHICLE NO: <b>'+esc(p.vehicle)+'</b></div><div class="ln">CARRIED BY: <b>'+esc(p.carrier)+'</b></div></div><div>'+qrSvg(verifyUrl(p.ref,p.qk))+'</div></div>';
-    h+='<div class="bigph"><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>FRONT VIEW OF THE VEHICLE</small></div>';
-    h+='<div class="bigph"><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>MATERIAL LOADED IN THE TRUCK</small></div>';
+    h+='<div class="ttl">MATERIAL GATE PASS &ndash; '+(isHC(p.vehicle)?'MATERIAL PHOTOS':'VEHICLE AND MATERIAL PHOTOS')+'</div>';
+    h+='<div class="top"><div><div class="ln">COMPANY: <b>'+esc(p.company)+'</b></div><div class="ln">VEHICLE NO: <b>'+esc(isHC(p.vehicle)?'HAND CARRY (NO VEHICLE)':p.vehicle)+'</b></div><div class="ln">CARRIED BY: <b>'+esc(p.carrier)+'</b></div></div><div>'+qrSvg(verifyUrl(p.ref,p.qk))+'</div></div>';
+    h+='<div class="bigph"><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>'+(isHC(p.vehicle)?'MATERIAL AND THE PERSON CARRYING IT':'FRONT VIEW OF THE VEHICLE')+'</small></div>';
+    h+='<div class="bigph"><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>'+(isHC(p.vehicle)?'CLOSE-UP OF THE MATERIAL (LABELS / TAGS)':'MATERIAL LOADED IN THE TRUCK')+'</small></div>';
     h+='<div class="ft"><span>'+esc(p.ref)+'</span><span class="pn">'+esc(tr('printedAt'))+' '+esc(st.txt)+' &middot; Page 2 of 2</span></div></div>';
   }
   return h;
@@ -432,8 +442,8 @@ function passDraw(){
     if(SG.length<2)h+='<button class="btn ghost sm" type="button" id="sgFile">'+esc(tr('scanFile'))+'</button>';
     h+='<div class="err" id="pErr"></div>'+(SG.length?'<button class="btn" id="pSend" type="button">'+esc(tr('sendSigned'))+'</button>':'');
   }else h+='<button class="btn ghost" id="pPrint" type="button">'+esc(tr('printAgain'))+'</button><button class="btn ghost" id="pPdf" type="button">'+esc(tr('dlPdf'))+'</button>';
-  h+='<h2>'+esc(tr('photosTitle'))+'</h2><div class="row2" id="pPhotos">'+(PHC[p.ref]?PHV.map(function(v){return '<div class="pv"><small class="note">'+esc(tr('ph_'+v))+'</small><img alt="" data-zoom="'+PHC[p.ref][v]+'" src="'+PHC[p.ref][v]+'"></div>';}).join(''):'<div class="note"><span class="sp"></span></div>')+'</div>';
-  h+='<h2>'+esc(tr('items'))+'</h2><div class="card"><div class="kv"><span>'+esc(tr('compShort'))+'</span><span>'+esc(p.company)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(p.vehicle)+'</span><span>'+esc(tr('driver'))+'</span><span>'+esc(p.carrier)+'</span><span>'+esc(tr('purposeText'))+'</span><span>'+esc(p.purposeText)+'</span></div><table class="it"><tr><th>#</th><th>'+esc(tr('itemName'))+'</th><th>'+esc(tr('qty'))+'</th><th>'+esc(tr('unit'))+'</th></tr>'+p.items.map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(it.item)+'</td><td>'+esc(it.qty)+'</td><td>'+esc(it.unit)+'</td></tr>';}).join('')+'</table></div>';
+  h+='<h2>'+esc(tr('photosTitle'))+'</h2><div class="row2" id="pPhotos">'+(PHC[p.ref]?PHV.map(function(v){return '<div class="pv"><small class="note">'+esc(phl(v,isHC(p.vehicle)))+'</small><img alt="" data-zoom="'+PHC[p.ref][v]+'" src="'+PHC[p.ref][v]+'"></div>';}).join(''):'<div class="note"><span class="sp"></span></div>')+'</div>';
+  h+='<h2>'+esc(tr('items'))+'</h2><div class="card"><div class="kv"><span>'+esc(tr('compShort'))+'</span><span>'+esc(p.company)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(vehTxt(p.vehicle))+'</span><span>'+esc(tr('driver'))+'</span><span>'+esc(p.carrier)+'</span><span>'+esc(tr('purposeText'))+'</span><span>'+esc(p.purposeText)+'</span></div><table class="it"><tr><th>#</th><th>'+esc(tr('itemName'))+'</th><th>'+esc(tr('qty'))+'</th><th>'+esc(tr('unit'))+'</th></tr>'+p.items.map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(it.item)+'</td><td>'+esc(it.qty)+'</td><td>'+esc(it.unit)+'</td></tr>';}).join('')+'</table></div>';
   if(p.status==='Awaiting signatures'||p.status==='Pending release')h+='<button class="btn danger" id="pCancel" type="button">'+esc(tr('cancelPass'))+'</button>';
   if(p.status==='Rejected'||p.status==='Expired'||p.status==='Cancelled')h+='<button class="btn" id="pNew" type="button">'+esc(tr('newPass'))+'</button>';
   h+='<button class="btn ghost" id="pBack" type="button">'+esc(tr('back'))+'</button>';
@@ -480,7 +490,7 @@ function findDraw(){
     $('vFind').innerHTML=h;return;
   }
   h+='<p class="note">'+esc(tr('findHelp2'))+'</p><label for="fdQ">'+esc(tr('fdQ'))+'</label><input id="fdQ" placeholder="'+esc(tr('refPh'))+'" autocapitalize="characters" autocomplete="off" value="'+esc(FD.q)+'"><div class="err" id="fdErr">'+esc(FD.err)+'</div><button class="btn" id="fdGo" type="button">'+esc(tr('findGo'))+'</button><button class="btn amber" id="fdQr" type="button">'+esc(tr('scanQr'))+'</button>';
-  if(FD.res&&FD.res.length){h+='<h2>'+esc(tr('found'))+'</h2>'+FD.res.map(function(s){return '<button class="pas" type="button" data-fdopen="'+esc(s.ref)+'"><span><b>'+esc(s.ref)+'</b><small>'+esc(s.company+' · '+s.vehicle+' · '+fmtD(s.date))+'</small></span>'+chip(s.status)+'</button>';}).join('');}
+  if(FD.res&&FD.res.length){h+='<h2>'+esc(tr('found'))+'</h2>'+FD.res.map(function(s){return '<button class="pas" type="button" data-fdopen="'+esc(s.ref)+'"><span><b>'+esc(s.ref)+'</b><small>'+esc(s.company+' · '+vehTxt(s.vehicle)+' · '+fmtD(s.date))+'</small></span>'+chip(s.status)+'</button>';}).join('');}
   h+='<button class="btn ghost" id="fdBack" type="button">'+esc(tr('back'))+'</button>';
   $('vFind').innerHTML=h;
 }
@@ -571,7 +581,7 @@ function verifyDraw(){
     var s=VRES.status,cls=s==='Pending release'?'ok':s==='Released'?'ok':s==='Awaiting signatures'?'wait':'bad';
     var k=s==='Pending release'?['v_ready','v_ready2']:s==='Released'?['v_rel','']:s==='Awaiting signatures'?['v_wait','v_wait2']:s==='Rejected'?['v_rej','']:s==='Cancelled'?['v_can','']:['v_exp',''];
     h+='<div class="vbox '+cls+'"><div class="big">'+esc(tr(k[0]))+'</div>'+(k[1]?'<div>'+esc(tr(k[1]))+'</div>':'')+(s==='Released'&&VRES.decidedAt?'<div>'+esc(VRES.decidedAt)+' WIB</div>':'')+'</div>';
-    h+='<div class="card"><div class="kv"><span>'+esc(tr('date'))+'</span><span>'+esc(fmtD(VRES.date))+'</span><span>'+esc(tr('compShort'))+'</span><span>'+esc(VRES.company)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(VRES.vehicle)+'</span><span>'+esc(tr('items'))+'</span><span>'+esc(VRES.items)+'</span></div></div>';
+    h+='<div class="card"><div class="kv"><span>'+esc(tr('date'))+'</span><span>'+esc(fmtD(VRES.date))+'</span><span>'+esc(tr('compShort'))+'</span><span>'+esc(VRES.company)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(vehTxt(VRES.vehicle))+'</span><span>'+esc(tr('items'))+'</span><span>'+esc(VRES.items)+'</span></div></div>';
   }
   if(VRES&&VRES.ok&&VRES.found&&VRES.upload){
     h+='<div class="card"><h2 style="margin-top:0">'+esc(tr('upload'))+'</h2><p class="note">'+esc(tr('vUpHelp'))+'</p>';
@@ -634,7 +644,7 @@ function adminDraw(){
 }
 function adminDetailDraw(h){
   var d=AD.sel,p=d.pass;
-  h+='<div class="ref" style="font-size:24px">'+esc(p.ref)+'</div><div>'+chip(p.status)+'</div><div class="card"><div class="kv"><span>'+esc(tr('compShort'))+'</span><span>'+esc(p.company)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(p.vehicle)+'</span><span>'+esc(tr('driver'))+'</span><span>'+esc(p.carrier+' ('+p.icNo+')')+'</span><span>'+esc(tr('ecoDept'))+'</span><span>'+esc(p.dept)+'</span><span>'+esc(tr('icRepShort'))+'</span><span>'+esc(p.icRep+' '+p.icPos)+'</span><span>'+esc(tr('purposeText'))+'</span><span>'+esc(p.purposeText)+'</span>'+(p.decidedBy?'<span>'+esc(tr('releasedBy'))+'</span><span>'+esc(p.decidedBy+' · '+p.decidedAt)+(p.note?' · '+esc(p.note):'')+'</span>':'')+(d.lat!==''&&d.lat!=null?'<span>GPS</span><span>'+esc(d.lat+', '+d.lng)+'</span>':'')+'</div>';
+  h+='<div class="ref" style="font-size:24px">'+esc(p.ref)+'</div><div>'+chip(p.status)+'</div><div class="card"><div class="kv"><span>'+esc(tr('compShort'))+'</span><span>'+esc(p.company)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(vehTxt(p.vehicle))+'</span><span>'+esc(tr('driver'))+'</span><span>'+esc(p.carrier+' ('+p.icNo+')')+'</span><span>'+esc(tr('ecoDept'))+'</span><span>'+esc(p.dept)+'</span><span>'+esc(tr('icRepShort'))+'</span><span>'+esc(p.icRep+' '+p.icPos)+'</span><span>'+esc(tr('purposeText'))+'</span><span>'+esc(p.purposeText)+'</span>'+(p.decidedBy?'<span>'+esc(tr('releasedBy'))+'</span><span>'+esc(p.decidedBy+' · '+p.decidedAt)+(p.note?' · '+esc(p.note):'')+'</span>':'')+(d.lat!==''&&d.lat!=null?'<span>GPS</span><span>'+esc(d.lat+', '+d.lng)+'</span>':'')+'</div>';
   h+='<table class="it"><tr><th>#</th><th>'+esc(tr('itemName'))+'</th><th>'+esc(tr('qty'))+'</th><th>'+esc(tr('unit'))+'</th></tr>'+p.items.map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(it.item)+'</td><td>'+esc(it.qty)+'</td><td>'+esc(it.unit)+'</td></tr>';}).join('')+'</table></div>';
   h+='<h2>'+esc(tr('links'))+'</h2><div>'+[['front',d.links.front],['load',d.links.load],['top',(d.links.old||[])[0]],['left',(d.links.old||[])[1]],['right',(d.links.old||[])[2]]].filter(function(x){return x[1]&&/^http/.test(x[1])&&!(x[0]==='top'&&x[1]===d.links.load);}).map(function(x){return '<a class="btn ghost sm" target="_blank" rel="noopener" href="'+esc(x[1])+'">'+esc(tr('ph_'+x[0]))+'</a>';}).join('')+d.links.signed.map(function(u,i){return '<a class="btn sm" target="_blank" rel="noopener" href="'+esc(u)+'">'+esc(tr('upload'))+' '+(i+1)+'</a>';}).join('')+'</div>';
   h+='<h2>'+esc(tr('auditLog'))+'</h2><table class="it adm"><tr><th>Time</th><th>Event</th><th>By</th><th>Detail</th></tr>'+d.log.map(function(l){return '<tr><td>'+esc(l.t)+'</td><td>'+esc(l.ev)+'</td><td>'+esc(l.by)+'</td><td>'+esc(l.d)+'</td></tr>';}).join('')+'</table>';

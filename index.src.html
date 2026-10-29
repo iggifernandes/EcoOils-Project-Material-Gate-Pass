@@ -88,6 +88,7 @@ table.it{border-collapse:collapse;width:100%;font-size:14px;margin-top:6px}table
 img[data-zoom]{cursor:zoom-in}
 .gstep{display:flex;gap:12px;margin:10px 0}.gstep i{flex:none;width:30px;height:30px;border-radius:50%;background:var(--green);color:#fff;font-style:normal;font-weight:600;display:flex;align-items:center;justify-content:center}.gstep b{display:block;font-weight:600}.gstep span{font-size:15px}
 .gl{list-style:none;margin:8px 0 0;padding:0}.gl li{position:relative;padding:8px 0 8px 32px;border-top:1px solid var(--line);font-size:16px}.gl li:first-child{border-top:0}.gl li:before{position:absolute;left:2px;top:6px;font-weight:700;font-size:20px}
+.gl.gn{counter-reset:g}.gl.gn li:before{counter-increment:g;content:counter(g)".";font-size:16px;color:var(--mute);top:9px}
 .gdo{border-left:5px solid var(--green)}.gdo .gl li:before{content:"\2713";color:var(--ok)}.gdn{border-left:5px solid var(--bad)}.gdn .gl li:before{content:"\2717";color:var(--bad)}
 
 #qrs video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}

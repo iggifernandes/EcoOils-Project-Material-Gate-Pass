@@ -27,7 +27,7 @@ ok((await page.evaluate(()=>getComputedStyle(document.querySelector('h1')).fontF
 // ----- wizard
 await page.click('#hNew');
 await page.click('#nNext');ok((await page.textContent('#nErr')).length>3,'step 1 blocks until A/B is chosen: '+await page.textContent('#nErr'));
-await page.click('[data-purpose=A]');
+await page.click('[data-purpose=A]');await page.click('[data-mode=vehicle]');
 await page.selectOption('#fCompany','GSB');
 await page.fill('#fVehicle','bk 1234 xy');await page.fill('#fCarrier','Budi Santoso');ok(await page.locator('#fIcNo').isDisabled(),'ID number box is locked until KTP or SIM is chosen');await page.selectOption('#fIcType','SIM');await page.fill('#fIcNo','1271 0123 4567');ok((await page.textContent('#icCnt')).includes('12 of 12'),'SIM counter: '+await page.textContent('#icCnt'));await page.selectOption('#fIcType','KTP');ok((await page.textContent('#icCnt')).includes('12 of 16'),'switching to KTP needs 16: '+await page.textContent('#icCnt'));await page.fill('#fIcNo','1271 0123 4567 8901');ok((await page.textContent('#icCnt')).includes('16 of 16'),'KTP counter reaches 16 of 16');
 await page.fill('#fIcNo','');await page.locator('#fIcNo').pressSequentially('12ab3456789012345678901');ok((await page.inputValue('#fIcNo'))==='1234567890123456','KTP box takes digits only and stops at 16');
