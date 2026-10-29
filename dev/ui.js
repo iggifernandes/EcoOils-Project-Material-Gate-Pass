@@ -177,6 +177,7 @@ await c3.close();
 await p2.evaluate(()=>homeOpen());await p2.click('#hAdmin');await p2.fill('#adPin',m.props.ADMIN_PIN);await p2.click('#adGo');await p2.waitForSelector('[data-adopen]');
 ok((await p2.textContent('#vAdmin')).includes(ref),'admin list');
 await p2.click('[data-adopen="'+ref+'"]');await p2.waitForSelector('#adList');
+await p2.waitForFunction(()=>document.querySelectorAll('#adPics img').length>=3,null,{timeout:8000}).catch(()=>{});ok((await p2.locator('#adPics img').count())>=3,'admin sees the signed copy page(s) and the photos inside the pass: '+await p2.locator('#adPics img').count());
 ok((await p2.textContent('#vAdmin')).includes('RELEASED')&&(await p2.textContent('#vAdmin')).includes('Dedi'),'admin detail shows the audit trail');
 await p2.click('#adList');
 await p2.waitForSelector('[data-adsel]');const nRows=m.sheets.Passes.rows.length;await p2.check('[data-adsel="'+ref+'"]');ok((await p2.textContent('#adDelSel')).includes('(1)'),'admin can tick passes and see the Delete selected button');

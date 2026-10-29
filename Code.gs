@@ -1,4 +1,4 @@
-/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.0
+/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.8
    Form EOSM-HSSE-FM003. Paste into Extensions > Apps Script of the "EcoOils Gate Pass Log" Google Sheet (personal Gmail account).
    Do NOT upload this file to GitHub (keep the repo to index.html and the static files only).
    Who calls this web app:
@@ -6,7 +6,7 @@
    - Public QR check: action 'verify' returns status only (no names, no ID numbers, no photos).
    - Patroli (guards): actions b_list / b_get / b_release, protected by the shared secret BRIDGE_SECRET (script property). The guard's name comes from Patroli's PIN login.
    - Admin (you): actions a_*, protected by the script property ADMIN_PIN. */
-var VERSION = 'v1.7';
+var VERSION = 'v1.8';
 var OFF = 7 * 3600000;      // Jakarta (WIB), no daylight saving
 var TZ = 'Asia/Jakarta';
 var P_HEAD = ['Ref', 'Created (WIB)', 'Date', 'Purpose', 'Carrier name', 'Carrier I/C no', 'Company', 'Vehicle no', 'Purpose of taking out', 'EcoOils dept', 'IC rep name', 'IC rep position', 'Items', 'Status', 'Token hash',
@@ -293,6 +293,8 @@ function photos_(b) {
   if (!hit || !(tokenOk_(hit, b.token) || (b.pin && adminOk_(b.pin)))) return {ok: false, err: 'notfound'};
   var ids = String(hit.v[PC['Photo IDs']] || '').split(','), vs = viewsOf_(ids), imgs = {};
   vs.forEach(function (v, i) { imgs[v] = img_(ids[i]); });
+  /* v1.8: the Admin can also open the signed copy pages (asked for with signed:true) */
+  if (b.signed && b.pin && adminOk_(b.pin)) imgs.signed = String(hit.v[PC['Signed IDs']] || '').split(',').filter(function (x) { return x; }).map(img_);
   return {ok: true, ref: String(hit.v[0]), images: imgs};
 }
 function get_(b) {
