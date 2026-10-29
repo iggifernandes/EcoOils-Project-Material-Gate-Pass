@@ -1,4 +1,4 @@
-var VERSION='v1.15';
+var VERSION='v1.16';
 var PHV=['front','load'];
 var HC='HAND CARRY';
 function isHC(v){return String(v||'').toUpperCase()===HC;}
@@ -59,6 +59,9 @@ try{var d0=JSON.parse(ls('gp_draft')||'null');if(d0&&d0.items){D=Object.assign(n
 
 /* ===== views ===== */
 var VIEWS=['vHome','vNew','vDone','vPass','vFind','vVerify','vAdmin','vGuide'];
+/* v1.16: the Back button always sits at the top of the screen, so nobody has to scroll down to leave */
+function topBack(sec){var b=sec.querySelector('button[id$="Back"]');if(b&&sec.firstElementChild!==b){b.classList.add('topback');sec.insertBefore(b,sec.firstChild);}}
+(function(){VIEWS.forEach(function(v){var s=$(v);if(!s||!window.MutationObserver)return;new MutationObserver(function(){topBack(s);}).observe(s,{childList:true});});})();
 function show(id){VIEWS.forEach(function(v){$(v).classList.toggle('hidden',v!==id);});window.scrollTo(0,0);}
 function h1(t){return '<h1>'+esc(t)+'</h1>';}
 function applyLang(){

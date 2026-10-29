@@ -13,6 +13,7 @@
 html,body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.45 Jost,system-ui,Arial,sans-serif}
 input,select,button,textarea{font-family:Jost,system-ui,Arial,sans-serif}
 main{max-width:640px;margin:0 auto;padding:0 16px 80px}
+button.topback{width:auto;min-width:96px;min-height:40px;margin:12px 0 0;padding:6px 16px;display:block}
 /* v1.15 screen sizes: phone as before, tablet wider, laptop uses the screen; on wide screens one pass = one line */
 @media(min-width:760px){main{max-width:920px;padding:0 24px 80px}
  #vNew,#vGuide,#vDone{max-width:760px;margin-left:auto;margin-right:auto}
@@ -2562,7 +2563,7 @@ var T={en:{
  transport:"Bagaimana bahan dibawa keluar?",tVeh:"Kenderaan",tVehSub:"Lori atau kenderaan lain. Nombor plat dan 2 foto kenderaan.",tHand:"Dibawa tangan",tHandSub:"Dibawa seorang dengan berjalan kaki. Tanpa kenderaan, 2 foto bahan.",handNote:"Dibawa tangan: nombor kenderaan tidak diperlukan. Pembawa bahan mesti menunjukkan KTP / SIM di pintu pagar.",handShow:"Dibawa tangan (tanpa kenderaan)",f_mode:"Pilih Kenderaan atau Dibawa tangan.",phh_front:"Bahan dan orang yang membawanya",phh_load:"Foto dekat bahan (label / tag)",photoHelpH:"Ambil 2 foto sekarang dengan kamera: semua bahan bersama orang yang akan membawanya, dan foto dekat bahan dengan label atau tagnya. Setiap foto dicop dengan tarikh dan masa.",gdHandH:"Proses dibawa tangan",gdHandIntro:"Pilih dibawa tangan hanya untuk bahan yang boleh dibawa seorang dengan berjalan kaki, tanpa kenderaan, troli atau forklift.",gdHand:["Pilih Dibawa tangan semasa membuat permohonan. Nombor kenderaan dan foto kenderaan tidak diperlukan.", "Senaraikan setiap barang dengan kuantiti dan unit, tepat seperti yang akan dibawa.", "Ambil 2 foto: semua bahan bersama orang yang membawanya, kemudian foto dekat label atau tag.", "Cetak pas dan dapatkan 4 tandatangan: pembawa, orang bertanggungjawab IC, wakil EcoOils dan Site Lead.", "Imbas pas yang telah ditandatangani dan hantar. Simpan kertas asal bersama pembawa bahan.", "Di pintu pagar pengawal menyemak barang, kad KTP / SIM dan kertas asal berbanding pas, kemudian melepaskan."],
 }};
 
-var VERSION='v1.15';
+var VERSION='v1.16';
 var PHV=['front','load'];
 var HC='HAND CARRY';
 function isHC(v){return String(v||'').toUpperCase()===HC;}
@@ -2623,6 +2624,9 @@ try{var d0=JSON.parse(ls('gp_draft')||'null');if(d0&&d0.items){D=Object.assign(n
 
 /* ===== views ===== */
 var VIEWS=['vHome','vNew','vDone','vPass','vFind','vVerify','vAdmin','vGuide'];
+/* v1.16: the Back button always sits at the top of the screen, so nobody has to scroll down to leave */
+function topBack(sec){var b=sec.querySelector('button[id$="Back"]');if(b&&sec.firstElementChild!==b){b.classList.add('topback');sec.insertBefore(b,sec.firstChild);}}
+(function(){VIEWS.forEach(function(v){var s=$(v);if(!s||!window.MutationObserver)return;new MutationObserver(function(){topBack(s);}).observe(s,{childList:true});});})();
 function show(id){VIEWS.forEach(function(v){$(v).classList.toggle('hidden',v!==id);});window.scrollTo(0,0);}
 function h1(t){return '<h1>'+esc(t)+'</h1>';}
 function applyLang(){
