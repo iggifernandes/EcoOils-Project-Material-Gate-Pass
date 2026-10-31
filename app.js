@@ -1,4 +1,4 @@
-var VERSION='v1.21';
+var VERSION='v1.22';
 var PHV=['front','load'];
 var HC='HAND CARRY';
 function isHC(v){return String(v||'').toUpperCase()===HC;}
@@ -214,13 +214,13 @@ $('vNew').addEventListener('change',function(e){
   if(t.getAttribute('data-view')){
     var f0=t.files&&t.files[0],v=t.getAttribute('data-view');if(!f0)return;
     var co=D.company==='__other'?D.companyOther:D.company;
-    shrink(f0,[stampTime(),phl(v,D.mode==='hand')+' | '+(D.mode==='hand'?HC:(D.vehicle||'').toUpperCase())+' | '+co],1100,0.6,true).then(function(p){D.photos[v]=p;var el=document.querySelector('[data-tile="'+v+'"]');if(el)el.outerHTML=tileHtml(v);var zb=document.querySelector('.tiles+.row2');if(zb)zb.outerHTML=tilesZoomBar();var er0=$('nErr');if(er0)er0.textContent='';},function(why){var er=$('nErr');if(er)er.textContent=why==='portrait'?tr('err_portrait'):tr('err_bad_photo');});
+    shrink(f0,[stampTime(),phl(v,D.mode==='hand')+' | '+(D.mode==='hand'?HC:(D.vehicle||'').toUpperCase())+' | '+co],1100,0.6,true).then(function(p){var hh=SHH,ov=v==='front'?'load':'front';D.hash=D.hash||{};if(D.photos[ov]&&D.hash[ov]&&hDist(hh,D.hash[ov])<=8){var er1=$('nErr');if(er1)er1.textContent=tr('err_same_photo');return;}D.hash[v]=hh;D.photos[v]=p;var el=document.querySelector('[data-tile="'+v+'"]');if(el)el.outerHTML=tileHtml(v);var zb=document.querySelector('.tiles+.row2');if(zb)zb.outerHTML=tilesZoomBar();var er0=$('nErr');if(er0)er0.textContent='';},function(why){var er=$('nErr');if(er)er.textContent=why==='portrait'?tr('err_portrait'):tr('err_bad_photo');});
   }
 });
 $('vNew').addEventListener('click',function(e){
   var t=e.target.closest('button');if(!t)return;
   if(t.getAttribute('data-zv')){var pz=D.photos[t.getAttribute('data-zv')];if(pz)zoomOpen('data:image/jpeg;base64,'+pz);return;}
-  if(t.getAttribute('data-mode')){var nm=t.getAttribute('data-mode');if(nm!==D.mode){D.mode=nm;D.photos={};}saveDraft();newDraw(true);return;}
+  if(t.getAttribute('data-mode')){var nm=t.getAttribute('data-mode');if(nm!==D.mode){D.mode=nm;D.photos={};D.hash={};}saveDraft();newDraw(true);return;}
   if(t.getAttribute('data-purpose')){var np=t.getAttribute('data-purpose');if(np!==D.purpose&&D.reason!=='rOther')D.reason='';D.purpose=np;saveDraft();newDraw(true);}
   else if(t.getAttribute('data-rm')!==null){D.items.splice(+t.getAttribute('data-rm'),1);saveDraft();newDraw(true);}
   else if(t.id==='addItem'){D.items.push({item:'',qty:'',unit:''});saveDraft();newDraw(true);}
@@ -228,13 +228,17 @@ $('vNew').addEventListener('click',function(e){
   else if(t.id==='nBack'){if(D.step>1){D.step--;saveDraft();newDraw();window.scrollTo(0,0);}else homeOpen();}
   else if(t.id==='nSubmit'){submit();}
 });
+/* v1.22: a tiny picture fingerprint (64 bits) of the raw photo, taken before the time stamp, so the same picture cannot be used for both photos */
+var SHH='';
+function dHash(c){var s=document.createElement('canvas');s.width=9;s.height=8;var x=s.getContext('2d');x.drawImage(c,0,0,9,8);var d=x.getImageData(0,0,9,8).data,o='';for(var r=0;r<8;r++)for(var i=0;i<8;i++){var p=(r*9+i)*4,q=p+4;o+=(d[p]*.3+d[p+1]*.59+d[p+2]*.11)>(d[q]*.3+d[q+1]*.59+d[q+2]*.11)?'1':'0';}return o;}
+function hDist(a,b){var n=0;for(var i=0;i<64;i++)if(a.charAt(i)!==b.charAt(i))n++;return n;}
 function shrink(file,lines,max,q,landscape){
   return new Promise(function(res,rej){
     var u=URL.createObjectURL(file),im=new Image();
     im.onload=function(){
       if(landscape&&im.naturalHeight>im.naturalWidth){URL.revokeObjectURL(u);rej('portrait');return;}
       var k=Math.min(1,(max||1100)/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');
-      c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);var x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);
+      c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);var x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);SHH=dHash(c);
       if(lines&&lines.length){
         var f0=Math.max(18,Math.round(c.width/16)),f1=Math.max(14,Math.round(c.width/26)),pd=Math.round(f0*0.35),lh=[Math.round(f0*1.2),Math.round(f1*1.25)],bh=pd*2+lh[0]+(lines.length>1?lh[1]:0),yy=c.height-bh;
         /* time stamp: solid black bar, big bold white date and time, smaller second line (vehicle, company) */

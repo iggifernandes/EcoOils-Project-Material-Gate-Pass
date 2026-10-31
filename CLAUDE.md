@@ -44,3 +44,4 @@ Owner: Iggy (Ignatius Ambrosio Viegas e Fernandes), HSSE Manager, Mentari Projec
 • v1.19 (29 Oct 2026): the Back button is top right on every screen (right-aligned above the title on phones, level with the title on tablet and laptop). Front end only; Code.gs v1.8.
 • v1.20 (29 Oct 2026): Admin pass screen no longer loads the signed copy and photos by itself; a 'Show signed copy and photos' button loads them on tap. Front end only; Code.gs v1.8.
 • v1.21 (29 Oct 2026): the Admin pass screen's back-to-list button (#adList) also moves to the top right like every other Back button. Front end only; Code.gs v1.8.
+• v1.22 (31 Oct 2026): the second photo is refused when it is the same picture as the first (64-bit picture fingerprint of the raw photo, taken before the time stamp; distance 8 or less of 64 = same). Camera-only capture was already in place (capture=environment). Front end only; Code.gs v1.8.

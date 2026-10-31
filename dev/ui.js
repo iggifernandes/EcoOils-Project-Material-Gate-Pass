@@ -16,7 +16,7 @@ const jp=await page.evaluate(async()=>{const c=document.createElement('canvas');
 const jpgPath='/tmp/gp_test.jpg';
 const pg2=await ctx.newPage();await pg2.goto('about:blank');
 const jb=await pg2.evaluate(()=>{const c=document.createElement('canvas');c.width=800;c.height=600;const x=c.getContext('2d');x.fillStyle='#88aa88';x.fillRect(0,0,800,600);x.fillStyle='#222';x.fillRect(100,200,600,250);return c.toDataURL('image/jpeg',0.8).split(',')[1];});
-fs.writeFileSync(jpgPath,Buffer.from(jb,'base64'));await pg2.close();
+fs.writeFileSync(jpgPath,Buffer.from(jb,'base64'));const jb2=await pg2.evaluate(()=>{const c=document.createElement('canvas');c.width=800;c.height=600;const x=c.getContext('2d');const g=x.createLinearGradient(0,0,800,0);g.addColorStop(0,'#fff');g.addColorStop(1,'#123');x.fillStyle=g;x.fillRect(0,0,800,600);x.fillStyle='#e22';x.beginPath();x.arc(600,150,90,0,7);x.fill();x.fillStyle='#222';x.fillRect(40,380,300,180);return c.toDataURL('image/jpeg',0.8).split(',')[1];});fs.writeFileSync('/tmp/gp_test2.jpg',Buffer.from(jb2,'base64'));await pg2.close();
 await page.goto('https://gp.test/');
 await page.waitForSelector('#hNew');
 // version above the language toggle, top right
@@ -56,7 +56,7 @@ const pgp=await ctx.newPage();await pgp.goto('about:blank');const pb=await pgp.e
 await page.setInputFiles('input[data-view=front]','/tmp/gp_portrait.jpg');await page.waitForFunction(()=>/landscape/i.test(document.querySelector('#nErr').textContent),null,{timeout:5000});ok(true,'a portrait photo is refused: turn the phone sideways');
 await page.setInputFiles('input[data-view=front]',jpgPath);
 await page.click('#nNext');ok((await page.textContent('#nErr')).length>3,'1 photo is not enough');
-await page.setInputFiles('input[data-view=load]',jpgPath);
+await page.setInputFiles('input[data-view=load]',jpgPath);await page.waitForFunction(()=>/same/i.test(document.querySelector('#nErr').textContent),null,{timeout:5000});ok((await page.locator('.tile.on').count())===1,'the same picture is refused for the second photo: '+await page.textContent('#nErr'));await page.setInputFiles('input[data-view=load]','/tmp/gp_test2.jpg');
 await page.waitForTimeout(2500);console.log('DBG imgs',await page.locator('.tile img').count(),'step',await page.textContent('.stepl'),'err',await page.textContent('#nErr'));await page.waitForFunction(()=>document.querySelectorAll('.tile img').length===2,null,{timeout:5000});
 await page.screenshot({path:'/tmp/gp_photos.png'});
 await page.click('#nNext');
