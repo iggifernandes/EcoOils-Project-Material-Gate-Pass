@@ -36,7 +36,11 @@ await page.selectOption('#fReason','rOther');await page.fill('#fPT','');await pa
 ok((await page.locator('#fReason option').allTextContents()).join().includes('Rejected on receipt'),'quick reasons offered for purpose A');
 await page.selectOption('#fReason','rA1');await page.fill('#fPT','6in pipes');await page.selectOption('#fDept','Stores');await page.fill('#fRep','Andi Wijaya');await page.fill('#fPos','Store lead');
 await page.fill('#fPhone','123');await page.click('#nNext');ok((await page.textContent('#nErr')).length>3&&(await page.textContent('.stepl')).includes('1'),'IC phone number is required and checked: '+await page.textContent('#nErr'));
-await page.fill('#fPhone','+62 812 3456 7890');
+ok((await page.inputValue('#fCc'))==='+62'&&(await page.locator('#fCc option').first().textContent()).includes('+62'),'phone country code defaults to Indonesia +62');ok((await page.locator('#fCc option').allTextContents()).join().includes('+91')&&(await page.locator('#fCc option').allTextContents()).join().includes('+880'),'south asian codes offered');
+await page.fill('#fPhone','0812 3456 7890');ok((await page.evaluate(()=>D.icPhone))==='+62 812 3456 7890','leading 0 dropped, +62 added: '+await page.evaluate(()=>D.icPhone));
+await page.selectOption('#fCc','+91');await page.fill('#fPhone','98765 43210');ok((await page.evaluate(()=>D.icPhone))==='+91 98765 43210','India code used');
+await page.selectOption('#fCc','+62');await page.fill('#fPhone','+60 12 345 6789');ok((await page.evaluate(()=>D.icPhone))==='+60 12 345 6789'&&(await page.inputValue('#fCc'))==='+60','a pasted full number picks its own code');
+await page.selectOption('#fCc','+62');await page.fill('#fPhone','812 3456 7890');
 await page.fill('#fPT','');await page.click('#nNext');ok((await page.textContent('#nErr')).includes('details'),'details are mandatory: '+await page.textContent('#nErr'));await page.fill('#fPT','6in pipes');
 await page.fill('#fPos','');await page.click('#nNext');ok((await page.textContent('#nErr')).includes('position'),'position of the IC person is mandatory: '+await page.textContent('#nErr'));await page.fill('#fPos','Store lead');
 ok((await page.textContent('#vNew')).includes('All fields are required'),'form says all fields are required');

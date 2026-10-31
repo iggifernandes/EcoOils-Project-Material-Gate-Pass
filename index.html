@@ -15,6 +15,7 @@ input,select,button,textarea{font-family:Jost,system-ui,Arial,sans-serif}
 main{max-width:640px;margin:0 auto;padding:0 16px 80px}
 #hNew{display:block;width:auto;max-width:none!important;margin:14px 0 -6px auto;padding:10px 20px;min-height:44px}
 @media(min-width:760px){#hNew{margin:22px 0 -48px auto;position:relative;z-index:2}}
+div.phrow{display:flex;gap:8px}div.phrow select{flex:0 0 auto;width:auto;max-width:52%}div.phrow input{flex:1;min-width:0}
 button.topback{width:auto;min-width:96px;min-height:40px;margin:12px 0 -6px auto;padding:6px 16px;display:block}
 @media(min-width:760px){button.topback{margin:22px 0 -46px auto;position:relative;z-index:2}}
 /* v1.15 screen sizes: phone as before, tablet wider, laptop uses the screen; on wide screens one pass = one line */
@@ -2514,6 +2515,7 @@ var T={en:{
  showPics:"Show signed copy and photos",
  err_same_photo:"Both photos look the same. Take a different photo for this one.",
  cfmTitle:"Confirm the photo",cfmText:"This photo is of the FRONT of the vehicle.",cfmWarn:"Disclaimer: the pass will be rejected if this photo is not of the front of the vehicle that will take the material out.",cfmYes:"Yes, this is the front of the vehicle",cfmNo:"No, take it again",
+ countryCode:"Country code",
 },id:{
  title:'Surat jalan material',newPass:'Surat jalan baru',how:'Cara kerja',how1:'Isi data dan tambahkan 2 foto: bagian depan kendaraan dan material di dalam truk.',how2:'Cetak surat atau unduh PDF, lalu kumpulkan 4 tanda tangan: pengemudi, perwakilan IC, perwakilan EcoOils, Site Lead.',how3:'Pindai surat yang sudah ditandatangani dengan pemindai di aplikasi lalu kirim. Memindai QR surat membuka pemindai otomatis.',how4:'Security mencocokkan salinan bertanda tangan dengan kertas aslinya dan memeriksa kendaraan, lalu melepasnya.',
  mine:'Surat saya',noneMine:'Belum ada surat di ponsel ini.',find:'Cari surat',refresh:'Segarkan',admin:'Admin',back:'Kembali',next:'Lanjut',close:'Tutup',cancelBtn:'Batal',loading:'Memuat...',
@@ -2545,6 +2547,7 @@ var T={en:{
  showPics:"Tampilkan salinan bertanda tangan dan foto",
  err_same_photo:"Kedua foto terlihat sama. Ambil foto yang berbeda untuk yang ini.",
  cfmTitle:"Konfirmasi foto",cfmText:"Foto ini adalah bagian DEPAN kendaraan.",cfmWarn:"Penafian: surat akan ditolak jika foto ini bukan bagian depan kendaraan yang akan membawa material keluar.",cfmYes:"Ya, ini bagian depan kendaraan",cfmNo:"Tidak, ambil ulang",
+ countryCode:"Kode negara",
 },ms:{
  title:'Pas pintu bahan',newPass:'Pas pintu baharu',how:'Cara ia berfungsi',how1:'Isi butiran dan tambah 2 foto: bahagian depan kenderaan dan bahan di dalam lori.',how2:'Cetak pas atau muat turun PDF, dan kumpulkan 4 tandatangan: pemandu, wakil IC, wakil EcoOils, Site Lead.',how3:'Imbas pas yang telah ditandatangani dengan pengimbas dalam aplikasi dan hantar. Mengimbas QR pas membuka pengimbas secara automatik.',how4:'Keselamatan menyemak salinan bertandatangan dengan kertas asal dan kenderaan, kemudian melepaskannya.',
  mine:'Pas saya',noneMine:'Belum ada pas pada telefon ini.',find:'Cari pas',refresh:'Segar semula',admin:'Admin',back:'Kembali',next:'Seterusnya',close:'Tutup',cancelBtn:'Batal',loading:'Memuatkan...',
@@ -2576,9 +2579,10 @@ var T={en:{
  showPics:"Papar salinan bertandatangan dan foto",
  err_same_photo:"Kedua-dua foto kelihatan sama. Ambil foto yang berbeza untuk yang ini.",
  cfmTitle:"Sahkan foto",cfmText:"Foto ini ialah bahagian HADAPAN kenderaan.",cfmWarn:"Penafian: pas akan ditolak jika foto ini bukan bahagian hadapan kenderaan yang akan membawa bahan keluar.",cfmYes:"Ya, ini bahagian hadapan kenderaan",cfmNo:"Tidak, ambil semula",
+ countryCode:"Kod negara",
 }};
 
-var VERSION='v1.23';
+var VERSION='v1.24';
 var PHV=['front','load'];
 var HC='HAND CARRY';
 function isHC(v){return String(v||'').toUpperCase()===HC;}
@@ -2631,6 +2635,10 @@ function icApply(){
   var c=$('icCnt');if(c)c.textContent=icCntText();
 }
 function icCntText(){var n=icNeed(),d=String(D.icNo||'').replace(/\D/g,'').length;return n?(tr('icDigits').replace('{n}',d).replace('{m}',n)):tr('icPickFirst');}
+/* v1.24: phone = country code (flag, default Indonesia +62) + local number; D.icPhone keeps the full text '+62 812 3456 7890' */
+var CCS=[['\uD83C\uDDEE\uD83C\uDDE9','Indonesia','+62'],['\uD83C\uDDF2\uD83C\uDDFE','Malaysia','+60'],['\uD83C\uDDF8\uD83C\uDDEC','Singapore','+65'],['\uD83C\uDDEE\uD83C\uDDF3','India','+91'],['\uD83C\uDDF5\uD83C\uDDF0','Pakistan','+92'],['\uD83C\uDDE7\uD83C\uDDE9','Bangladesh','+880'],['\uD83C\uDDF1\uD83C\uDDF0','Sri Lanka','+94'],['\uD83C\uDDF3\uD83C\uDDF5','Nepal','+977'],['\uD83C\uDDF5\uD83C\uDDED','Philippines','+63']];
+function phSplit(){var t=String(D.icPhone||'').trim(),cc=D.icCc||'+62',loc=t;if(t.charAt(0)==='+'){var best='';CCS.forEach(function(c){if(t.indexOf(c[2])===0&&c[2].length>best.length)best=c[2];});if(best){cc=best;loc=t.slice(best.length).trim();}}return {cc:cc,loc:loc};}
+function phSet(cc,loc){D.icCc=cc;var l=String(loc||'').replace(/[^0-9 \-]/g,'').replace(/^[\s0\-]+/,'').trim();D.icPhone=l?cc+' '+l:'';}
 function icPhoneOk(){var t=String(D.icPhone||'').trim(),d=t.replace(/\D/g,'');return /^\+?[0-9][0-9 \-]{6,18}$/.test(t)&&d.length>=8&&d.length<=15;}
 function icFull(){var d=icDigits();return (D.icType||'')+' '+d;}
 function newDraft(){return {mode:'',purpose:'',company:'',companyOther:'',vehicle:'',carrier:'',icType:'',icNo:'',icPhone:'',purposeText:'',reason:'',dept:'',icRep:'',icPos:'',items:[{item:'',qty:'',unit:''}],photos:{},cid:Date.now().toString(36)+Math.random().toString(36).slice(2,10),step:1};}
@@ -2730,7 +2738,7 @@ function newDraw(keep){
     h+='<label for="fDept">'+esc(tr('dept'))+'</label><select id="fDept" data-f="dept"><option value="">'+esc(tr('deptPick'))+'</option>'+CFG.depts.map(function(c){return '<option value="'+esc(c)+'"'+(D.dept===c?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select>';
     h+='<label for="fRep">'+esc(tr('icRep'))+'</label><input id="fRep" data-f="icRep" maxlength="60" autocomplete="off" value="'+esc(D.icRep)+'">';
     h+='<label for="fPos">'+esc(tr('icPos'))+'</label><input id="fPos" data-f="icPos" maxlength="40" autocomplete="off" value="'+esc(D.icPos)+'">';
-    h+='<label for="fPhone">'+esc(tr('icPhone'))+'</label><input id="fPhone" data-f="icPhone" type="tel" inputmode="tel" maxlength="20" autocomplete="off" placeholder="+62 812 3456 7890" value="'+esc(D.icPhone)+'">';
+    h+='<label for="fPhone">'+esc(tr('icPhone'))+'</label><div class="phrow"><select id="fCc" data-f="icCc" aria-label="'+esc(tr('countryCode'))+'">'+CCS.map(function(c){return '<option value="'+c[2]+'"'+(phSplit().cc===c[2]?' selected':'')+'>'+c[0]+' '+c[2]+' '+esc(c[1])+'</option>';}).join('')+'</select><input id="fPhone" data-pl="1" type="tel" inputmode="tel" maxlength="16" autocomplete="off" placeholder="812 3456 7890" value="'+esc(phSplit().loc)+'"></div>';
   }else if(st===2){
     D.items.forEach(function(it,i){
       h+='<div class="irow"><label style="margin-top:0">'+(i+1)+'. '+esc(tr('itemName'))+'</label><input data-i="'+i+'" data-k="item" maxlength="80" value="'+esc(it.item)+'" autocomplete="off"><div class="row3"><div><label style="margin-top:0">'+esc(tr('qty'))+'</label><input data-i="'+i+'" data-k="qty" inputmode="decimal" maxlength="8" value="'+esc(it.qty)+'"></div><div><label style="margin-top:0">'+esc(tr('unit'))+'</label><select data-i="'+i+'" data-k="unit"><option value="">'+esc(tr('unitPick'))+'</option>'+CFG.units.map(function(u){return '<option value="'+esc(u)+'"'+(it.unit===u?' selected':'')+'>'+esc(u)+'</option>';}).join('')+'</select></div></div>'+(D.items.length>1?'<button class="btn danger sm" type="button" data-rm="'+i+'">'+esc(tr('remove'))+'</button>':'')+'</div>';
@@ -2783,11 +2791,13 @@ function stepOk(){
 $('vNew').addEventListener('change',function(e){if(e.target.id==='fIcType'){D.icType=e.target.value;icApply();saveDraft();}});
 $('vNew').addEventListener('input',function(e){
   var t=e.target,f=t.getAttribute('data-f'),i=t.getAttribute('data-i');
+  if(t.getAttribute('data-pl')){t.classList.remove('bad');if(String(t.value).trim().charAt(0)==='+'){D.icPhone=String(t.value).replace(/[^0-9+ \-]/g,'').trim();var sp=phSplit();D.icCc=sp.cc;var ccEl=$('fCc');if(ccEl)ccEl.value=sp.cc;t.value=sp.loc;}else phSet(phSplit().cc,t.value);saveDraft();return;}
   if(f){D[f]=t.value;t.classList.remove('bad');if(f==='icNo'||f==='icType')icApply();saveDraft();}
   else if(i!==null){D.items[+i][t.getAttribute('data-k')]=t.value;saveDraft();}
 });
 $('vNew').addEventListener('change',function(e){
   var t=e.target,f=t.getAttribute('data-f');
+  if(f==='icCc'){phSet(t.value,phSplit().loc);saveDraft();return;}
   if(f==='company'){D.company=t.value;saveDraft();newDraw(true);}
   if(f==='reason'){D.reason=t.value;saveDraft();newDraw(true);}
   if(f==='icType'){D.icType=t.value;saveDraft();newDraw(true);}

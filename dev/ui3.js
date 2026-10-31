@@ -27,7 +27,7 @@ await page.click('#nNext');ok((await page.textContent('#nErr')).toLowerCase().in
 await page.click('[data-mode=hand]');
 ok(await page.locator('#fVehicle').count()===0,'hand carry hides the vehicle number box');
 await page.fill('#fCarrier','Dewi Lestari');await page.selectOption('#fIcType','KTP');await page.fill('#fIcNo','1271012345678901');
-await page.selectOption('#fReason',{index:1});await page.fill('#fPT','Tools');await page.selectOption('#fDept','HSSE');await page.fill('#fRep','Andi');await page.fill('#fPos','Lead');await page.fill('#fPhone','+62 812 3456 7890');
+await page.selectOption('#fReason',{index:1});await page.fill('#fPT','Tools');await page.selectOption('#fDept','HSSE');await page.fill('#fRep','Andi');await page.fill('#fPos','Lead');await page.fill('#fPhone','812 3456 7890');
 await page.click('#nNext');ok((await page.textContent('.stepl')).includes('2'),'step 1 passes without a vehicle number');
 await page.fill('[data-i="0"][data-k=item]','Torque wrench');await page.fill('[data-i="0"][data-k=qty]','2');await page.selectOption('[data-i="0"][data-k=unit]','Pcs');await page.click('#nNext');
 ok((await page.textContent('#vNew')).includes('person carrying'),'photo step asks for material photos, not vehicle photos');

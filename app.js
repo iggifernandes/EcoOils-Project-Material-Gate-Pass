@@ -1,4 +1,4 @@
-var VERSION='v1.23';
+var VERSION='v1.24';
 var PHV=['front','load'];
 var HC='HAND CARRY';
 function isHC(v){return String(v||'').toUpperCase()===HC;}
@@ -51,6 +51,10 @@ function icApply(){
   var c=$('icCnt');if(c)c.textContent=icCntText();
 }
 function icCntText(){var n=icNeed(),d=String(D.icNo||'').replace(/\D/g,'').length;return n?(tr('icDigits').replace('{n}',d).replace('{m}',n)):tr('icPickFirst');}
+/* v1.24: phone = country code (flag, default Indonesia +62) + local number; D.icPhone keeps the full text '+62 812 3456 7890' */
+var CCS=[['\uD83C\uDDEE\uD83C\uDDE9','Indonesia','+62'],['\uD83C\uDDF2\uD83C\uDDFE','Malaysia','+60'],['\uD83C\uDDF8\uD83C\uDDEC','Singapore','+65'],['\uD83C\uDDEE\uD83C\uDDF3','India','+91'],['\uD83C\uDDF5\uD83C\uDDF0','Pakistan','+92'],['\uD83C\uDDE7\uD83C\uDDE9','Bangladesh','+880'],['\uD83C\uDDF1\uD83C\uDDF0','Sri Lanka','+94'],['\uD83C\uDDF3\uD83C\uDDF5','Nepal','+977'],['\uD83C\uDDF5\uD83C\uDDED','Philippines','+63']];
+function phSplit(){var t=String(D.icPhone||'').trim(),cc=D.icCc||'+62',loc=t;if(t.charAt(0)==='+'){var best='';CCS.forEach(function(c){if(t.indexOf(c[2])===0&&c[2].length>best.length)best=c[2];});if(best){cc=best;loc=t.slice(best.length).trim();}}return {cc:cc,loc:loc};}
+function phSet(cc,loc){D.icCc=cc;var l=String(loc||'').replace(/[^0-9 \-]/g,'').replace(/^[\s0\-]+/,'').trim();D.icPhone=l?cc+' '+l:'';}
 function icPhoneOk(){var t=String(D.icPhone||'').trim(),d=t.replace(/\D/g,'');return /^\+?[0-9][0-9 \-]{6,18}$/.test(t)&&d.length>=8&&d.length<=15;}
 function icFull(){var d=icDigits();return (D.icType||'')+' '+d;}
 function newDraft(){return {mode:'',purpose:'',company:'',companyOther:'',vehicle:'',carrier:'',icType:'',icNo:'',icPhone:'',purposeText:'',reason:'',dept:'',icRep:'',icPos:'',items:[{item:'',qty:'',unit:''}],photos:{},cid:Date.now().toString(36)+Math.random().toString(36).slice(2,10),step:1};}
@@ -150,7 +154,7 @@ function newDraw(keep){
     h+='<label for="fDept">'+esc(tr('dept'))+'</label><select id="fDept" data-f="dept"><option value="">'+esc(tr('deptPick'))+'</option>'+CFG.depts.map(function(c){return '<option value="'+esc(c)+'"'+(D.dept===c?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select>';
     h+='<label for="fRep">'+esc(tr('icRep'))+'</label><input id="fRep" data-f="icRep" maxlength="60" autocomplete="off" value="'+esc(D.icRep)+'">';
     h+='<label for="fPos">'+esc(tr('icPos'))+'</label><input id="fPos" data-f="icPos" maxlength="40" autocomplete="off" value="'+esc(D.icPos)+'">';
-    h+='<label for="fPhone">'+esc(tr('icPhone'))+'</label><input id="fPhone" data-f="icPhone" type="tel" inputmode="tel" maxlength="20" autocomplete="off" placeholder="+62 812 3456 7890" value="'+esc(D.icPhone)+'">';
+    h+='<label for="fPhone">'+esc(tr('icPhone'))+'</label><div class="phrow"><select id="fCc" data-f="icCc" aria-label="'+esc(tr('countryCode'))+'">'+CCS.map(function(c){return '<option value="'+c[2]+'"'+(phSplit().cc===c[2]?' selected':'')+'>'+c[0]+' '+c[2]+' '+esc(c[1])+'</option>';}).join('')+'</select><input id="fPhone" data-pl="1" type="tel" inputmode="tel" maxlength="16" autocomplete="off" placeholder="812 3456 7890" value="'+esc(phSplit().loc)+'"></div>';
   }else if(st===2){
     D.items.forEach(function(it,i){
       h+='<div class="irow"><label style="margin-top:0">'+(i+1)+'. '+esc(tr('itemName'))+'</label><input data-i="'+i+'" data-k="item" maxlength="80" value="'+esc(it.item)+'" autocomplete="off"><div class="row3"><div><label style="margin-top:0">'+esc(tr('qty'))+'</label><input data-i="'+i+'" data-k="qty" inputmode="decimal" maxlength="8" value="'+esc(it.qty)+'"></div><div><label style="margin-top:0">'+esc(tr('unit'))+'</label><select data-i="'+i+'" data-k="unit"><option value="">'+esc(tr('unitPick'))+'</option>'+CFG.units.map(function(u){return '<option value="'+esc(u)+'"'+(it.unit===u?' selected':'')+'>'+esc(u)+'</option>';}).join('')+'</select></div></div>'+(D.items.length>1?'<button class="btn danger sm" type="button" data-rm="'+i+'">'+esc(tr('remove'))+'</button>':'')+'</div>';
@@ -203,11 +207,13 @@ function stepOk(){
 $('vNew').addEventListener('change',function(e){if(e.target.id==='fIcType'){D.icType=e.target.value;icApply();saveDraft();}});
 $('vNew').addEventListener('input',function(e){
   var t=e.target,f=t.getAttribute('data-f'),i=t.getAttribute('data-i');
+  if(t.getAttribute('data-pl')){t.classList.remove('bad');if(String(t.value).trim().charAt(0)==='+'){D.icPhone=String(t.value).replace(/[^0-9+ \-]/g,'').trim();var sp=phSplit();D.icCc=sp.cc;var ccEl=$('fCc');if(ccEl)ccEl.value=sp.cc;t.value=sp.loc;}else phSet(phSplit().cc,t.value);saveDraft();return;}
   if(f){D[f]=t.value;t.classList.remove('bad');if(f==='icNo'||f==='icType')icApply();saveDraft();}
   else if(i!==null){D.items[+i][t.getAttribute('data-k')]=t.value;saveDraft();}
 });
 $('vNew').addEventListener('change',function(e){
   var t=e.target,f=t.getAttribute('data-f');
+  if(f==='icCc'){phSet(t.value,phSplit().loc);saveDraft();return;}
   if(f==='company'){D.company=t.value;saveDraft();newDraw(true);}
   if(f==='reason'){D.reason=t.value;saveDraft();newDraw(true);}
   if(f==='icType'){D.icType=t.value;saveDraft();newDraw(true);}
