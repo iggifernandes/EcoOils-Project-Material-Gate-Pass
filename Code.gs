@@ -1,4 +1,4 @@
-/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.8
+/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.9
    Form EOSM-HSSE-FM003. Paste into Extensions > Apps Script of the "EcoOils Gate Pass Log" Google Sheet (personal Gmail account).
    Do NOT upload this file to GitHub (keep the repo to index.html and the static files only).
    Who calls this web app:
@@ -6,7 +6,7 @@
    - Public QR check: action 'verify' returns status only (no names, no ID numbers, no photos).
    - Patroli (guards): actions b_list / b_get / b_release, protected by the shared secret BRIDGE_SECRET (script property). The guard's name comes from Patroli's PIN login.
    - Admin (you): actions a_*, protected by the script property ADMIN_PIN. */
-var VERSION = 'v1.8';
+var VERSION = 'v1.9';
 var OFF = 7 * 3600000;      // Jakarta (WIB), no daylight saving
 var TZ = 'Asia/Jakarta';
 var P_HEAD = ['Ref', 'Created (WIB)', 'Date', 'Purpose', 'Carrier name', 'Carrier I/C no', 'Company', 'Vehicle no', 'Purpose of taking out', 'EcoOils dept', 'IC rep name', 'IC rep position', 'Items', 'Status', 'Token hash',
@@ -65,6 +65,8 @@ function ymdhms_(ms) { return new Date(ms + OFF).toISOString().replace('T', ' ')
 function ymd_(ms) { return new Date(ms + OFF).toISOString().slice(0, 10); }
 function num_(v) { if (v === '' || v == null) return null; var n = Number(v); return isFinite(n) ? n : null; }
 function out_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
+/* v1.9: text that starts with = + - @ would be read by Google Sheets as a formula (a phone number like +62 812... showed as #ERROR!). A leading apostrophe stores it as plain text. */
+function safe_(v) { return (typeof v === 'string' && /^[=+\-@]/.test(v)) ? "'" + v : v; }
 function clean_(s, max) { return String(s == null ? '' : s).replace(/[\u0000-\u001f<>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max); }
 var CFGM_ = null;
 function cfg_(k, def) {
@@ -103,7 +105,7 @@ function folder_() {
   p.setProperty('PASS_FOLDER', f.getId());
   return f;
 }
-function log_(ref, ev, by, detail) { sh_('Log').appendRow([ymdhms_(Date.now()), ref || '', ev, by || '', detail || '']); }
+function log_(ref, ev, by, detail) { sh_('Log').appendRow([ymdhms_(Date.now()), ref || '', ev, safe_(by || ''), safe_(detail || '')]); }
 
 /* ---------- rows ---------- */
 var ROWS_ = null;
@@ -118,7 +120,20 @@ function rowOf_(ref) {
   for (var i = 0; i < rs.length; i++) if (String(rs[i][0]).toUpperCase() === r) return {row: i + 2, v: rs[i]};
   return null;
 }
-function setCell_(row, name, val) { sh_('Passes').getRange(row, PC[name] + 1).setValue(val); }
+function setCell_(row, name, val) { sh_('Passes').getRange(row, PC[name] + 1).setValue(safe_(val)); }
+/* One-time repair (run it once from the Apps Script editor): phone numbers that already show #ERROR! are turned back into text when the original number can still be read from the cell. */
+function repairPhones() {
+  var sh = sh_('Passes'), n = sh.getLastRow(), col = PC['IC rep phone'] + 1, fixed = 0, lost = 0;
+  if (n < 2) return 'nothing to repair';
+  var rg = sh.getRange(2, col, n - 1, 1), vals = rg.getValues(), fs = rg.getFormulas();
+  for (var i = 0; i < vals.length; i++) {
+    var f = String(fs[i][0] || ''), v = String(vals[i][0] || '');
+    if (f) { var t = f.replace(/^=/, '').trim(); var cell = sh.getRange(i + 2, col); cell.setNumberFormat('@'); cell.setValue(t); fixed++; }
+    else if (/^#(ERROR|NAME|VALUE|REF|N\/A)/.test(v)) lost++;
+  }
+  Logger.log('repairPhones: fixed ' + fixed + ', could not recover ' + lost);
+  return 'fixed ' + fixed + ', could not recover ' + lost;
+}
 function itemsOf_(ref) {
   var sh = sh_('Items'), n = sh.getLastRow(), out = [];
   if (n < 2) return out;
@@ -269,9 +284,9 @@ function create_(b) {
     row[PC['Items']] = items.length; row[PC['Status']] = ST_WAIT; row[PC['Token hash']] = hash_(token);
     row[PC['Photo front']] = saved.front.url; row[PC['Photo load']] = saved.load.url; row[PC['IC rep phone']] = icPhone;
     row[PC['Photo IDs']] = VIEWS.map(function (v) { return saved[v].id; }).join(','); row[PC['Created ms']] = now; row[PC['Client id']] = cid;
-    sh_('Passes').appendRow(row);
+    sh_('Passes').appendRow(row.map(safe_));
     var ish = sh_('Items');
-    ish.getRange(ish.getLastRow() + 1, 1, items.length, 5).setValues(items.map(function (x) { return [ref, x[0], x[1], x[2], x[3]]; }));
+    ish.getRange(ish.getLastRow() + 1, 1, items.length, 5).setValues(items.map(function (x) { return [ref, x[0], safe_(x[1]), x[2], x[3]]; }));
     log_(ref, 'CREATED', carrier, company + ' / ' + vehicle + ' / ' + items.length + ' items');
     ROWS_ = null;
   } finally { lock.releaseLock(); }

@@ -119,3 +119,13 @@ ok(m.call({action:'signed',ref:q1.ref,k:q1.qk,photos:[jpg]}).err==='not_open'&&m
 m.sheets.Config.rows.forEach(r=>{if(r[0]==='COMPANY_DAILY_CAP')r[1]='40'});
 const ep=m.call({...base,company:'EcoOils (Project)'}),eo=m.call({...base,company:'EcoOils (Operations)'});
 ok(ep.ok&&/^MGP-EOP-\d{4}-0001$/.test(ep.ref)&&eo.ok&&/^MGP-EOO-\d{4}-0001$/.test(eo.ref),'EcoOils (Project) and (Operations) get their own codes and numbering: '+ep.ref+' '+eo.ref);
+// v1.9: phone numbers starting with + (and other text starting with = + - @) must stay text in the Sheet
+const ph1=m.call({...base,icPhone:'+62 812 3456 7890',carrier:'=SUM(1)',items:[{item:'=cmd',qty:1,unit:'Pcs'}]});
+const g1=m.call({action:'a_get',ref:ph1.ref,pin:m.props.ADMIN_PIN});
+ok(ph1.ok&&g1.ok&&g1.pass.icPhone==='+62 812 3456 7890'&&g1.pass.carrier==='=SUM(1)'&&g1.pass.items[0].item==='=cmd','phone +62... and text starting with = stay text (no #ERROR!): '+JSON.stringify([g1.pass&&g1.pass.icPhone,g1.pass&&g1.pass.carrier]));
+// an older pass whose phone already became a formula: repairPhones brings the number back
+const prow=m.sheets.Passes.rows.find(r=>r[0]===ph1.ref);const pc=m.ctx.PC['IC rep phone'];
+m.sheets.Passes.rows.forEach((r,i)=>{if(r[0]===ph1.ref){r[pc]='#ERROR!';m.sheets.Passes.fm[(i+1)+','+(pc+1)]='=+62 812 3456 7890'}});
+const rp=m.ctx.repairPhones();const g2=m.call({action:'a_get',ref:ph1.ref,pin:m.props.ADMIN_PIN});
+ok(g2.pass.icPhone==='+62 812 3456 7890','repairPhones restores an old #ERROR! phone: '+rp+' -> '+g2.pass.icPhone);
+console.log(fails?'FAILED '+fails:'ALL PASSED');
