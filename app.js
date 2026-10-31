@@ -1,4 +1,4 @@
-var VERSION='v1.22';
+var VERSION='v1.23';
 var PHV=['front','load'];
 var HC='HAND CARRY';
 function isHC(v){return String(v||'').toUpperCase()===HC;}
@@ -214,7 +214,7 @@ $('vNew').addEventListener('change',function(e){
   if(t.getAttribute('data-view')){
     var f0=t.files&&t.files[0],v=t.getAttribute('data-view');if(!f0)return;
     var co=D.company==='__other'?D.companyOther:D.company;
-    shrink(f0,[stampTime(),phl(v,D.mode==='hand')+' | '+(D.mode==='hand'?HC:(D.vehicle||'').toUpperCase())+' | '+co],1100,0.6,true).then(function(p){var hh=SHH,ov=v==='front'?'load':'front';D.hash=D.hash||{};if(D.photos[ov]&&D.hash[ov]&&hDist(hh,D.hash[ov])<=8){var er1=$('nErr');if(er1)er1.textContent=tr('err_same_photo');return;}D.hash[v]=hh;D.photos[v]=p;var el=document.querySelector('[data-tile="'+v+'"]');if(el)el.outerHTML=tileHtml(v);var zb=document.querySelector('.tiles+.row2');if(zb)zb.outerHTML=tilesZoomBar();var er0=$('nErr');if(er0)er0.textContent='';},function(why){var er=$('nErr');if(er)er.textContent=why==='portrait'?tr('err_portrait'):tr('err_bad_photo');});
+    shrink(f0,[stampTime(),phl(v,D.mode==='hand')+' | '+(D.mode==='hand'?HC:(D.vehicle||'').toUpperCase())+' | '+co],1100,0.6,true).then(function(p){var hh=SHH,ov=v==='front'?'load':'front';D.hash=D.hash||{};if(D.photos[ov]&&D.hash[ov]&&hDist(hh,D.hash[ov])<=8){var er1=$('nErr');if(er1)er1.textContent=tr('err_same_photo');return;}var fin=function(){D.hash[v]=hh;D.photos[v]=p;var el=document.querySelector('[data-tile="'+v+'"]');if(el)el.outerHTML=tileHtml(v);var zb=document.querySelector('.tiles+.row2');if(zb)zb.outerHTML=tilesZoomBar();var er0=$('nErr');if(er0)er0.textContent='';};if(D.mode==='vehicle'&&v==='front')cfmFront(p,fin);else fin();},function(why){var er=$('nErr');if(er)er.textContent=why==='portrait'?tr('err_portrait'):tr('err_bad_photo');});
   }
 });
 $('vNew').addEventListener('click',function(e){
@@ -230,6 +230,14 @@ $('vNew').addEventListener('click',function(e){
 });
 /* v1.22: a tiny picture fingerprint (64 bits) of the raw photo, taken before the time stamp, so the same picture cannot be used for both photos */
 var SHH='';
+/* v1.23: the front-of-vehicle photo must be confirmed (with a disclaimer) before it is accepted */
+function cfmFront(p,ok){
+  var o=document.createElement('div');o.id='cfm';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');
+  o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto';
+  o.innerHTML='<div style="background:#fff;border-radius:12px;max-width:460px;width:100%;padding:18px"><h2 style="margin:0 0 10px">'+esc(tr('cfmTitle'))+'</h2><img alt="" src="data:image/jpeg;base64,'+p+'" style="width:100%;border-radius:8px;display:block"><p style="margin:12px 0"><b>'+esc(tr('cfmText'))+'</b></p><div class="note" style="background:var(--ban);border:1px solid var(--amber);border-radius:8px;padding:10px;margin-bottom:12px">'+esc(tr('cfmWarn'))+'</div><button class="btn" id="cfmYes" type="button">'+esc(tr('cfmYes'))+'</button><button class="btn ghost" id="cfmNo" type="button">'+esc(tr('cfmNo'))+'</button></div>';
+  document.body.appendChild(o);
+  o.addEventListener('click',function(e){var t=e.target.closest('button');if(!t)return;if(t.id==='cfmYes'){o.remove();ok();}else if(t.id==='cfmNo'){o.remove();var fi=document.querySelector('input[data-view=front]');if(fi)fi.value='';}});
+}
 function dHash(c){var s=document.createElement('canvas');s.width=9;s.height=8;var x=s.getContext('2d');x.drawImage(c,0,0,9,8);var d=x.getImageData(0,0,9,8).data,o='';for(var r=0;r<8;r++)for(var i=0;i<8;i++){var p=(r*9+i)*4,q=p+4;o+=(d[p]*.3+d[p+1]*.59+d[p+2]*.11)>(d[q]*.3+d[q+1]*.59+d[q+2]*.11)?'1':'0';}return o;}
 function hDist(a,b){var n=0;for(var i=0;i<64;i++)if(a.charAt(i)!==b.charAt(i))n++;return n;}
 function shrink(file,lines,max,q,landscape){

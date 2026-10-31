@@ -28,6 +28,7 @@ var T={en:{
  signedCopy:"Signed copy and photos (tap to zoom)",noSigned:"No signed copy has been uploaded yet.",picsFail:"Could not load the pictures. Try again.",picsOld:"Update the backend (Code.gs v1.8) to see the signed copy here.",
  showPics:"Show signed copy and photos",
  err_same_photo:"Both photos look the same. Take a different photo for this one.",
+ cfmTitle:"Confirm the photo",cfmText:"This photo is of the FRONT of the vehicle.",cfmWarn:"Disclaimer: the pass will be rejected if this photo is not of the front of the vehicle that will take the material out.",cfmYes:"Yes, this is the front of the vehicle",cfmNo:"No, take it again",
 },id:{
  title:'Surat jalan material',newPass:'Surat jalan baru',how:'Cara kerja',how1:'Isi data dan tambahkan 2 foto: bagian depan kendaraan dan material di dalam truk.',how2:'Cetak surat atau unduh PDF, lalu kumpulkan 4 tanda tangan: pengemudi, perwakilan IC, perwakilan EcoOils, Site Lead.',how3:'Pindai surat yang sudah ditandatangani dengan pemindai di aplikasi lalu kirim. Memindai QR surat membuka pemindai otomatis.',how4:'Security mencocokkan salinan bertanda tangan dengan kertas aslinya dan memeriksa kendaraan, lalu melepasnya.',
  mine:'Surat saya',noneMine:'Belum ada surat di ponsel ini.',find:'Cari surat',refresh:'Segarkan',admin:'Admin',back:'Kembali',next:'Lanjut',close:'Tutup',cancelBtn:'Batal',loading:'Memuat...',
@@ -58,6 +59,7 @@ var T={en:{
  signedCopy:"Salinan bertanda tangan dan foto (ketuk untuk memperbesar)",noSigned:"Belum ada salinan bertanda tangan yang diunggah.",picsFail:"Gambar tidak dapat dimuat. Coba lagi.",picsOld:"Perbarui backend (Code.gs v1.8) untuk melihat salinan bertanda tangan di sini.",
  showPics:"Tampilkan salinan bertanda tangan dan foto",
  err_same_photo:"Kedua foto terlihat sama. Ambil foto yang berbeda untuk yang ini.",
+ cfmTitle:"Konfirmasi foto",cfmText:"Foto ini adalah bagian DEPAN kendaraan.",cfmWarn:"Penafian: surat akan ditolak jika foto ini bukan bagian depan kendaraan yang akan membawa material keluar.",cfmYes:"Ya, ini bagian depan kendaraan",cfmNo:"Tidak, ambil ulang",
 },ms:{
  title:'Pas pintu bahan',newPass:'Pas pintu baharu',how:'Cara ia berfungsi',how1:'Isi butiran dan tambah 2 foto: bahagian depan kenderaan dan bahan di dalam lori.',how2:'Cetak pas atau muat turun PDF, dan kumpulkan 4 tandatangan: pemandu, wakil IC, wakil EcoOils, Site Lead.',how3:'Imbas pas yang telah ditandatangani dengan pengimbas dalam aplikasi dan hantar. Mengimbas QR pas membuka pengimbas secara automatik.',how4:'Keselamatan menyemak salinan bertandatangan dengan kertas asal dan kenderaan, kemudian melepaskannya.',
  mine:'Pas saya',noneMine:'Belum ada pas pada telefon ini.',find:'Cari pas',refresh:'Segar semula',admin:'Admin',back:'Kembali',next:'Seterusnya',close:'Tutup',cancelBtn:'Batal',loading:'Memuatkan...',
@@ -88,4 +90,5 @@ var T={en:{
  signedCopy:"Salinan bertandatangan dan foto (ketik untuk zum)",noSigned:"Belum ada salinan bertandatangan dimuat naik.",picsFail:"Gambar tidak dapat dimuatkan. Cuba lagi.",picsOld:"Kemas kini backend (Code.gs v1.8) untuk melihat salinan bertandatangan di sini.",
  showPics:"Papar salinan bertandatangan dan foto",
  err_same_photo:"Kedua-dua foto kelihatan sama. Ambil foto yang berbeza untuk yang ini.",
+ cfmTitle:"Sahkan foto",cfmText:"Foto ini ialah bahagian HADAPAN kenderaan.",cfmWarn:"Penafian: pas akan ditolak jika foto ini bukan bahagian hadapan kenderaan yang akan membawa bahan keluar.",cfmYes:"Ya, ini bahagian hadapan kenderaan",cfmNo:"Tidak, ambil semula",
 }};
