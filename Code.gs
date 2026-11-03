@@ -1,4 +1,4 @@
-/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.9
+/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.10
    Form EOSM-HSSE-FM003. Paste into Extensions > Apps Script of the "EcoOils Gate Pass Log" Google Sheet (personal Gmail account).
    Do NOT upload this file to GitHub (keep the repo to index.html and the static files only).
    Who calls this web app:
@@ -6,11 +6,11 @@
    - Public QR check: action 'verify' returns status only (no names, no ID numbers, no photos).
    - Patroli (guards): actions b_list / b_get / b_release, protected by the shared secret BRIDGE_SECRET (script property). The guard's name comes from Patroli's PIN login.
    - Admin (you): actions a_*, protected by the script property ADMIN_PIN. */
-var VERSION = 'v1.9';
+var VERSION = 'v1.10';
 var OFF = 7 * 3600000;      // Jakarta (WIB), no daylight saving
 var TZ = 'Asia/Jakarta';
 var P_HEAD = ['Ref', 'Created (WIB)', 'Date', 'Purpose', 'Carrier name', 'Carrier I/C no', 'Company', 'Vehicle no', 'Purpose of taking out', 'EcoOils dept', 'IC rep name', 'IC rep position', 'Items', 'Status', 'Token hash',
-  'Photo front', 'Photo load', 'Photo left (old)', 'Photo right (old)', 'Photo IDs', 'Signed copy links', 'Signed IDs', 'Signed at (WIB)', 'Decided by', 'Decided at (WIB)', 'Decision note', 'Dec lat', 'Dec lng', 'Dec acc', 'Checklist', 'Created ms', 'Signed ms', 'Decided ms', 'Cancelled reason', 'Decider role', 'Client id', 'IC rep phone'];
+  'Photo front', 'Photo load', 'Photo left (old)', 'Photo right (old)', 'Photo IDs', 'Signed copy links', 'Signed IDs', 'Signed at (WIB)', 'Decided by', 'Decided at (WIB)', 'Decision note', 'Dec lat', 'Dec lng', 'Dec acc', 'Checklist', 'Created ms', 'Signed ms', 'Decided ms', 'Cancelled reason', 'Decider role', 'Client id', 'IC rep phone', 'Extra photo IDs'];
 var PC = {}; P_HEAD.forEach(function (h, i) { PC[h] = i; });
 var HEAD = {
   Passes: P_HEAD,
@@ -21,6 +21,9 @@ var HEAD = {
 var UNITS_DEF = 'Pcs,Units,Kgs,Ton,Liters,Meters,Sets,Rolls,Drums,Bags,Boxes,Pallets,Lots';
 var VIEWS = ['front', 'load'];          /* v1.3: 2 photos. Passes made before v1.3 hold 4 (front, top, left, right) and are read by photo count. */
 var OLD_VIEWS = ['front', 'top', 'left', 'right'];
+/* v1.10: up to 4 optional extra photos (x1..x4) next to the 2 required ones; their Drive ids live in 'Extra photo IDs' as x1:id,x2:id */
+var XVIEWS = ['x1', 'x2', 'x3', 'x4'];
+function extraIds_(v) { var o = {}; String(v[PC['Extra photo IDs']] || '').split(',').forEach(function (p) { var k = p.split(':'); if (k.length === 2 && XVIEWS.indexOf(k[0]) >= 0 && k[1]) o[k[0]] = k[1]; }); return o; }
 function viewsOf_(ids) { return ids.length >= 4 ? OLD_VIEWS : VIEWS; }
 var ST_WAIT = 'Awaiting signatures', ST_PEND = 'Pending release', ST_REL = 'Released', ST_REJ = 'Rejected', ST_CAN = 'Cancelled', ST_EXP = 'Expired';
 
@@ -256,6 +259,8 @@ function create_(b) {
   }
   var ph = b.photos || {};
   for (var k = 0; k < VIEWS.length; k++) if (!b64ok_(ph[VIEWS[k]], 2000, 1500000)) return {ok: false, err: 'bad_photo', view: VIEWS[k]};
+  var xs = XVIEWS.filter(function (x) { return ph[x] !== undefined && ph[x] !== null && ph[x] !== ''; });
+  for (var xk = 0; xk < xs.length; xk++) if (!b64ok_(ph[xs[xk]], 2000, 1500000)) return {ok: false, err: 'bad_photo', view: xs[xk]};
   var lock = LockService.getScriptLock();
   lock.waitLock(25000);
   var ref, token, now = Date.now(), saved = {};
@@ -278,12 +283,13 @@ function create_(b) {
     ref = nextRef_(now, company);
     token = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '').slice(0, 32);
     VIEWS.forEach(function (v) { saved[v] = saveImg_(ph[v], ref + '_' + v + '.jpg', ref); });
+    var xsaved = xs.map(function (x) { return x + ':' + saveImg_(ph[x], ref + '_' + x + '.jpg', ref).id; });
     var row = new Array(P_HEAD.length).fill('');
     row[0] = ref; row[PC['Created (WIB)']] = ymdhms_(now); row[PC['Date']] = today; row[PC['Purpose']] = purpose; row[PC['Carrier name']] = carrier; row[PC['Carrier I/C no']] = icNo;
     row[PC['Company']] = company; row[PC['Vehicle no']] = vehicle; row[PC['Purpose of taking out']] = ptxt; row[PC['EcoOils dept']] = dept; row[PC['IC rep name']] = icRep; row[PC['IC rep position']] = icPos;
     row[PC['Items']] = items.length; row[PC['Status']] = ST_WAIT; row[PC['Token hash']] = hash_(token);
     row[PC['Photo front']] = saved.front.url; row[PC['Photo load']] = saved.load.url; row[PC['IC rep phone']] = icPhone;
-    row[PC['Photo IDs']] = VIEWS.map(function (v) { return saved[v].id; }).join(','); row[PC['Created ms']] = now; row[PC['Client id']] = cid;
+    row[PC['Photo IDs']] = VIEWS.map(function (v) { return saved[v].id; }).join(','); row[PC['Extra photo IDs']] = xsaved.join(','); row[PC['Created ms']] = now; row[PC['Client id']] = cid;
     sh_('Passes').appendRow(row.map(safe_));
     var ish = sh_('Items');
     ish.getRange(ish.getLastRow() + 1, 1, items.length, 5).setValues(items.map(function (x) { return [ref, x[0], safe_(x[1]), x[2], x[3]]; }));
@@ -308,6 +314,7 @@ function photos_(b) {
   if (!hit || !(tokenOk_(hit, b.token) || (b.pin && adminOk_(b.pin)))) return {ok: false, err: 'notfound'};
   var ids = String(hit.v[PC['Photo IDs']] || '').split(','), vs = viewsOf_(ids), imgs = {};
   vs.forEach(function (v, i) { imgs[v] = img_(ids[i]); });
+  var xi = extraIds_(hit.v); Object.keys(xi).forEach(function (k) { imgs[k] = img_(xi[k]); });
   /* v1.8: the Admin can also open the signed copy pages (asked for with signed:true) */
   if (b.signed && b.pin && adminOk_(b.pin)) imgs.signed = String(hit.v[PC['Signed IDs']] || '').split(',').filter(function (x) { return x; }).map(img_);
   return {ok: true, ref: String(hit.v[0]), images: imgs};
@@ -471,6 +478,7 @@ function bridge_(a, b) {
     if (!hit) return {ok: false, err: 'notfound'};
     var p = full_(hit.v, now), imgs = {}, ids = String(hit.v[PC['Photo IDs']] || '').split(',');
     viewsOf_(ids).forEach(function (v, i) { imgs[v] = img_(ids[i]); });
+    var xi2 = extraIds_(hit.v); Object.keys(xi2).forEach(function (k) { imgs[k] = img_(xi2[k]); });
     imgs.signed = String(hit.v[PC['Signed IDs']] || '').split(',').filter(function (x) { return x; }).map(img_);
     var why = '';
     if (p.status !== ST_PEND) why = p.status === ST_WAIT ? 'no_signed_copy' : p.status === ST_REL ? 'already_released' : p.status === ST_EXP ? 'expired' : p.status === ST_REJ ? 'rejected' : 'cancelled';

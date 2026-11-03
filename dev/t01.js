@@ -129,3 +129,13 @@ m.sheets.Passes.rows.forEach((r,i)=>{if(r[0]===ph1.ref){r[pc]='#ERROR!';m.sheets
 const rp=m.ctx.repairPhones();const g2=m.call({action:'a_get',ref:ph1.ref,pin:m.props.ADMIN_PIN});
 ok(g2.pass.icPhone==='+62 812 3456 7890','repairPhones restores an old #ERROR! phone: '+rp+' -> '+g2.pass.icPhone);
 console.log(fails?'FAILED '+fails:'ALL PASSED');
+// v1.10: up to 4 optional extra photos
+const xp=m.call({...base,photos:{...base.photos,x1:base.photos.front,x2:base.photos.load}});
+ok(xp.ok,'create with 2 extra photos works: '+JSON.stringify(xp).slice(0,80));
+const xa=m.call({action:'photos',ref:xp.ref,pin:m.props.ADMIN_PIN});
+ok(xa.ok&&xa.images.front&&xa.images.load&&xa.images.x1&&xa.images.x2&&!xa.images.x3,'the pass returns front, load, x1, x2 only');
+const xb=m.call({...base,photos:{...base.photos,x1:'notajpeg'+'A'.repeat(3000)}});
+ok(!xb.ok&&xb.err==='bad_photo'&&xb.view==='x1','a broken extra photo is refused: '+JSON.stringify(xb));
+const xc=m.call(base);const xd=m.call({action:'photos',ref:xc.ref,pin:m.props.ADMIN_PIN});
+ok(xc.ok&&xd.ok&&!xd.images.x1,'a pass without extras still works');
+console.log(fails?'FAILED '+fails:'ALL PASSED');

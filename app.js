@@ -1,9 +1,14 @@
-var VERSION='v1.24';
+var VERSION='v1.25';
 var PHV=['front','load'];
+var EXV=['x1','x2','x3','x4'];
+var ALLV=PHV.concat(EXV);
+/* v1.25: 2 required photos + up to 4 optional extra photos; the tiles show the taken ones and one empty tile to add the next */
+function visViews(){var a=PHV.slice(),added=false;EXV.forEach(function(v){if(D.photos[v])a.push(v);else if(!added&&D.photos.front&&D.photos.load){a.push(v);added=true;}});return a;}
+function takenViews(ph){return ALLV.filter(function(v){return ph&&ph[v];});}
 var HC='HAND CARRY';
 function isHC(v){return String(v||'').toUpperCase()===HC;}
 function vehTxt(v){return isHC(v)?tr('handShow'):v;}
-function phl(v,hc){return tr((hc?'phh_':'ph_')+v);}
+function phl(v,hc){if(v.charAt(0)==='x')return tr('ph_x')+' '+v.slice(1);return tr((hc?'phh_':'ph_')+v);}
 function vehVal(){return D.mode==='hand'?HC:D.vehicle.trim();}
 var APP_URL='https://iggifernandes.github.io/EcoOils-Project-Material-Gate-Pass/';
 var API_URL='https://script.google.com/macros/s/AKfycbxULvNJReaniGRTFWKY507I0AZD5YLP3mBBjAyFFA-7z4nI0-LPncZbPZTajS89Jp0Z/exec';
@@ -59,7 +64,7 @@ function icPhoneOk(){var t=String(D.icPhone||'').trim(),d=t.replace(/\D/g,'');re
 function icFull(){var d=icDigits();return (D.icType||'')+' '+d;}
 function newDraft(){return {mode:'',purpose:'',company:'',companyOther:'',vehicle:'',carrier:'',icType:'',icNo:'',icPhone:'',purposeText:'',reason:'',dept:'',icRep:'',icPos:'',items:[{item:'',qty:'',unit:''}],photos:{},cid:Date.now().toString(36)+Math.random().toString(36).slice(2,10),step:1};}
 function saveDraft(){var o={};Object.keys(D).forEach(function(k){if(k!=='photos')o[k]=D[k];});ls('gp_draft',JSON.stringify(o));}
-try{var d0=JSON.parse(ls('gp_draft')||'null');if(d0&&d0.items){D=Object.assign(newDraft(),d0);D.photos={};}}catch(e){}
+try{var d0=JSON.parse(ls('gp_draft')||'null');if(d0&&d0.items){D=Object.assign(newDraft(),d0);D.photos={};D.hash={};}}catch(e){}
 
 /* ===== views ===== */
 var VIEWS=['vHome','vNew','vDone','vPass','vFind','vVerify','vAdmin','vGuide'];
@@ -162,13 +167,13 @@ function newDraw(keep){
     h+=D.items.length<CFG.maxItems?'<button class="btn ghost" id="addItem" type="button">+ '+esc(tr('addItem'))+'</button>':'<div class="note">'+esc(tr('itemsMax'))+'</div>';
   }else if(st===3){
     h+='<p class="note">'+esc(tr(D.mode==='hand'?'photoHelpH':'photoHelp'))+'</p><div class="tiles">';
-    PHV.forEach(function(v){h+=tileHtml(v);});h+='</div>'+tilesZoomBar()+'<div>';
+    visViews().forEach(function(v){h+=tileHtml(v);});h+='</div>'+tilesZoomBar();if(D.photos.front&&D.photos.load)h+='<p class="note">'+esc(tr('extraHelp'))+'</p>';h+='<div>';
     h+='</div>';
   }else{
     var co=D.company==='__other'?D.companyOther:D.company;
     h+='<p class="note">'+esc(tr('reviewHelp'))+'</p><p class="note"><b>'+esc(tr('icCheck'))+'</b></p><div class="card"><div class="kv"><span>'+esc(tr('purposeShort'))+'</span><span>'+esc(D.purpose+'. '+(D.purpose==='A'?tr('purA'):tr('purB')))+'</span><span>'+esc(tr('compShort'))+'</span><span>'+esc(co)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(D.vehicle.toUpperCase())+'</span><span>'+esc(tr('driver'))+'</span><span>'+esc(D.carrier)+' ('+esc(icFull())+')</span><span>'+esc(tr('ecoDept'))+'</span><span>'+esc(D.dept)+'</span><span>'+esc(tr('icRepShort'))+'</span><span>'+esc(D.icRep+(D.icPos?', '+D.icPos:'')+(D.icPhone?', '+D.icPhone:''))+'</span><span>'+esc(tr('purposeText'))+'</span><span>'+esc(purposeFull())+'</span></div>';
     h+='<table class="it"><tr><th>#</th><th>'+esc(tr('itemName'))+'</th><th>'+esc(tr('qty'))+'</th><th>'+esc(tr('unit'))+'</th></tr>'+validItems().map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(it.item)+'</td><td>'+esc(it.qty)+'</td><td>'+esc(it.unit)+'</td></tr>';}).join('')+'</table>';
-    h+='<div class="row2" style="margin-top:10px">'+PHV.map(function(v){return '<div class="pv"><small class="note">'+esc(phl(v,D.mode==='hand'))+'</small><img alt="" data-zoom="data:image/jpeg;base64,'+D.photos[v]+'" src="data:image/jpeg;base64,'+D.photos[v]+'"></div>';}).join('')+'</div></div>';
+    h+='<div class="row2" style="margin-top:10px">'+takenViews(D.photos).map(function(v){return '<div class="pv"><small class="note">'+esc(phl(v,D.mode==='hand'))+'</small><img alt="" data-zoom="data:image/jpeg;base64,'+D.photos[v]+'" src="data:image/jpeg;base64,'+D.photos[v]+'"></div>';}).join('')+'</div></div>';
   }
   h+='<div class="err" id="nErr"></div>';
   if(st<4)h+='<button class="btn" id="nNext" type="button">'+esc(tr('next'))+'</button>';else h+='<button class="btn amber" id="nSubmit" type="button">'+esc(tr('submit'))+'</button>';
@@ -176,8 +181,8 @@ function newDraw(keep){
   $('vNew').innerHTML=h;
   if(keep)window.scrollTo(0,sc);
 }
-function tileHtml(v){var p=D.photos[v];return '<label class="tile'+(p?' on':' ph')+'" style="margin:0" data-tile="'+v+'">'+(p?'<img alt="" src="data:image/jpeg;base64,'+p+'"><span class="ck">&#10003;</span>':'')+'<span>'+esc(phl(v,D.mode==='hand'))+'</span><small>'+esc(p?tr('retake'):tr('take'))+'</small><input type="file" accept="image/*" capture="environment" data-view="'+v+'"></label>';}
-function tilesZoomBar(){return '<div class="row2" style="margin-top:6px">'+PHV.map(function(v){return D.photos[v]?'<button class="btn ghost sm" type="button" data-zv="'+v+'">&#128269; '+esc(tr('zoom'))+'</button>':'<span></span>';}).join('')+'</div>';}
+function tileHtml(v){var p=D.photos[v];return '<label class="tile'+(p?' on':' ph')+'" style="margin:0" data-tile="'+v+'">'+(p?'<img alt="" src="data:image/jpeg;base64,'+p+'"><span class="ck">&#10003;</span>':'')+'<span>'+esc(v.charAt(0)==='x'&&!p?tr('addPhoto'):phl(v,D.mode==='hand'))+'</span><small>'+esc(p?tr('retake'):tr('take'))+'</small><input type="file" accept="image/*" capture="environment" data-view="'+v+'"></label>';}
+function tilesZoomBar(){return '<div class="row2" style="margin-top:6px">'+visViews().map(function(v){return D.photos[v]?'<div><button class="btn ghost sm" type="button" data-zv="'+v+'">&#128269; '+esc(tr('zoom'))+'</button>'+(v.charAt(0)==='x'?' <button class="btn danger sm" type="button" data-xrm="'+v+'">'+esc(tr('rmPhoto'))+'</button>':'')+'</div>':'<span></span>';}).join('')+'</div>';}
 function validItems(){return D.items.filter(function(it){return String(it.item).trim().length>=2&&Number(String(it.qty).replace(',','.'))>0&&CFG.units.indexOf(String(it.unit||''))>=0;}).map(function(it){return {item:String(it.item).trim(),qty:Number(String(it.qty).replace(',','.')),unit:String(it.unit||'').trim()};});}
 function nerr(k,field){var e=$('nErr');if(e)e.textContent=tr(k);if(field){var f=document.querySelector(field);if(f){f.classList.add('bad');try{f.scrollIntoView({block:'center'});}catch(x){}}}}
 function stepOk(){
@@ -220,11 +225,12 @@ $('vNew').addEventListener('change',function(e){
   if(t.getAttribute('data-view')){
     var f0=t.files&&t.files[0],v=t.getAttribute('data-view');if(!f0)return;
     var co=D.company==='__other'?D.companyOther:D.company;
-    shrink(f0,[stampTime(),phl(v,D.mode==='hand')+' | '+(D.mode==='hand'?HC:(D.vehicle||'').toUpperCase())+' | '+co],1100,0.6,true).then(function(p){var hh=SHH,ov=v==='front'?'load':'front';D.hash=D.hash||{};if(D.photos[ov]&&D.hash[ov]&&hDist(hh,D.hash[ov])<=8){var er1=$('nErr');if(er1)er1.textContent=tr('err_same_photo');return;}var fin=function(){D.hash[v]=hh;D.photos[v]=p;var el=document.querySelector('[data-tile="'+v+'"]');if(el)el.outerHTML=tileHtml(v);var zb=document.querySelector('.tiles+.row2');if(zb)zb.outerHTML=tilesZoomBar();var er0=$('nErr');if(er0)er0.textContent='';};if(D.mode==='vehicle'&&v==='front')cfmFront(p,fin);else fin();},function(why){var er=$('nErr');if(er)er.textContent=why==='portrait'?tr('err_portrait'):tr('err_bad_photo');});
+    Promise.all([shrink(f0,[stampTime(),phl(v,D.mode==='hand')+' | '+(D.mode==='hand'?HC:(D.vehicle||'').toUpperCase())+' | '+co],1100,0.6,true),fileHash(f0)]).then(function(rs){var p=rs[0],hh=rs[1];D.hash=D.hash||{};if(ALLV.some(function(o){return o!==v&&D.photos[o]&&D.hash[o]&&hDist(hh,D.hash[o])<=6;})){var er1=$('nErr');if(er1)er1.textContent=tr('err_same_photo');return;}var fin=function(){D.hash[v]=hh;D.photos[v]=p;newDraw(true);};if(D.mode==='vehicle'&&v==='front')cfmFront(p,fin);else fin();},function(why){var er=$('nErr');if(er)er.textContent=why==='portrait'?tr('err_portrait'):tr('err_bad_photo');});
   }
 });
 $('vNew').addEventListener('click',function(e){
   var t=e.target.closest('button');if(!t)return;
+  if(t.getAttribute('data-xrm')){var xv=t.getAttribute('data-xrm');delete D.photos[xv];if(D.hash)delete D.hash[xv];newDraw(true);return;}
   if(t.getAttribute('data-zv')){var pz=D.photos[t.getAttribute('data-zv')];if(pz)zoomOpen('data:image/jpeg;base64,'+pz);return;}
   if(t.getAttribute('data-mode')){var nm=t.getAttribute('data-mode');if(nm!==D.mode){D.mode=nm;D.photos={};D.hash={};}saveDraft();newDraw(true);return;}
   if(t.getAttribute('data-purpose')){var np=t.getAttribute('data-purpose');if(np!==D.purpose&&D.reason!=='rOther')D.reason='';D.purpose=np;saveDraft();newDraw(true);}
@@ -244,15 +250,16 @@ function cfmFront(p,ok){
   document.body.appendChild(o);
   o.addEventListener('click',function(e){var t=e.target.closest('button');if(!t)return;if(t.id==='cfmYes'){o.remove();ok();}else if(t.id==='cfmNo'){o.remove();var fi=document.querySelector('input[data-view=front]');if(fi)fi.value='';}});
 }
-function dHash(c){var s=document.createElement('canvas');s.width=9;s.height=8;var x=s.getContext('2d');x.drawImage(c,0,0,9,8);var d=x.getImageData(0,0,9,8).data,o='';for(var r=0;r<8;r++)for(var i=0;i<8;i++){var p=(r*9+i)*4,q=p+4;o+=(d[p]*.3+d[p+1]*.59+d[p+2]*.11)>(d[q]*.3+d[q+1]*.59+d[q+2]*.11)?'1':'0';}return o;}
-function hDist(a,b){var n=0;for(var i=0;i<64;i++)if(a.charAt(i)!==b.charAt(i))n++;return n;}
+function dHash(c){var s=document.createElement('canvas');s.width=12;s.height=12;var x=s.getContext('2d');x.drawImage(c,0,0,12,12);var d=x.getImageData(0,0,12,12).data,o=[];for(var i=0;i<d.length;i++)if(i%4<3)o.push(d[i]);return o;}
+function fileHash(f){return new Promise(function(res){var u=URL.createObjectURL(f),im=new Image();im.onload=function(){var h=dHash(im);URL.revokeObjectURL(u);res(h);};im.onerror=function(){URL.revokeObjectURL(u);res(null);};im.src=u;});}
+function hDist(a,b){if(!a||!b||a.length!==b.length||!a.length)return 99;var n=0;for(var i=0;i<a.length;i++)n+=Math.abs(a[i]-b[i]);return n/a.length;}
 function shrink(file,lines,max,q,landscape){
   return new Promise(function(res,rej){
     var u=URL.createObjectURL(file),im=new Image();
     im.onload=function(){
       if(landscape&&im.naturalHeight>im.naturalWidth){URL.revokeObjectURL(u);rej('portrait');return;}
       var k=Math.min(1,(max||1100)/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');
-      c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);var x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);SHH=dHash(c);
+      c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);var x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);
       if(lines&&lines.length){
         var f0=Math.max(18,Math.round(c.width/16)),f1=Math.max(14,Math.round(c.width/26)),pd=Math.round(f0*0.35),lh=[Math.round(f0*1.2),Math.round(f1*1.25)],bh=pd*2+lh[0]+(lines.length>1?lh[1]:0),yy=c.height-bh;
         /* time stamp: solid black bar, big bold white date and time, smaller second line (vehicle, company) */
@@ -274,7 +281,7 @@ function submit(){
     BUSY=false;
     if(!r){var e1=$('nErr');if(e1)e1.textContent=tr('err_net');var b=$('nSubmit');if(b)b.disabled=false;return;}
     if(!r.ok){var e2=$('nErr');if(e2)e2.textContent=errText(r.err);var b2=$('nSubmit');if(b2)b2.disabled=false;return;}
-    LAST={ref:r.ref,qk:r.qk,date:r.date,purpose:D.purpose,carrier:body.carrier,icNo:body.icNo,company:body.company,vehicle:body.vehicle.toUpperCase(),purposeText:body.purposeText,dept:body.dept,icRep:body.icRep,icPos:body.icPos,icPhone:body.icPhone,items:its,siteLead:CFG.siteLead,photos:{front:D.photos.front,load:D.photos.load}};
+    LAST={ref:r.ref,qk:r.qk,date:r.date,purpose:D.purpose,carrier:body.carrier,icNo:body.icNo,company:body.company,vehicle:body.vehicle.toUpperCase(),purposeText:body.purposeText,dept:body.dept,icRep:body.icRep,icPos:body.icPos,icPhone:body.icPhone,items:its,siteLead:CFG.siteLead,photos:Object.assign({},D.photos)};
     MINE.unshift({ref:r.ref,token:r.token,vehicle:LAST.vehicle,company:LAST.company,ts:Date.now()});saveMine();
     SUM[r.ref]={ref:r.ref,status:'Awaiting signatures'};
     D=newDraft();ls('gp_draft',null);
@@ -307,9 +314,9 @@ var PHC={};
 function getPhotos(p){
   return new Promise(function(res){
     var c=(LAST&&LAST.ref===p.ref&&LAST.photos)||PHC[p.ref]||p.photos;
-    if(c&&c.front&&c.load){var o0={front:dataUri(c.front),load:dataUri(c.load)};PHC[p.ref]=o0;res(o0);return;}
+    if(c&&c.front&&c.load){var o0={};ALLV.forEach(function(v){if(c[v])o0[v]=dataUri(c[v]);});PHC[p.ref]=o0;res(o0);return;}
     api({action:'photos',ref:p.ref,token:tokenOf(p.ref),pin:AD&&AD.pin||''},60000).then(function(r){
-      if(r&&r.ok&&r.images){var o={};PHV.forEach(function(v){o[v]=dataUri(r.images[v]||(v==='load'?r.images.top:''));});PHC[p.ref]=o;res(o);}else res(null);
+      if(r&&r.ok&&r.images){var o={};PHV.forEach(function(v){o[v]=dataUri(r.images[v]||(v==='load'?r.images.top:''));});EXV.forEach(function(v){if(r.images[v])o[v]=dataUri(r.images[v]);});PHC[p.ref]=o;res(o);}else res(null);
     },function(){res(null);});
   });
 }
@@ -323,6 +330,7 @@ function stampNow(){
 }
 function fileBase(p,st){return String(p.ref).replace(/[^A-Za-z0-9_-]/g,'')+'_'+st.file;}
 function passHtml(p,ph,one,st){
+  var xs=EXV.filter(function(v){return ph&&ph[v];}),tot=(one?1:2)+(xs.length?1:0);
   var rows='',n=Math.max(6,p.items.length);
   for(var i=0;i<n;i++){var it=p.items[i];rows+='<tr><td style="text-align:center;width:9%">'+(it?(i+1):'')+'</td><td>'+(it?esc(it.item):'')+'</td><td style="text-align:center;width:10%">'+(it?esc(it.qty):'')+'</td><td style="text-align:center;width:13%">'+(it?esc(String(it.unit||'').toUpperCase()):'')+'</td></tr>';}
   var h='<div class="pg'+(p.items.length>8?' cmp':'')+'"><table class="hd"><tr><td class="lg" rowspan="3"><img alt="" src="'+LOGO+'"></td><td class="k">Item</td><td class="v">: EOSM-HSSE-FM003</td></tr><tr><td class="k">Revision No</td><td class="v">: Initial Issue</td></tr><tr><td class="k">Date</td><td class="v">: February, 3rd 2026</td></tr></table>';
@@ -337,14 +345,21 @@ function passHtml(p,ph,one,st){
   if(one)h+='<div class="ph2"><div><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>'+(isHC(p.vehicle)?'MATERIAL AND THE PERSON CARRYING IT':'FRONT VIEW OF THE VEHICLE')+'</small></div><div><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>'+(isHC(p.vehicle)?'CLOSE-UP OF THE MATERIAL (LABELS / TAGS)':'MATERIAL LOADED IN THE TRUCK')+'</small></div></div>';
   h+='<div class="sig"><div><b>CARRIED BY:</b><div class="l"></div><small>(Person taking the material out)</small><div style="font-size:9pt">'+esc(p.carrier)+'</div></div><div><b>CHECKED BY:</b><div class="l"></div><small>(IC responsible Person- Lead/Store in charge)</small><div style="font-size:9pt">'+esc(p.icRep+(p.icPos?', '+p.icPos:''))+(p.icPhone?'<br>Tel: '+esc(p.icPhone):'')+'</div></div></div>';
   h+='<div class="sig" style="margin-top:3mm"><div><b>EcoOils Rep:</b><div class="l"></div><small>(Proj/Eng, Discipline Eng, HSSE, Stores)</small><div style="font-size:9pt">'+esc(p.dept)+'</div></div><div><b>Approval By:</b><div class="l"></div><small>(EcoOils Site Lead)</small><div style="font-size:9pt">'+esc(p.siteLead||'')+'</div></div></div>';
-  h+='<div class="ft"><span>COPY: <i>SECURITY / CARRIER / STORES</i></span><span class="pn">'+esc(tr('printedAt'))+' '+esc(st.txt)+' &middot; Page 1 of '+(one?1:2)+'</span></div></div>';
+  h+='<div class="ft"><span>COPY: <i>SECURITY / CARRIER / STORES</i></span><span class="pn">'+esc(tr('printedAt'))+' '+esc(st.txt)+' &middot; Page 1 of '+tot+'</span></div></div>';
   if(!one){
     h+='<div class="pg pg2"><table class="hd"><tr><td class="lg" rowspan="3"><img alt="" src="'+LOGO+'"></td><td class="k">Item</td><td class="v">: EOSM-HSSE-FM003</td></tr><tr><td class="k">SR NO</td><td class="v">: '+esc(p.ref)+'</td></tr><tr><td class="k">Date</td><td class="v">: '+esc(fmtD(p.date))+'</td></tr></table>';
     h+='<div class="ttl">MATERIAL GATE PASS &ndash; '+(isHC(p.vehicle)?'MATERIAL PHOTOS':'VEHICLE AND MATERIAL PHOTOS')+'</div>';
     h+='<div class="top"><div><div class="ln">COMPANY: <b>'+esc(p.company)+'</b></div><div class="ln">VEHICLE NO: <b>'+esc(isHC(p.vehicle)?'HAND CARRY (NO VEHICLE)':p.vehicle)+'</b></div><div class="ln">CARRIED BY: <b>'+esc(p.carrier)+'</b></div></div><div>'+qrSvg(verifyUrl(p.ref,p.qk))+'</div></div>';
     h+='<div class="bigph"><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>'+(isHC(p.vehicle)?'MATERIAL AND THE PERSON CARRYING IT':'FRONT VIEW OF THE VEHICLE')+'</small></div>';
     h+='<div class="bigph"><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>'+(isHC(p.vehicle)?'CLOSE-UP OF THE MATERIAL (LABELS / TAGS)':'MATERIAL LOADED IN THE TRUCK')+'</small></div>';
-    h+='<div class="ft"><span>'+esc(p.ref)+'</span><span class="pn">'+esc(tr('printedAt'))+' '+esc(st.txt)+' &middot; Page 2 of 2</span></div></div>';
+    h+='<div class="ft"><span>'+esc(p.ref)+'</span><span class="pn">'+esc(tr('printedAt'))+' '+esc(st.txt)+' &middot; Page 2 of '+tot+'</span></div></div>';
+  }
+  if(xs.length){var pn=one?2:3;
+    h+='<div class="pg pg2"><table class="hd"><tr><td class="lg" rowspan="3"><img alt="" src="'+LOGO+'"></td><td class="k">Item</td><td class="v">: EOSM-HSSE-FM003</td></tr><tr><td class="k">SR NO</td><td class="v">: '+esc(p.ref)+'</td></tr><tr><td class="k">Date</td><td class="v">: '+esc(fmtD(p.date))+'</td></tr></table>';
+    h+='<div class="ttl">MATERIAL GATE PASS &ndash; ADDITIONAL PHOTOS</div>';
+    h+='<div class="top"><div><div class="ln">COMPANY: <b>'+esc(p.company)+'</b></div><div class="ln">VEHICLE NO: <b>'+esc(isHC(p.vehicle)?'HAND CARRY (NO VEHICLE)':p.vehicle)+'</b></div><div class="ln">CARRIED BY: <b>'+esc(p.carrier)+'</b></div></div><div>'+qrSvg(verifyUrl(p.ref,p.qk))+'</div></div>';
+    h+='<div class="xgrid">'+xs.map(function(v,i){return '<div><div class="pi"><img alt="" src="'+ph[v]+'"></div><small>ADDITIONAL PHOTO '+(i+1)+'</small></div>';}).join('')+'</div>';
+    h+='<div class="ft"><span>'+esc(p.ref)+'</span><span class="pn">'+esc(tr('printedAt'))+' '+esc(st.txt)+' &middot; Page '+pn+' of '+tot+'</span></div></div>';
   }
   return h;
 }
@@ -463,7 +478,7 @@ function passDraw(){
     if(SG.length<2)h+='<button class="btn ghost sm" type="button" id="sgFile">'+esc(tr('scanFile'))+'</button>';
     h+='<div class="err" id="pErr"></div>'+(SG.length?'<button class="btn" id="pSend" type="button">'+esc(tr('sendSigned'))+'</button>':'');
   }else h+='<button class="btn ghost" id="pPrint" type="button">'+esc(tr('printAgain'))+'</button><button class="btn ghost" id="pPdf" type="button">'+esc(tr('dlPdf'))+'</button>';
-  h+='<h2>'+esc(tr('photosTitle'))+'</h2><div class="row2" id="pPhotos">'+(PHC[p.ref]?PHV.map(function(v){return '<div class="pv"><small class="note">'+esc(phl(v,isHC(p.vehicle)))+'</small><img alt="" data-zoom="'+PHC[p.ref][v]+'" src="'+PHC[p.ref][v]+'"></div>';}).join(''):'<div class="note"><span class="sp"></span></div>')+'</div>';
+  h+='<h2>'+esc(tr('photosTitle'))+'</h2><div class="row2" id="pPhotos">'+(PHC[p.ref]?takenViews(PHC[p.ref]).map(function(v){return '<div class="pv"><small class="note">'+esc(phl(v,isHC(p.vehicle)))+'</small><img alt="" data-zoom="'+PHC[p.ref][v]+'" src="'+PHC[p.ref][v]+'"></div>';}).join(''):'<div class="note"><span class="sp"></span></div>')+'</div>';
   h+='<h2>'+esc(tr('items'))+'</h2><div class="card"><div class="kv"><span>'+esc(tr('compShort'))+'</span><span>'+esc(p.company)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(vehTxt(p.vehicle))+'</span><span>'+esc(tr('driver'))+'</span><span>'+esc(p.carrier)+'</span><span>'+esc(tr('purposeText'))+'</span><span>'+esc(p.purposeText)+'</span></div><table class="it"><tr><th>#</th><th>'+esc(tr('itemName'))+'</th><th>'+esc(tr('qty'))+'</th><th>'+esc(tr('unit'))+'</th></tr>'+p.items.map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(it.item)+'</td><td>'+esc(it.qty)+'</td><td>'+esc(it.unit)+'</td></tr>';}).join('')+'</table></div>';
   if(p.status==='Awaiting signatures'||p.status==='Pending release')h+='<button class="btn danger" id="pCancel" type="button">'+esc(tr('cancelPass'))+'</button>';
   if(p.status==='Rejected'||p.status==='Expired'||p.status==='Cancelled')h+='<button class="btn" id="pNew" type="button">'+esc(tr('newPass'))+'</button>';
@@ -673,7 +688,7 @@ function adPicsLoad(ref){
     if(!sg.length&&r.images.signed===undefined)h='<p class="note" style="grid-column:1/-1">'+esc(tr('picsOld'))+'</p>';
     else if(!sg.length)h='<p class="note" style="grid-column:1/-1">'+esc(tr('noSigned'))+'</p>';
     sg.forEach(function(u,i){h+='<div class="pv"><small class="note">'+esc(tr('upload'))+' '+(i+1)+'</small><img alt="" data-zoom="'+u+'" src="'+u+'"></div>';});
-    PHV.forEach(function(v){if(r.images[v])h+='<div class="pv"><small class="note">'+esc(phl(v,isHC(AD.sel.pass.vehicle)))+'</small><img alt="" data-zoom="'+r.images[v]+'" src="'+r.images[v]+'"></div>';});
+    ALLV.forEach(function(v){if(r.images[v])h+='<div class="pv"><small class="note">'+esc(phl(v,isHC(AD.sel.pass.vehicle)))+'</small><img alt="" data-zoom="'+r.images[v]+'" src="'+r.images[v]+'"></div>';});
     el.innerHTML=h;
   },function(){var el=$('adPics');if(el)el.innerHTML='<p class="note">'+esc(tr('picsFail'))+'</p>';});
 }

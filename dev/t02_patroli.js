@@ -33,6 +33,10 @@ ok(pm.sheets.GatePass.rows[1][1]===c.ref&&pm.sheets.GatePass.rows[1][3]==='Dedi 
 ok(gp.call({action:'verify',ref:c.ref}).status==='Released','the public QR check now shows Released');
 ok(gp.call({action:'get',ref:c.ref,token:c.token}).pass.decidedBy==='Dedi Gate','the IC sees who released it');
 ok(pm.call({action:'gate_release',gp:dp['Rendi Irawan'],ref:c.ref,decision:'release',checks:{signed:true,plate:true,items:true,vehicle:true,idc:true}}).err==='already_released','a second guard cannot release it again');
+// 3b. extra photos (v1.25 / backend v1.10) reach the guard screen data
+const c2=gp.call({action:'create',purpose:'B',carrier:'Dewi Lestari',icNo:'KTP 1271012345678901',company:'KKS',vehicle:'HAND CARRY',purposeText:'Tools back to base',dept:'HSSE',icRep:'Andi Wijaya',icPos:'Lead',icPhone:'+62 812 3456 7890',items:[{item:'Wrench',qty:2,unit:'pcs'}],photos:{front:jpg,load:jpg,x1:jpg,x2:jpg}});
+const g2=pm.call({action:'gate_get',gp:G.pin,ref:c2.ref});
+ok(c2.ok&&g2.ok&&g2.images.x1.startsWith('data:image/jpeg')&&g2.images.x2.startsWith('data:image/jpeg')&&g2.images.x3===undefined,'guard data carries the extra photos x1 and x2 of a hand carry pass');
 // 4. wrong secret
 pm.props.GATEPASS_SECRET='nope';
 ok(!pm.call({action:'gate_list',gp:G.pin}).ok||pm.call({action:'gate_get',gp:G.pin,ref:c.ref}).ok===false,'wrong secret is refused by the Gate Pass script');
