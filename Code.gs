@@ -1,4 +1,4 @@
-/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.10
+/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.11
    Form EOSM-HSSE-FM003. Paste into Extensions > Apps Script of the "EcoOils Gate Pass Log" Google Sheet (personal Gmail account).
    Do NOT upload this file to GitHub (keep the repo to index.html and the static files only).
    Who calls this web app:
@@ -6,7 +6,7 @@
    - Public QR check: action 'verify' returns status only (no names, no ID numbers, no photos).
    - Patroli (guards): actions b_list / b_get / b_release, protected by the shared secret BRIDGE_SECRET (script property). The guard's name comes from Patroli's PIN login.
    - Admin (you): actions a_*, protected by the script property ADMIN_PIN. */
-var VERSION = 'v1.10';
+var VERSION = 'v1.11';
 var OFF = 7 * 3600000;      // Jakarta (WIB), no daylight saving
 var TZ = 'Asia/Jakarta';
 var P_HEAD = ['Ref', 'Created (WIB)', 'Date', 'Purpose', 'Carrier name', 'Carrier I/C no', 'Company', 'Vehicle no', 'Purpose of taking out', 'EcoOils dept', 'IC rep name', 'IC rep position', 'Items', 'Status', 'Token hash',
@@ -419,6 +419,14 @@ function admin_(a, b) {
       if (out.length < 300) out.push(s);
     });
     return {ok: true, list: out, counts: counts, total: rows_().length, now: now};
+  }
+  if (a === 'a_dash') {   /* v1.11: slim rows of every pass for the Admin dashboard */
+    var rs = rows_(), dr = [];
+    rs.forEach(function (v) {
+      var s = summary_(v, now);
+      dr.push([s.ref, s.date, s.company, s.vehicle, s.status, s.items, s.createdAt, s.signedAt, s.decidedAt, s.purpose]);
+    });
+    return {ok: true, rows: dr.slice(-5000), total: dr.length, now: now, today: ymd_(now)};
   }
   if (a === 'a_get') {
     var hit = rowOf_(b.ref);

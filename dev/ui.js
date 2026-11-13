@@ -180,6 +180,12 @@ const qn2=m.call({...qb,company:'KKS'});await p3.goto('https://gp.test/?v='+qn2.
 await c3.close();
 await p2.evaluate(()=>homeOpen());await p2.click('#hAdmin');await p2.fill('#adPin',m.props.ADMIN_PIN);await p2.click('#adGo');await p2.waitForSelector('[data-adopen]');
 ok((await p2.textContent('#vAdmin')).includes(ref),'admin list');
+await p2.click('#adDash');await p2.waitForSelector('.dbtiles');
+{const tx=await p2.textContent('#vAdmin');ok(/Dashboard/.test(tx)&&tx.includes('Released rate')&&tx.includes('Passes per day')&&tx.includes('By company'),'dashboard shows tiles, per-day chart and companies');
+ok(await p2.locator('.dbday>div').count()===30&&await p2.locator('.dbrow').count()>=2,'dashboard draws 30 days and company rows');
+ok(await p2.evaluate(()=>{var b=document.getElementById('dbBack');return b&&document.getElementById('vAdmin').firstElementChild===b;}),'dashboard Back button is at the top');
+await p2.click('[data-dbp="7"]');ok(await p2.locator('.dbday>div').count()===7,'dashboard 7 day period');
+await p2.click('#dbBack');await p2.waitForSelector('[data-adopen]');}
 await p2.click('[data-adopen="'+ref+'"]');await p2.waitForSelector('#adList');
 ok((await p2.locator('#adPics img').count())===0,'admin pass screen does not load the pictures by itself');await p2.click('#adPicsBtn');await p2.waitForFunction(()=>document.querySelectorAll('#adPics img').length>=3,null,{timeout:8000}).catch(()=>{});ok((await p2.locator('#adPics img').count())>=3,'admin sees the signed copy page(s) and the photos inside the pass: '+await p2.locator('#adPics img').count());
 ok((await p2.textContent('#vAdmin')).includes('RELEASED')&&(await p2.textContent('#vAdmin')).includes('Dedi'),'admin detail shows the audit trail');

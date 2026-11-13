@@ -1,4 +1,4 @@
-var VERSION='v1.25';
+var VERSION='v1.26';
 var PHV=['front','load'];
 var EXV=['x1','x2','x3','x4'];
 var ALLV=PHV.concat(EXV);
@@ -670,13 +670,67 @@ function adminDraw(){
   var h=h1(tr('admin'));
   if(!AD.pin){h+='<label for="adPin">'+esc(tr('pin'))+'</label><input id="adPin" type="password" inputmode="numeric" autocomplete="off" maxlength="12"><div class="err">'+esc(AD.err||'')+'</div><button class="btn" id="adGo" type="button">'+esc(tr('login'))+'</button><button class="btn ghost" id="adBack" type="button">'+esc(tr('back'))+'</button>';$('vAdmin').innerHTML=h;return;}
   if(AD.sel){adminDetailDraw(h);return;}
+  if(AD.dash){dashDraw(h);return;}
   h+='<div class="row2"><input id="adQ" placeholder="'+esc(tr('search'))+'" value="'+esc(AD.q)+'"><select id="adSt"><option value="">'+esc(tr('all'))+'</option>'+Object.keys(ST).map(function(s){return '<option value="'+esc(s)+'"'+(AD.st===s?' selected':'')+'>'+esc(tr(ST[s][0]))+' ('+(AD.counts[s]||0)+')</option>';}).join('')+'</select></div>';
   h+='<div class="err">'+esc(AD.err||'')+'</div>'+(AD.note?'<div class="note">'+esc(AD.note)+'</div>':'');
   (AD.list||[]).forEach(function(s){h+='<div class="adrow"><input type="checkbox" data-adsel="'+esc(s.ref)+'"'+(AD.chk[s.ref]?' checked':'')+' aria-label="'+esc(s.ref)+'"><button class="pas" type="button" data-adopen="'+esc(s.ref)+'"><span><b>'+esc(s.ref)+'</b><small>'+esc(s.company+' · '+s.vehicle+' · '+s.carrier)+'<br>'+esc(s.createdAt)+'</small></span>'+chip(s.status)+'</button></div>';});
   var nsel=Object.keys(AD.chk).filter(function(k){return AD.chk[k];}).length;
   if(nsel)h+='<button class="btn danger" id="adDelSel" type="button">'+esc(tr('adDeleteSel').replace('{n}',nsel))+'</button>';
-  h+='<button class="btn ghost" id="adCsv" type="button">'+esc(tr('csv'))+'</button><button class="btn ghost" id="adOut" type="button">'+esc(tr('logout'))+'</button><button class="btn ghost" id="adBack" type="button">'+esc(tr('back'))+'</button>';
+  h+='<button class="btn" id="adDash" type="button">'+esc(tr('dash'))+'</button><button class="btn ghost" id="adCsv" type="button">'+esc(tr('csv'))+'</button><button class="btn ghost" id="adOut" type="button">'+esc(tr('logout'))+'</button><button class="btn ghost" id="adBack" type="button">'+esc(tr('back'))+'</button>';
   $('vAdmin').innerHTML=h;
+}
+
+/* ===== v1.26 admin dashboard (all numbers worked out in the browser from the a_dash rows) ===== */
+function dMs(x){return x?Date.parse(String(x).replace(' ','T')+'Z'):NaN;}
+function dDur(ms){if(!isFinite(ms))return '-';var m=Math.round(ms/60000);return m<90?m+' '+tr('dbMin'):(m/60).toFixed(1)+' '+tr('dbHrs');}
+function dAvg(a){a=a.filter(function(x){return isFinite(x)&&x>=0;});return a.length?a.reduce(function(p,c){return p+c;},0)/a.length:NaN;}
+function dayAdd(ymd,n){var d=new Date(Date.parse(ymd+'T00:00:00Z')+n*864e5);return d.toISOString().slice(0,10);}
+function dashOpen(){
+  AD.dash={per:30,rows:null,today:'',err:''};AD.sel=null;adminDraw();
+  api({action:'a_dash',pin:AD.pin},60000).then(function(r){
+    if(!AD.dash)return;
+    if(!r||!r.ok){AD.dash.err=(r&&r.err==='unknown'||r&&r.err==='bad_action')?tr('dbOldBack'):(r?errText(r.err):tr('err_net'));AD.dash.rows=[];}
+    else{AD.dash.rows=r.rows;AD.dash.today=r.today;}
+    adminDraw();
+  },function(){if(AD.dash){AD.dash.err=tr('err_net');AD.dash.rows=[];adminDraw();}});
+}
+function dBar(parts,total){var h='<div class="dbbar">';parts.forEach(function(p){if(p[0]>0)h+='<i style="width:'+(p[0]/total*100).toFixed(1)+'%;background:'+p[1]+'" title="'+esc(p[2])+': '+p[0]+'"></i>';});return h+'</div>';}
+function dashDraw(h){
+  var D=AD.dash;h+='<h2>'+esc(tr('dash'))+'</h2>';
+  h+='<div class="dbper">'+[7,30,90,0].map(function(n){return '<button type="button" class="btn ghost'+(D.per===n?' on':'')+'" data-dbp="'+n+'">'+(n?n+' '+esc(tr('dbDays')):esc(tr('dbAll')))+'</button>';}).join('')+'</div>';
+  if(D.rows===null){$('vAdmin').innerHTML=h+'<span class="sp"></span><button class="btn ghost" id="dbBack" type="button">'+esc(tr('back'))+'</button>';return;}
+  if(D.err)h+='<div class="err">'+esc(D.err)+'</div>';
+  var T0=D.today,from=D.per?dayAdd(T0,-(D.per-1)):'0000-00-00';
+  var rows=D.rows.map(function(r){return {ref:r[0],date:r[1],co:r[2],veh:r[3],st:r[4],items:+r[5]||0,cr:r[6],sg:r[7],dc:r[8],pu:r[9]};});
+  var inP=rows.filter(function(r){return r.date>=from;});
+  var open=rows.filter(function(r){return r.st==='Awaiting signatures'||r.st==='Pending release';});
+  var rel=inP.filter(function(r){return r.st==='Released';}),notc=inP.filter(function(r){return r.st==='Expired'||r.st==='Cancelled'||r.st==='Rejected';});
+  var tdy=rows.filter(function(r){return r.date===T0;});
+  var tiles=[[inP.length,tr('dbTotal')],[tdy.length,tr('dbToday')],[open.length,tr('dbOpen')],[rel.length,tr('dbRel')],[notc.length,tr('dbNot')],[inP.length?Math.round(rel.length/inP.length*100)+'%':'-',tr('dbRate')],[inP.reduce(function(p,r){return p+r.items;},0),tr('dbItems')]];
+  h+='<div class="dbtiles">'+tiles.map(function(t){return '<div class="dbt"><b>'+esc(String(t[0]))+'</b><span>'+esc(t[1])+'</span></div>';}).join('')+'</div>';
+  if(!inP.length&&!open.length){$('vAdmin').innerHTML=h+'<p class="note">'+esc(tr('dbNoData'))+'</p><button class="btn ghost" id="dbBack" type="button">'+esc(tr('back'))+'</button>';return;}
+  /* passes per day */
+  var N=D.per?Math.min(D.per,90):30,days=[],i;for(i=N-1;i>=0;i--)days.push(dayAdd(T0,-i));
+  var byD={};rows.forEach(function(r){var o=byD[r.date]||(byD[r.date]={t:0,r:0});o.t++;if(r.st==='Released')o.r++;});
+  var mx=1;days.forEach(function(d){if(byD[d]&&byD[d].t>mx)mx=byD[d].t;});
+  h+='<h2>'+esc(tr('dbPerDay'))+'</h2><div class="card"><div class="dbday">'+days.map(function(d){var o=byD[d]||{t:0,r:0};return '<div title="'+d+': '+o.t+' ('+o.r+' '+esc(tr('dbRel'))+')"><u style="height:'+(o.t/mx*100).toFixed(1)+'%"><s style="height:'+(o.t?o.r/o.t*100:0).toFixed(1)+'%"></s></u></div>';}).join('')+'</div><div class="dbax"><span>'+days[0]+'</span><span>max '+mx+'</span><span>'+days[days.length-1]+'</span></div></div>';
+  /* by company */
+  var co={};inP.forEach(function(r){var o=co[r.co]||(co[r.co]={t:0,r:0,o:0});o.t++;if(r.st==='Released')o.r++;else if(r.st==='Awaiting signatures'||r.st==='Pending release')o.o++;});
+  var cks=Object.keys(co).sort(function(a,b){return co[b].t-co[a].t;}),cm=cks.length?co[cks[0]].t:1;
+  h+='<h2>'+esc(tr('dbByCo'))+'</h2><div class="card">'+cks.map(function(k){var o=co[k];return '<div class="dbrow"><span>'+esc(k)+'</span><div style="width:'+(o.t/cm*100).toFixed(1)+'%">'+dBar([[o.r,'var(--green)',tr('dbRel')],[o.o,'var(--amber)',tr('dbOpen')],[o.t-o.r-o.o,'#bbb',tr('dbNot')]],o.t)+'</div><b>'+o.t+'</b></div>';}).join('')+'<div class="dbleg"><i style="background:var(--green)"></i>'+esc(tr('dbRel'))+' <i style="background:var(--amber)"></i>'+esc(tr('dbOpen'))+' <i style="background:#bbb"></i>'+esc(tr('dbNot'))+'</div></div>';
+  /* mode + purpose */
+  var hc=inP.filter(function(r){return /^HAND CARRY/i.test(r.veh);}).length,pa=inP.filter(function(r){return r.pu==='A';}).length,pb=inP.filter(function(r){return r.pu==='B';}).length;
+  h+='<h2>'+esc(tr('dbMode'))+'</h2><div class="card"><div class="dbrow"><span>'+esc(tr('dbVeh'))+'</span><div style="width:'+(inP.length?(inP.length-hc)/inP.length*100:0).toFixed(1)+'%">'+dBar([[1,'var(--amber)','']],1)+'</div><b>'+(inP.length-hc)+'</b></div><div class="dbrow"><span>'+esc(tr('dbHand'))+'</span><div style="width:'+(inP.length?hc/inP.length*100:0).toFixed(1)+'%">'+dBar([[1,'var(--green)','']],1)+'</div><b>'+hc+'</b></div></div>';
+  if(pa+pb)h+='<h2>'+esc(tr('dbPurp'))+'</h2><div class="card"><div class="dbrow"><span>'+esc(tr('dbPA'))+'</span><div style="width:'+(pa/(pa+pb)*100).toFixed(1)+'%">'+dBar([[1,'var(--amber)','']],1)+'</div><b>'+pa+'</b></div><div class="dbrow"><span>'+esc(tr('dbPB'))+'</span><div style="width:'+(pb/(pa+pb)*100).toFixed(1)+'%">'+dBar([[1,'var(--green)','']],1)+'</div><b>'+pb+'</b></div></div>';
+  /* speed */
+  var a1=dAvg(inP.map(function(r){return dMs(r.sg)-dMs(r.cr);})),a2=dAvg(rel.map(function(r){return dMs(r.dc)-dMs(r.sg);}));
+  h+='<div class="card"><div class="kv"><span>'+esc(tr('dbAvgSign'))+'</span><span>'+esc(dDur(a1))+'</span><span>'+esc(tr('dbAvgRel'))+'</span><span>'+esc(dDur(a2))+'</span></div></div>';
+  /* needs attention: open passes, oldest first */
+  open.sort(function(a,b){return a.cr<b.cr?-1:1;});
+  h+='<h2>'+esc(tr('dbAttn'))+'</h2>';
+  if(!open.length)h+='<p class="note">'+esc(tr('dbNone'))+'</p>';
+  open.slice(0,20).forEach(function(r){h+='<div class="adrow"><button class="pas" type="button" data-adopen="'+esc(r.ref)+'"><b>'+esc(r.ref)+'</b> '+esc(r.co)+' '+esc(/^HAND CARRY/i.test(r.veh)?tr('dbHand'):r.veh)+' '+chip(r.st)+'</button></div>';});
+  $('vAdmin').innerHTML=h+'<button class="btn ghost" id="dbBack" type="button">'+esc(tr('back'))+'</button>';
 }
 /* v1.18: the Admin sees the signed copy pages (and the photos) right inside the pass, tap to zoom */
 function adPicsLoad(ref){
@@ -720,6 +774,9 @@ function adminDelete(refs){
 $('vAdmin').addEventListener('click',function(e){
   var t=e.target.closest('button');if(!t)return;
   if(t.id==='adBack')homeOpen();
+  else if(t.id==='adDash'){dashOpen();return;}
+  else if(t.id==='dbBack'){AD.dash=null;adminLoad();return;}
+  else if(t.getAttribute('data-dbp')){AD.dash.per=+t.getAttribute('data-dbp');adminDraw();return;}
   else if(t.id==='adGo'){AD.pin=$('adPin').value.trim();ls('gp_apin',AD.pin);adminLoad();}
   else if(t.id==='adOut'){AD.pin='';AD.list=null;ls('gp_apin',null);adminDraw();}
   else if(t.id==='adList'){AD.sel=null;adminDraw();}

@@ -80,6 +80,8 @@ const al=m.call({action:'a_list',pin:m.props.ADMIN_PIN});
 ok(al.ok&&al.list.length===4&&al.counts.Released===1,'admin list and counts');
 const ag=m.call({action:'a_get',pin:m.props.ADMIN_PIN,ref:r1.ref});
 ok(ag.ok&&ag.links.front.startsWith('https://drive')&&ag.log.some(x=>x.ev==='RELEASED'),'admin get has Drive links and audit trail');
+const dd=m.call({action:'a_dash',pin:m.props.ADMIN_PIN});
+ok(dd.ok&&dd.rows.length===4&&dd.total===4&&dd.rows[0].length===10&&/^\d{4}-\d\d-\d\d$/.test(dd.today)&&m.call({action:'a_dash',pin:'000000'}).err==='pin','admin dashboard rows (a_dash) need the PIN');
 // daily cap
 m.sheets.Config.rows.forEach(r=>{if(r[0]==='COMPANY_DAILY_CAP')r[1]='2'});
 ok(m.call({...base,company:'WEN'}).ok&&m.call({...base,company:'WEN'}).ok&&m.call({...base,company:'WEN'}).err==='daily_cap','daily cap per company');

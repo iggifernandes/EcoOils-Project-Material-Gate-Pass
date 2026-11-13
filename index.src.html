@@ -113,6 +113,16 @@ img[data-zoom]{cursor:zoom-in}
 #qrs video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 #qrBox{position:absolute;left:50%;top:50%;width:62vmin;height:62vmin;transform:translate(-50%,-50%);border:3px solid #fff;border-radius:10px;box-shadow:0 0 0 100vmax #0007;z-index:2;pointer-events:none}
 #qrMsg{position:absolute;left:12px;right:12px;bottom:40px;text-align:center;font-size:15px;z-index:3;text-shadow:0 1px 3px #000}
+/* v1.26 dashboard */
+.dbper{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.dbper .btn{width:auto;padding:8px 14px;min-height:0}.dbper .btn.on{background:var(--amber);color:#231f20;border-color:var(--amber)}
+.dbtiles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}.dbt{border:1px solid var(--line);border-radius:var(--r);padding:12px;background:var(--panel)}.dbt b{display:block;font-size:28px;font-weight:300;color:var(--text)}.dbt span{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.dbday{display:flex;align-items:flex-end;gap:2px;height:120px}.dbday>div{flex:1;height:100%;display:flex;align-items:flex-end}.dbday u{display:flex;align-items:flex-end;width:100%;background:var(--amber);min-height:1px;text-decoration:none}.dbday s{display:block;width:100%;background:var(--green)}
+.dbax{display:flex;justify-content:space-between;font-size:12px;color:var(--mute);margin-top:4px}
+.dbrow{display:grid;grid-template-columns:90px 1fr 36px;align-items:center;gap:8px;margin:6px 0;font-size:14px}.dbrow>div{min-width:2px}.dbrow b{text-align:right;font-weight:600}
+.dbbar{display:flex;height:16px;border-radius:3px;overflow:hidden;background:#eee}.dbbar i{display:block;height:100%}
+.dbleg{font-size:12px;color:var(--mute);margin-top:8px}.dbleg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 3px 0 8px}
+@media(min-width:760px){.dbtiles{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:1100px){.dbtiles{grid-template-columns:repeat(7,1fr)}.dbrow{grid-template-columns:130px 1fr 48px}}
 .adrow{display:flex;align-items:center;gap:8px}.adrow input[type=checkbox]{width:24px;height:24px;flex:none;margin:0}.adrow .pas{flex:1;min-width:0}
 
 @media print{
