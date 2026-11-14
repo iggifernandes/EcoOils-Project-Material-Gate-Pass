@@ -1,4 +1,4 @@
-var VERSION='v1.28';
+var VERSION='v1.29';
 var PHV=['front','load'];
 var EXV=['x1','x2','x3','x4'];
 var ALLV=PHV.concat(EXV);
@@ -43,6 +43,7 @@ try{var c0=JSON.parse(ls('gp_cfg')||'null');if(c0&&c0.companies)CFG=c0;}catch(e)
 function secOf(d){return /^Operations - /.test(d||'')?'Operations':(/^Project - /.test(d||'')?'Project':'');}
 function apprCap(d){var s=secOf(d);return s==='Operations'?'(Operations HOF)':(s==='Project'?'(Project Site Lead)':'(EcoOils Site Lead)');}
 function apprName(p){return secOf(p.dept)==='Operations'?(p.hofName||CFG.hofName||''):(p.siteLead||CFG.siteLead||'');}
+function oldBackend(){return !!(CFG.live&&!CFG.deptGroups);}
 function dgroups(){var g=CFG.deptGroups;return g&&g.Project&&g.Operations?g:DG0;}
 var MINE=[];try{MINE=JSON.parse(ls('gp_mine')||'[]');if(!Array.isArray(MINE))MINE=[];}catch(e){MINE=[];}
 function saveMine(){ls('gp_mine',JSON.stringify(MINE.slice(0,60)));}
@@ -122,7 +123,7 @@ function homeDraw(){
 }
 function homeLoad(){
   if(!API_URL)return;
-  api({action:'config'}).then(function(r){if(r&&r.ok){CFG={units:(r.units&&r.units.length?r.units:CFG.units),companies:r.companies,depts:r.depts,deptGroups:r.deptGroups,validHours:r.validHours,maxItems:r.maxItems||15,siteLead:r.siteLead||'',hofName:r.hofName||''};ls('gp_cfg',JSON.stringify(CFG));}},function(){});
+  api({action:'config'}).then(function(r){if(r&&r.ok){CFG={units:(r.units&&r.units.length?r.units:CFG.units),companies:r.companies,depts:r.depts,deptGroups:r.deptGroups,validHours:r.validHours,maxItems:r.maxItems||15,siteLead:r.siteLead||'',hofName:r.hofName||'',live:true};ls('gp_cfg',JSON.stringify(CFG));}},function(){});
   if(!MINE.length)return;
   api({action:'mine',list:MINE.slice(0,40).map(function(m){return {ref:m.ref,token:m.token};})}).then(function(r){
     if(!r||!r.ok)return;r.list.forEach(function(s){SUM[s.ref]=s;});if(!$('vHome').classList.contains('hidden'))homeDraw();
@@ -176,10 +177,12 @@ function newDraw(keep){
     h+='<label for="fPos">'+esc(tr('icPos'))+'</label><input id="fPos" data-f="icPos" maxlength="40" autocomplete="off" value="'+esc(D.icPos)+'">';
     h+='<label for="fPhone">'+esc(tr('icPhone'))+'</label><div class="phrow"><select id="fCc" data-f="icCc" aria-label="'+esc(tr('countryCode'))+'">'+CCS.map(function(c){return '<option value="'+c[2]+'"'+(phSplit().cc===c[2]?' selected':'')+'>'+c[0]+' '+c[2]+' '+esc(c[1])+'</option>';}).join('')+'</select><input id="fPhone" data-pl="1" type="tel" inputmode="tel" maxlength="16" autocomplete="off" placeholder="812 3456 7890" value="'+esc(phSplit().loc)+'"></div>';
     h+='<div class="blk"></div>';
+    if(oldBackend()){h+='<label for="fDept">'+esc(tr('ecoRep'))+'</label><p class="note">'+esc(tr('oldServer'))+'</p><select id="fDept" data-f="dept"><option value="">'+esc(tr('deptPick'))+'</option>'+(CFG.depts||[]).map(function(c){return '<option value="'+esc(c)+'"'+(D.dept===c?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select>';}else{
     h+='<label>'+esc(tr('ecoRep'))+'</label>'+mopt(D.deptSec==='Project','sec:Project',tr('secProject'),'')+mopt(D.deptSec==='Operations','sec:Operations',tr('secOps'),'');
     if(D.deptSec){h+='<label for="fDept">'+esc(tr('dept'))+'</label><select id="fDept" data-f="dept"><option value="">'+esc(tr('deptPick'))+'</option>'+dgroups()[D.deptSec].map(function(c){var v=D.deptSec+' - '+c;return '<option value="'+esc(v)+'"'+(D.dept===v?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select>';}
     h+='<p class="note">'+esc(tr('ecoRepCap'))+'</p>';
     h+='<div class="blk"><label>'+esc(tr('apprBy'))+'</label><div class="auto"><b>'+esc(D.deptSec==='Operations'?tr('apOps'):(D.deptSec==='Project'?tr('apProj'):'-'))+'</b><small>'+esc(tr('apprHint'))+'</small></div></div>';
+    }
   }else if(st===3){
     h+='<p class="note">'+esc(tr(D.mode==='hand'?'photoHelpH':'photoHelp'))+'</p><div class="tiles">';
     visViews().forEach(function(v){h+=tileHtml(v);});h+='</div>'+tilesZoomBar();if(D.photos.front&&D.photos.load)h+='<p class="note">'+esc(tr('extraHelp'))+'</p>';h+='<div>';
@@ -219,7 +222,7 @@ function stepOk(){
     if(D.icRep.trim().length<2){nerr('f_icRep','#fRep');return false;}
     if(D.icPos.trim().length<2){nerr('f_icPos','#fPos');return false;}
     if(!icPhoneOk()){nerr('f_icPhone','#fPhone');return false;}
-    if(!D.deptSec){nerr('f_sec','#nNext');return false;}
+    if(!oldBackend()&&!D.deptSec){nerr('f_sec','#nNext');return false;}
     if(!D.dept){nerr('f_dept','#fDept');return false;}
   }
   else if(s===3){if(!PHV.every(function(v){return D.photos[v];})){nerr('f_photos');return false;}}

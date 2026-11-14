@@ -35,6 +35,7 @@ var T={en:{
  deptSec:"EcoOils section", secProject:"Project", secOps:"Operations", f_sec:"Choose Project or Operations.",
  apBy:"Approval by", apProj:"Project Site Lead", apOps:"Operations HOF",
  allowMr:"Please allow Mr / Miss", toSec:"TO: SECURITY", itemsH:"Items", carriedBy:"Carried by", carriedCap:"(Person taking the material out) - same name as above, signs on paper", checkedBy:"Checked by", checkedCap:"(IC responsible person - Lead / Store in charge) - signs on paper", icRepN:"Name", ecoRep:"EcoOils Rep", ecoRepCap:"(Project / Operations - department) - signs on paper", apprBy:"Approval by", apprHint:"Filled in automatically from EcoOils Rep. Signs on paper.",
+ oldServer:"The server list is being updated. Choose your department for now.", err_bad_dept:"The department is not accepted by the server. Reload the page and choose it again. If this stays, the Apps Script needs Code.gs v1.13.",
 },id:{
  title:'Surat jalan material',newPass:'Surat jalan baru',how:'Cara kerja',how1:'Isi data dan tambahkan 2 foto: bagian depan kendaraan dan material di dalam truk.',how2:'Cetak surat atau unduh PDF, lalu kumpulkan 4 tanda tangan: pengemudi, perwakilan IC, perwakilan EcoOils, Site Lead.',how3:'Pindai surat yang sudah ditandatangani dengan pemindai di aplikasi lalu kirim. Memindai QR surat membuka pemindai otomatis.',how4:'Security mencocokkan salinan bertanda tangan dengan kertas aslinya dan memeriksa kendaraan, lalu melepasnya.',
  mine:'Surat saya',noneMine:'Belum ada surat di ponsel ini.',find:'Cari surat',refresh:'Segarkan',admin:'Admin',back:'Kembali',next:'Lanjut',close:'Tutup',cancelBtn:'Batal',loading:'Memuat...',
@@ -72,6 +73,7 @@ var T={en:{
  deptSec:"Bagian EcoOils", secProject:"Project", secOps:"Operasi", f_sec:"Pilih Project atau Operasi.",
  apBy:"Persetujuan oleh", apProj:"Site Lead Project", apOps:"HOF Operasi",
  allowMr:"Mohon izinkan Bapak / Ibu", toSec:"KEPADA: SECURITY", itemsH:"Barang", carriedBy:"Dibawa oleh", carriedCap:"(Orang yang membawa material keluar) - nama sama seperti di atas, tanda tangan di kertas", checkedBy:"Diperiksa oleh", checkedCap:"(Penanggung jawab IC - Lead / penanggung jawab gudang) - tanda tangan di kertas", icRepN:"Nama", ecoRep:"Perwakilan EcoOils", ecoRepCap:"(Project / Operasi - departemen) - tanda tangan di kertas", apprBy:"Disetujui oleh", apprHint:"Terisi otomatis dari Perwakilan EcoOils. Tanda tangan di kertas.",
+ oldServer:"Daftar di server sedang diperbarui. Pilih departemen Anda untuk sementara.", err_bad_dept:"Departemen tidak diterima server. Muat ulang halaman dan pilih lagi. Jika tetap, Apps Script perlu Code.gs v1.13.",
 },ms:{
  title:'Pas pintu bahan',newPass:'Pas pintu baharu',how:'Cara ia berfungsi',how1:'Isi butiran dan tambah 2 foto: bahagian depan kenderaan dan bahan di dalam lori.',how2:'Cetak pas atau muat turun PDF, dan kumpulkan 4 tandatangan: pemandu, wakil IC, wakil EcoOils, Site Lead.',how3:'Imbas pas yang telah ditandatangani dengan pengimbas dalam aplikasi dan hantar. Mengimbas QR pas membuka pengimbas secara automatik.',how4:'Keselamatan menyemak salinan bertandatangan dengan kertas asal dan kenderaan, kemudian melepaskannya.',
  mine:'Pas saya',noneMine:'Belum ada pas pada telefon ini.',find:'Cari pas',refresh:'Segar semula',admin:'Admin',back:'Kembali',next:'Seterusnya',close:'Tutup',cancelBtn:'Batal',loading:'Memuatkan...',
@@ -109,4 +111,5 @@ var T={en:{
  deptSec:"Bahagian EcoOils", secProject:"Projek", secOps:"Operasi", f_sec:"Pilih Projek atau Operasi.",
  apBy:"Kelulusan oleh", apProj:"Site Lead Projek", apOps:"HOF Operasi",
  allowMr:"Sila benarkan Encik / Cik", toSec:"KEPADA: SECURITY", itemsH:"Item", carriedBy:"Dibawa oleh", carriedCap:"(Orang yang membawa bahan keluar) - nama sama seperti di atas, tandatangan di atas kertas", checkedBy:"Disemak oleh", checkedCap:"(Orang bertanggungjawab IC - Lead / penjaga stor) - tandatangan di atas kertas", icRepN:"Nama", ecoRep:"Wakil EcoOils", ecoRepCap:"(Projek / Operasi - jabatan) - tandatangan di atas kertas", apprBy:"Diluluskan oleh", apprHint:"Diisi secara automatik daripada Wakil EcoOils. Tandatangan di atas kertas.",
+ oldServer:"Senarai pelayan sedang dikemas kini. Pilih jabatan anda buat sementara.", err_bad_dept:"Jabatan tidak diterima pelayan. Muat semula halaman dan pilih semula. Jika berterusan, Apps Script perlukan Code.gs v1.13.",
 }};
