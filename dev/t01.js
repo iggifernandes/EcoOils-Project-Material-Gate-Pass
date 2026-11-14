@@ -113,6 +113,9 @@ const dl=m.call({action:'a_delete',pin:m.props.ADMIN_PIN,refs:[r2.ref,r3.ref]});
 ok(dl.ok&&dl.deleted.length===2&&m.sheets.Passes.rows.length===nPass-2&&m.sheets.Items.rows.length<nItems&&!m.sheets.Items.rows.slice(1).some(r=>r[0]===r2.ref||r[0]===r3.ref),'admin delete removes the pass rows and their item rows');
 ok(m.trashed.includes(r2.ref)&&m.call({action:'verify',ref:r2.ref}).found===false&&m.call({action:'a_log',pin:m.props.ADMIN_PIN}).log.some(l=>l.ev==='DELETED_ADMIN'&&l.ref===r2.ref),'Drive folder goes to Trash, pass is gone, deletion is in the audit log');
 m.sheets.Config.rows.forEach(r=>{if(r[0]==='COMPANY_DAILY_CAP')r[1]='40'});
+// v1.15: EVERY department the app offers must be accepted (long ones such as 'Operations - Maintenance (Electrical and Instrument)' were cut at 40 characters and refused as bad_dept)
+{const bad=[];let n=0;['Project','Operations'].forEach(s=>cfg.deptGroups[s].forEach(d=>{const r=m.call({...base,company:['GSB','WEN','KKS','PBS'][n%4],cid:'dd'+(n++),dept:s+' - '+d});if(!r.ok)bad.push(s+' - '+d+' => '+r.err)}));ok(n>=20&&!bad.length,'all '+n+' offered departments are accepted '+bad.join('; '));}
+
 const nx=m.call({...base,company:'GSB'});
 ok(nx.ok&&!nx.ref.endsWith('-0002')&&!nx.ref.endsWith('-0003'),'a deleted number is never reused: '+nx.ref);
 // QR key: scanning the paper QR can upload the first signed copy (v1.5)
