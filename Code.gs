@@ -1,4 +1,4 @@
-/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.13
+/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.14
    Form EOSM-HSSE-FM003. Paste into Extensions > Apps Script of the "EcoOils Gate Pass Log" Google Sheet (personal Gmail account).
    Do NOT upload this file to GitHub (keep the repo to index.html and the static files only).
    Who calls this web app:
@@ -6,7 +6,7 @@
    - Public QR check: action 'verify' returns status only (no names, no ID numbers, no photos).
    - Patroli (guards): actions b_list / b_get / b_release, protected by the shared secret BRIDGE_SECRET (script property). The guard's name comes from Patroli's PIN login.
    - Admin (you): actions a_*, protected by the script property ADMIN_PIN. */
-var VERSION = 'v1.13';
+var VERSION = 'v1.14';
 var OFF = 7 * 3600000;      // Jakarta (WIB), no daylight saving
 var TZ = 'Asia/Jakarta';
 var P_HEAD = ['Ref', 'Created (WIB)', 'Date', 'Purpose', 'Carrier name', 'Carrier I/C no', 'Company', 'Vehicle no', 'Purpose of taking out', 'EcoOils dept', 'IC rep name', 'IC rep position', 'Items', 'Status', 'Token hash',
@@ -252,7 +252,6 @@ function saveImg_(b64, name, ref) {
 }
 function create_(b) {
   if (String(b.hp || '') !== '') return {ok: false, err: 'bad'};
-  if (!hits_('create', 30, 600)) return {ok: false, err: 'busy'};
   var cl = cfgList_('COMPANIES', 'GSB,WEN,KKS,PBS'), purpose = String(b.purpose || '').toUpperCase();
   if (purpose !== 'A' && purpose !== 'B') return {ok: false, err: 'bad_purpose'};
   var carrier = clean_(b.carrier, 60), icNo = clean_(b.icNo, 30), company = clean_(b.company, 60), vehicle = clean_(b.vehicle, 20).toUpperCase(), ptxt = clean_(b.purposeText, 300), dept = clean_(b.dept, 40);
@@ -327,7 +326,6 @@ function mine_(b) {
 }
 /* The pass owner's own photos (needs the pass token), used to print the pass with its pictures and to zoom them. */
 function photos_(b) {
-  if (!hits_('photos', 90, 600)) return {ok: false, err: 'busy'};
   var hit = rowOf_(b.ref);
   if (!hit || !(tokenOk_(hit, b.token) || (b.pin && adminOk_(b.pin)))) return {ok: false, err: 'notfound'};
   var ids = String(hit.v[PC['Photo IDs']] || '').split(','), vs = viewsOf_(ids), imgs = {};
@@ -377,7 +375,6 @@ function signed_(b) {
   var imgs = Array.isArray(b.photos) ? b.photos.slice(0, 2) : [];
   if (!imgs.length) return {ok: false, err: 'bad_photo'};
   for (var i = 0; i < imgs.length; i++) if (!b64ok_(imgs[i], 2000, 3000000)) return {ok: false, err: 'bad_photo'};
-  if (!hits_('signed', 60, 600)) return {ok: false, err: 'busy'};
   var lock = LockService.getScriptLock();
   lock.waitLock(25000);
   try {
@@ -417,7 +414,6 @@ function cancel_(b) {
 }
 /* Public check from a phone camera: status only. No names, ID numbers or photos. */
 function verify_(b) {
-  if (!hits_('verify', 120, 600)) return {ok: false, err: 'busy'};
   var hit = rowOf_(b.ref);
   if (!hit) return {ok: true, found: false};
   var s = summary_(hit.v, Date.now());
