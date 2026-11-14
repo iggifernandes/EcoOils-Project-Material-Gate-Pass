@@ -21,7 +21,7 @@ ok(m.call({...base,items:Array(16).fill({item:'x1',qty:1})}).err==='bad_items','
 ok(m.call({...base,items:[{item:'ab',qty:-1}]}).err==='bad_items','qty must be positive');
 ok(m.call({...base,photos:{...photos,load:'AAAA'}}).err==='bad_photo','2 real jpeg photos required');
 ok(m.call({...base,dept:'Kitchen'}).err==='bad_dept'&&m.call({...base,dept:'Operations - Kitchen'}).err==='bad_dept','department must be on the list');
-ok(cfg.deptGroups.Project.includes('HSSE')&&cfg.deptGroups.Operations.includes('Plant Operations'),'config returns Project and Operations department lists');
+ok(cfg.deptGroups.Project.includes('HR')&&cfg.deptGroups.Operations.includes('HR')&&cfg.deptGroups.Project.includes('HSSE')&&cfg.deptGroups.Operations.includes('Plant Operations'),'config returns Project and Operations department lists');
 ok(m.call({...base,dept:'Project - Laboratory'}).err==='bad_dept','a department of the other section is refused');
 ok(m.call({...base,purpose:'C'}).err==='bad_purpose','purpose A or B');
 // token protection

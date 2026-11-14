@@ -2530,6 +2530,7 @@ var T={en:{
  ph_x:"Extra photo",addPhoto:"Add another photo (optional)",rmPhoto:"Remove",extraHelp:"Optional: add up to 4 more photos if needed (any angle of the material or the vehicle). Landscape, taken with the camera.",
  dash:"Dashboard", dbTotal:"Passes", dbToday:"Today", dbOpen:"Open now", dbRel:"Released", dbNot:"Not completed", dbRate:"Released rate", dbPerDay:"Passes per day", dbByCo:"By company", dbMode:"How material left", dbPurp:"Purpose", dbAvgSign:"Average time to scan the signed copy", dbAvgRel:"Average time from signed copy to release", dbAttn:"Needs attention", dbNone:"Nothing waiting.", dbDays:"days", dbAll:"All", dbItems:"Items", dbHrs:"h", dbMin:"min", dbNoData:"No data yet.", dbOldBack:"Update the Apps Script (Code.gs v1.11) to see the dashboard.", dbVeh:"Vehicle", dbHand:"Hand carry", dbPA:"Purpose A", dbPB:"Purpose B", dbNotSigned:"Never signed (expired or cancelled)",
  deptSec:"EcoOils section", secProject:"Project", secOps:"Operations", f_sec:"Choose Project or Operations.",
+ apBy:"Approval by", apProj:"Project Site Lead", apOps:"Operations HOF",
 },id:{
  title:'Surat jalan material',newPass:'Surat jalan baru',how:'Cara kerja',how1:'Isi data dan tambahkan 2 foto: bagian depan kendaraan dan material di dalam truk.',how2:'Cetak surat atau unduh PDF, lalu kumpulkan 4 tanda tangan: pengemudi, perwakilan IC, perwakilan EcoOils, Site Lead.',how3:'Pindai surat yang sudah ditandatangani dengan pemindai di aplikasi lalu kirim. Memindai QR surat membuka pemindai otomatis.',how4:'Security mencocokkan salinan bertanda tangan dengan kertas aslinya dan memeriksa kendaraan, lalu melepasnya.',
  mine:'Surat saya',noneMine:'Belum ada surat di ponsel ini.',find:'Cari surat',refresh:'Segarkan',admin:'Admin',back:'Kembali',next:'Lanjut',close:'Tutup',cancelBtn:'Batal',loading:'Memuat...',
@@ -2565,6 +2566,7 @@ var T={en:{
  ph_x:"Foto tambahan",addPhoto:"Tambah foto lain (opsional)",rmPhoto:"Hapus",extraHelp:"Opsional: tambahkan sampai 4 foto lagi jika perlu (sudut apa saja dari material atau kendaraan). Landscape, diambil dengan kamera.",
  dash:"Dasbor", dbTotal:"Surat", dbToday:"Hari ini", dbOpen:"Masih terbuka", dbRel:"Sudah dilepas", dbNot:"Tidak selesai", dbRate:"Persentase dilepas", dbPerDay:"Surat per hari", dbByCo:"Per perusahaan", dbMode:"Cara material keluar", dbPurp:"Tujuan", dbAvgSign:"Rata-rata waktu sampai salinan bertanda tangan dipindai", dbAvgRel:"Rata-rata waktu dari salinan bertanda tangan sampai dilepas", dbAttn:"Perlu perhatian", dbNone:"Tidak ada yang menunggu.", dbDays:"hari", dbAll:"Semua", dbItems:"Barang", dbHrs:"j", dbMin:"mnt", dbNoData:"Belum ada data.", dbOldBack:"Perbarui Apps Script (Code.gs v1.11) untuk melihat dasbor.", dbVeh:"Kendaraan", dbHand:"Dibawa tangan", dbPA:"Tujuan A", dbPB:"Tujuan B", dbNotSigned:"Tidak pernah ditandatangani (kedaluwarsa atau dibatalkan)",
  deptSec:"Bagian EcoOils", secProject:"Project", secOps:"Operasi", f_sec:"Pilih Project atau Operasi.",
+ apBy:"Persetujuan oleh", apProj:"Site Lead Project", apOps:"HOF Operasi",
 },ms:{
  title:'Pas pintu bahan',newPass:'Pas pintu baharu',how:'Cara ia berfungsi',how1:'Isi butiran dan tambah 2 foto: bahagian depan kenderaan dan bahan di dalam lori.',how2:'Cetak pas atau muat turun PDF, dan kumpulkan 4 tandatangan: pemandu, wakil IC, wakil EcoOils, Site Lead.',how3:'Imbas pas yang telah ditandatangani dengan pengimbas dalam aplikasi dan hantar. Mengimbas QR pas membuka pengimbas secara automatik.',how4:'Keselamatan menyemak salinan bertandatangan dengan kertas asal dan kenderaan, kemudian melepaskannya.',
  mine:'Pas saya',noneMine:'Belum ada pas pada telefon ini.',find:'Cari pas',refresh:'Segar semula',admin:'Admin',back:'Kembali',next:'Seterusnya',close:'Tutup',cancelBtn:'Batal',loading:'Memuatkan...',
@@ -2600,6 +2602,7 @@ var T={en:{
  ph_x:"Foto tambahan",addPhoto:"Tambah foto lain (pilihan)",rmPhoto:"Buang",extraHelp:"Pilihan: tambah sehingga 4 foto lagi jika perlu (sebarang sudut bahan atau kenderaan). Mengufuk, diambil dengan kamera.",
  dash:"Papan pemuka", dbTotal:"Pas", dbToday:"Hari ini", dbOpen:"Masih terbuka", dbRel:"Telah dilepaskan", dbNot:"Tidak selesai", dbRate:"Peratus dilepaskan", dbPerDay:"Pas sehari", dbByCo:"Mengikut syarikat", dbMode:"Cara bahan keluar", dbPurp:"Tujuan", dbAvgSign:"Purata masa sehingga salinan bertandatangan diimbas", dbAvgRel:"Purata masa dari salinan bertandatangan hingga dilepaskan", dbAttn:"Perlu perhatian", dbNone:"Tiada yang menunggu.", dbDays:"hari", dbAll:"Semua", dbItems:"Item", dbHrs:"j", dbMin:"min", dbNoData:"Belum ada data.", dbOldBack:"Kemas kini Apps Script (Code.gs v1.11) untuk melihat papan pemuka.", dbVeh:"Kenderaan", dbHand:"Dibawa tangan", dbPA:"Tujuan A", dbPB:"Tujuan B", dbNotSigned:"Tidak pernah ditandatangani (tamat tempoh atau dibatalkan)",
  deptSec:"Bahagian EcoOils", secProject:"Projek", secOps:"Operasi", f_sec:"Pilih Projek atau Operasi.",
+ apBy:"Kelulusan oleh", apProj:"Site Lead Projek", apOps:"HOF Operasi",
 }};
 
 var VERSION='v1.27';
@@ -2642,8 +2645,11 @@ function api(body,ms){
 
 /* ===== state ===== */
 var CFG={units:['Pcs','Units','Kgs','Ton','Liters','Meters','Sets','Rolls','Drums','Bags','Boxes','Pallets','Lots'],companies:['GSB','WEN','KKS','PBS','EcoOils (Project)','EcoOils (Operations)'],depts:['Project Eng','Discipline Eng','HSSE','Stores'],validHours:48,maxItems:15,siteLead:''};
-var DG0={Project:['Project Management','Project Engineering','Discipline Engineering','Construction','Commissioning and Start-up','HSSE','Quality (QA/QC)','Planning and Cost Control','Procurement and Contracts','Stores and Warehouse','Security'],Operations:['Plant Operations','Maintenance (Mechanical)','Maintenance (Electrical and Instrument)','Reliability and Inspection','Laboratory','Utilities','HSSE (Operations)','Stores and Warehouse (Operations)','Logistics and Dispatch','Security']};
+var DG0={Project:['Project Management','Project Engineering','Discipline Engineering','Construction','Commissioning and Start-up','HSSE','Quality (QA/QC)','Planning and Cost Control','Procurement and Contracts','Stores and Warehouse','HR','Security'],Operations:['Plant Operations','Maintenance (Mechanical)','Maintenance (Electrical and Instrument)','Reliability and Inspection','Laboratory','Utilities','HSSE (Operations)','Stores and Warehouse (Operations)','Logistics and Dispatch','HR','Security']};
 try{var c0=JSON.parse(ls('gp_cfg')||'null');if(c0&&c0.companies)CFG=c0;}catch(e){}
+function secOf(d){return /^Operations - /.test(d||'')?'Operations':(/^Project - /.test(d||'')?'Project':'');}
+function apprCap(d){var s=secOf(d);return s==='Operations'?'(Operations HOF)':(s==='Project'?'(Project Site Lead)':'(EcoOils Site Lead)');}
+function apprName(p){return secOf(p.dept)==='Operations'?(p.hofName||CFG.hofName||''):(p.siteLead||CFG.siteLead||'');}
 function dgroups(){var g=CFG.deptGroups;return g&&g.Project&&g.Operations?g:DG0;}
 var MINE=[];try{MINE=JSON.parse(ls('gp_mine')||'[]');if(!Array.isArray(MINE))MINE=[];}catch(e){MINE=[];}
 function saveMine(){ls('gp_mine',JSON.stringify(MINE.slice(0,60)));}
@@ -2723,7 +2729,7 @@ function homeDraw(){
 }
 function homeLoad(){
   if(!API_URL)return;
-  api({action:'config'}).then(function(r){if(r&&r.ok){CFG={units:(r.units&&r.units.length?r.units:CFG.units),companies:r.companies,depts:r.depts,deptGroups:r.deptGroups,validHours:r.validHours,maxItems:r.maxItems||15,siteLead:r.siteLead||''};ls('gp_cfg',JSON.stringify(CFG));}},function(){});
+  api({action:'config'}).then(function(r){if(r&&r.ok){CFG={units:(r.units&&r.units.length?r.units:CFG.units),companies:r.companies,depts:r.depts,deptGroups:r.deptGroups,validHours:r.validHours,maxItems:r.maxItems||15,siteLead:r.siteLead||'',hofName:r.hofName||''};ls('gp_cfg',JSON.stringify(CFG));}},function(){});
   if(!MINE.length)return;
   api({action:'mine',list:MINE.slice(0,40).map(function(m){return {ref:m.ref,token:m.token};})}).then(function(r){
     if(!r||!r.ok)return;r.list.forEach(function(s){SUM[s.ref]=s;});if(!$('vHome').classList.contains('hidden'))homeDraw();
@@ -2763,6 +2769,7 @@ function newDraw(keep){
     else h+='<select id="fReason" data-f="reason"><option value="">'+esc(tr('reasonPick'))+'</option>'+REASONS[D.purpose].map(function(k){return '<option value="'+k+'"'+(D.reason===k?' selected':'')+'>'+esc(tr(k))+'</option>';}).join('')+'<option value="rOther"'+(D.reason==='rOther'?' selected':'')+'>'+esc(tr('rOther'))+'</option></select>';
     h+='<label for="fPT">'+esc(D.reason==='rOther'?tr('reasonDescribe'):tr('reasonDetails'))+'</label><textarea id="fPT" data-f="purposeText" maxlength="260">'+esc(D.purposeText)+'</textarea>';
     h+='<label>'+esc(tr('deptSec'))+'</label>'+mopt(D.deptSec==='Project','sec:Project',tr('secProject'),'')+mopt(D.deptSec==='Operations','sec:Operations',tr('secOps'),'');
+    if(D.deptSec)h+='<p class="note">'+esc(tr('apBy'))+': <b>'+esc(D.deptSec==='Operations'?tr('apOps'):tr('apProj'))+'</b></p>';
     if(D.deptSec){h+='<label for="fDept">'+esc(tr('dept'))+'</label><select id="fDept" data-f="dept"><option value="">'+esc(tr('deptPick'))+'</option>'+dgroups()[D.deptSec].map(function(c){var v=D.deptSec+' - '+c;return '<option value="'+esc(v)+'"'+(D.dept===v?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select>';}
     h+='<label for="fRep">'+esc(tr('icRep'))+'</label><input id="fRep" data-f="icRep" maxlength="60" autocomplete="off" value="'+esc(D.icRep)+'">';
     h+='<label for="fPos">'+esc(tr('icPos'))+'</label><input id="fPos" data-f="icPos" maxlength="40" autocomplete="off" value="'+esc(D.icPos)+'">';
@@ -2953,7 +2960,7 @@ function passHtml(p,ph,one,st){
   h+='<table class="items" style="margin-top:3mm"><tr><th>S/NO</th><th>ITEM</th><th>QTY.</th><th>UNIT</th></tr>'+rows+'</table>';
   if(one)h+='<div class="ph2"><div><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>'+(isHC(p.vehicle)?'MATERIAL AND THE PERSON CARRYING IT':'FRONT VIEW OF THE VEHICLE')+'</small></div><div><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>'+(isHC(p.vehicle)?'CLOSE-UP OF THE MATERIAL (LABELS / TAGS)':'MATERIAL LOADED IN THE TRUCK')+'</small></div></div>';
   h+='<div class="sig"><div><b>CARRIED BY:</b><div class="l"></div><small>(Person taking the material out)</small><div style="font-size:9pt">'+esc(p.carrier)+'</div></div><div><b>CHECKED BY:</b><div class="l"></div><small>(IC responsible Person- Lead/Store in charge)</small><div style="font-size:9pt">'+esc(p.icRep+(p.icPos?', '+p.icPos:''))+(p.icPhone?'<br>Tel: '+esc(p.icPhone):'')+'</div></div></div>';
-  h+='<div class="sig" style="margin-top:3mm"><div><b>EcoOils Rep:</b><div class="l"></div><small>(Project / Operations - department)</small><div style="font-size:9pt">'+esc(p.dept)+'</div></div><div><b>Approval By:</b><div class="l"></div><small>(EcoOils Site Lead)</small><div style="font-size:9pt">'+esc(p.siteLead||'')+'</div></div></div>';
+  h+='<div class="sig" style="margin-top:3mm"><div><b>EcoOils Rep:</b><div class="l"></div><small>(Project / Operations - department)</small><div style="font-size:9pt">'+esc(p.dept)+'</div></div><div><b>Approval By:</b><div class="l"></div><small>'+esc(apprCap(p.dept))+'</small><div style="font-size:9pt">'+esc(apprName(p))+'</div></div></div>';
   h+='<div class="ft"><span>COPY: <i>SECURITY / CARRIER / STORES</i></span><span class="pn">'+esc(tr('printedAt'))+' '+esc(st.txt)+' &middot; Page 1 of '+tot+'</span></div></div>';
   if(!one){
     h+='<div class="pg pg2"><table class="hd"><tr><td class="lg" rowspan="3"><img alt="" src="'+LOGO+'"></td><td class="k">Item</td><td class="v">: EOSM-HSSE-FM003</td></tr><tr><td class="k">SR NO</td><td class="v">: '+esc(p.ref)+'</td></tr><tr><td class="k">Date</td><td class="v">: '+esc(fmtD(p.date))+'</td></tr></table>';

@@ -81,8 +81,8 @@ function cfg_(k, def) {
   return Object.prototype.hasOwnProperty.call(CFGM_, k) ? CFGM_[k] : def;
 }
 function cfgNum_(k, def) { var v = Number(cfg_(k, def)); return isFinite(v) && v > 0 ? v : def; }
-var DEPT_P_DEF = 'Project Management,Project Engineering,Discipline Engineering,Construction,Commissioning and Start-up,HSSE,Quality (QA/QC),Planning and Cost Control,Procurement and Contracts,Stores and Warehouse,Security';
-var DEPT_O_DEF = 'Plant Operations,Maintenance (Mechanical),Maintenance (Electrical and Instrument),Reliability and Inspection,Laboratory,Utilities,HSSE (Operations),Stores and Warehouse (Operations),Logistics and Dispatch,Security';
+var DEPT_P_DEF = 'Project Management,Project Engineering,Discipline Engineering,Construction,Commissioning and Start-up,HSSE,Quality (QA/QC),Planning and Cost Control,Procurement and Contracts,Stores and Warehouse,HR,Security';
+var DEPT_O_DEF = 'Plant Operations,Maintenance (Mechanical),Maintenance (Electrical and Instrument),Reliability and Inspection,Laboratory,Utilities,HSSE (Operations),Stores and Warehouse (Operations),Logistics and Dispatch,HR,Security';
 /* v1.12: EcoOils section (Project or Operations) then department; stored as 'Project - HSSE'. Config keys DEPTS_PROJECT and DEPTS_OPERATIONS. Old plain DEPTS values are still accepted. */
 function deptGroups_() { return {Project: cfgList_('DEPTS_PROJECT', DEPT_P_DEF), Operations: cfgList_('DEPTS_OPERATIONS', DEPT_O_DEF)}; }
 function deptOk_(d) {
@@ -168,7 +168,7 @@ function full_(v, now) {
   var o = summary_(v, now);
   o.icNo = String(v[PC['Carrier I/C no']]); o.purposeText = String(v[PC['Purpose of taking out']]); o.dept = String(v[PC['EcoOils dept']]);
   o.icRep = String(v[PC['IC rep name']]); o.icPos = String(v[PC['IC rep position']]); o.icPhone = String(v[PC['IC rep phone']] || ''); o.items = itemsOf_(o.ref); o.itemCount = o.items.length; o.decidedRole = String(v[PC['Decider role']] || '');
-  o.cancelReason = String(v[PC['Cancelled reason']] || ''); o.siteLead = cfg_('SITE_LEAD_NAME', ''); o.qk = key_(o.ref);
+  o.cancelReason = String(v[PC['Cancelled reason']] || ''); o.siteLead = cfg_('SITE_LEAD_NAME', ''); o.hofName = cfg_('HOF_NAME', ''); o.qk = key_(o.ref);
   return o;
 }
 function tokenOk_(hit, tok) {
@@ -202,7 +202,7 @@ function route_(b) {
   return {ok: false, err: 'action'};
 }
 function config_() {
-  return {ok: true, version: VERSION, units: cfgList_('UNITS', UNITS_DEF), companies: companies_(), depts: cfgList_('DEPTS', 'Project Eng,Discipline Eng,HSSE,Stores'), deptGroups: deptGroups_(), validHours: cfgNum_('VALID_HOURS', 48), signHours: cfgNum_('SIGN_WINDOW_HOURS', 72), maxItems: 15, siteLead: cfg_('SITE_LEAD_NAME', ''), now: Date.now()};
+  return {ok: true, version: VERSION, units: cfgList_('UNITS', UNITS_DEF), companies: companies_(), depts: cfgList_('DEPTS', 'Project Eng,Discipline Eng,HSSE,Stores'), deptGroups: deptGroups_(), validHours: cfgNum_('VALID_HOURS', 48), signHours: cfgNum_('SIGN_WINDOW_HOURS', 72), maxItems: 15, siteLead: cfg_('SITE_LEAD_NAME', ''), hofName: cfg_('HOF_NAME', ''), now: Date.now()};
 }
 /* Short key printed inside the pass QR. Whoever scans the paper QR may upload the signed copy of a pass that is still Awaiting signatures; nothing else. */
 function key_(ref) { return hash_('QK|' + String(ref).toUpperCase()).slice(0, 12); }
