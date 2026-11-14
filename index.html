@@ -2612,7 +2612,7 @@ var T={en:{
  oldServer:"Senarai pelayan sedang dikemas kini. Pilih jabatan anda buat sementara.", err_bad_dept:"Jabatan tidak diterima pelayan. Muat semula halaman dan pilih semula. Jika berterusan, Apps Script perlukan Code.gs v1.13.",
 }};
 
-var VERSION='v1.29';
+var VERSION='v1.30';
 var PHV=['front','load'];
 var EXV=['x1','x2','x3','x4'];
 var ALLV=PHV.concat(EXV);
@@ -2657,6 +2657,7 @@ try{var c0=JSON.parse(ls('gp_cfg')||'null');if(c0&&c0.companies)CFG=c0;}catch(e)
 function secOf(d){return /^Operations - /.test(d||'')?'Operations':(/^Project - /.test(d||'')?'Project':'');}
 function apprCap(d){var s=secOf(d);return s==='Operations'?'(Operations HOF)':(s==='Project'?'(Project Site Lead)':'(EcoOils Site Lead)');}
 function apprName(p){return secOf(p.dept)==='Operations'?(p.hofName||CFG.hofName||''):(p.siteLead||CFG.siteLead||'');}
+function fixDept(){if(!D||!D.dept)return;var okv;if(oldBackend())okv=(CFG.depts||[]).indexOf(D.dept)>=0;else if(D.deptSec&&dgroups()[D.deptSec])okv=dgroups()[D.deptSec].some(function(c){return D.dept===D.deptSec+' - '+c;});else okv=(CFG.depts||[]).indexOf(D.dept)>=0;if(!okv)D.dept='';}
 function oldBackend(){return !!(CFG.live&&!CFG.deptGroups);}
 function dgroups(){var g=CFG.deptGroups;return g&&g.Project&&g.Operations?g:DG0;}
 var MINE=[];try{MINE=JSON.parse(ls('gp_mine')||'[]');if(!Array.isArray(MINE))MINE=[];}catch(e){MINE=[];}
@@ -2737,7 +2738,7 @@ function homeDraw(){
 }
 function homeLoad(){
   if(!API_URL)return;
-  api({action:'config'}).then(function(r){if(r&&r.ok){CFG={units:(r.units&&r.units.length?r.units:CFG.units),companies:r.companies,depts:r.depts,deptGroups:r.deptGroups,validHours:r.validHours,maxItems:r.maxItems||15,siteLead:r.siteLead||'',hofName:r.hofName||'',live:true};ls('gp_cfg',JSON.stringify(CFG));}},function(){});
+  api({action:'config'}).then(function(r){if(r&&r.ok){CFG={units:(r.units&&r.units.length?r.units:CFG.units),companies:r.companies,depts:r.depts,deptGroups:r.deptGroups,validHours:r.validHours,maxItems:r.maxItems||15,siteLead:r.siteLead||'',hofName:r.hofName||'',live:true,ver:r.version||''};try{var ed=document.querySelector('.eh-d');if(ed&&r.version&&!/server/.test(ed.textContent))ed.textContent+=' · server '+r.version;}catch(e){}ls('gp_cfg',JSON.stringify(CFG));}},function(){});
   if(!MINE.length)return;
   api({action:'mine',list:MINE.slice(0,40).map(function(m){return {ref:m.ref,token:m.token};})}).then(function(r){
     if(!r||!r.ok)return;r.list.forEach(function(s){SUM[s.ref]=s;});if(!$('vHome').classList.contains('hidden'))homeDraw();
@@ -2764,6 +2765,7 @@ function itemsHtml(){var h='';
     h+=D.items.length<CFG.maxItems?'<button class="btn ghost" id="addItem" type="button">+ '+esc(tr('addItem'))+'</button>':'<div class="note">'+esc(tr('itemsMax'))+'</div>';
   return h;}
 function newDraw(keep){
+  fixDept();
   var st=D.step,sc=window.pageYOffset,h='';
   h+=h1(tr('newPass'));
   var dsp=st<=2?1:st-1;
@@ -2818,6 +2820,7 @@ function tilesZoomBar(){return '<div class="row2" style="margin-top:6px">'+visVi
 function validItems(){return D.items.filter(function(it){return String(it.item).trim().length>=2&&Number(String(it.qty).replace(',','.'))>0&&CFG.units.indexOf(String(it.unit||''))>=0;}).map(function(it){return {item:String(it.item).trim(),qty:Number(String(it.qty).replace(',','.')),unit:String(it.unit||'').trim()};});}
 function nerr(k,field){var e=$('nErr');if(e)e.textContent=tr(k);if(field){var f=document.querySelector(field);if(f){f.classList.add('bad');try{f.scrollIntoView({block:'center'});}catch(x){}}}}
 function stepOk(){
+  fixDept();
   var s=D.step,co=D.company==='__other'?D.companyOther:D.company;
   if(s===1){
     if(D.purpose!=='A'&&D.purpose!=='B'){nerr('f_purpose');return false;}
@@ -2907,6 +2910,7 @@ function shrink(file,lines,max,q,landscape){
 }
 var BUSY=false;
 function submit(){
+  fixDept();if(!D.dept){D.step=1;newDraw(true);nerr('f_dept','#fDept');return;}
   if(BUSY)return;if(!stepOk())return;BUSY=true;
   var co=D.company==='__other'?D.companyOther:D.company,its=validItems();
   var body={action:'create',cid:D.cid,hp:'',purpose:D.purpose,company:co.trim(),vehicle:vehVal(),carrier:D.carrier.trim(),icNo:icFull(),purposeText:purposeFull(),dept:D.dept,icRep:D.icRep.trim(),icPhone:D.icPhone.trim(),icPos:D.icPos.trim(),items:its,photos:D.photos};
