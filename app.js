@@ -1,4 +1,4 @@
-var VERSION='v1.26';
+var VERSION='v1.27';
 var PHV=['front','load'];
 var EXV=['x1','x2','x3','x4'];
 var ALLV=PHV.concat(EXV);
@@ -38,7 +38,9 @@ function api(body,ms){
 
 /* ===== state ===== */
 var CFG={units:['Pcs','Units','Kgs','Ton','Liters','Meters','Sets','Rolls','Drums','Bags','Boxes','Pallets','Lots'],companies:['GSB','WEN','KKS','PBS','EcoOils (Project)','EcoOils (Operations)'],depts:['Project Eng','Discipline Eng','HSSE','Stores'],validHours:48,maxItems:15,siteLead:''};
+var DG0={Project:['Project Management','Project Engineering','Discipline Engineering','Construction','Commissioning and Start-up','HSSE','Quality (QA/QC)','Planning and Cost Control','Procurement and Contracts','Stores and Warehouse','Security'],Operations:['Plant Operations','Maintenance (Mechanical)','Maintenance (Electrical and Instrument)','Reliability and Inspection','Laboratory','Utilities','HSSE (Operations)','Stores and Warehouse (Operations)','Logistics and Dispatch','Security']};
 try{var c0=JSON.parse(ls('gp_cfg')||'null');if(c0&&c0.companies)CFG=c0;}catch(e){}
+function dgroups(){var g=CFG.deptGroups;return g&&g.Project&&g.Operations?g:DG0;}
 var MINE=[];try{MINE=JSON.parse(ls('gp_mine')||'[]');if(!Array.isArray(MINE))MINE=[];}catch(e){MINE=[];}
 function saveMine(){ls('gp_mine',JSON.stringify(MINE.slice(0,60)));}
 var SUM={};var CUR=null;var PASS=null;var LAST=null;
@@ -62,7 +64,7 @@ function phSplit(){var t=String(D.icPhone||'').trim(),cc=D.icCc||'+62',loc=t;if(
 function phSet(cc,loc){D.icCc=cc;var l=String(loc||'').replace(/[^0-9 \-]/g,'').replace(/^[\s0\-]+/,'').trim();D.icPhone=l?cc+' '+l:'';}
 function icPhoneOk(){var t=String(D.icPhone||'').trim(),d=t.replace(/\D/g,'');return /^\+?[0-9][0-9 \-]{6,18}$/.test(t)&&d.length>=8&&d.length<=15;}
 function icFull(){var d=icDigits();return (D.icType||'')+' '+d;}
-function newDraft(){return {mode:'',purpose:'',company:'',companyOther:'',vehicle:'',carrier:'',icType:'',icNo:'',icPhone:'',purposeText:'',reason:'',dept:'',icRep:'',icPos:'',items:[{item:'',qty:'',unit:''}],photos:{},cid:Date.now().toString(36)+Math.random().toString(36).slice(2,10),step:1};}
+function newDraft(){return {mode:'',purpose:'',company:'',companyOther:'',vehicle:'',carrier:'',icType:'',icNo:'',icPhone:'',purposeText:'',reason:'',deptSec:'',dept:'',icRep:'',icPos:'',items:[{item:'',qty:'',unit:''}],photos:{},cid:Date.now().toString(36)+Math.random().toString(36).slice(2,10),step:1};}
 function saveDraft(){var o={};Object.keys(D).forEach(function(k){if(k!=='photos')o[k]=D[k];});ls('gp_draft',JSON.stringify(o));}
 try{var d0=JSON.parse(ls('gp_draft')||'null');if(d0&&d0.items){D=Object.assign(newDraft(),d0);D.photos={};D.hash={};}}catch(e){}
 
@@ -117,7 +119,7 @@ function homeDraw(){
 }
 function homeLoad(){
   if(!API_URL)return;
-  api({action:'config'}).then(function(r){if(r&&r.ok){CFG={units:(r.units&&r.units.length?r.units:CFG.units),companies:r.companies,depts:r.depts,validHours:r.validHours,maxItems:r.maxItems||15,siteLead:r.siteLead||''};ls('gp_cfg',JSON.stringify(CFG));}},function(){});
+  api({action:'config'}).then(function(r){if(r&&r.ok){CFG={units:(r.units&&r.units.length?r.units:CFG.units),companies:r.companies,depts:r.depts,deptGroups:r.deptGroups,validHours:r.validHours,maxItems:r.maxItems||15,siteLead:r.siteLead||''};ls('gp_cfg',JSON.stringify(CFG));}},function(){});
   if(!MINE.length)return;
   api({action:'mine',list:MINE.slice(0,40).map(function(m){return {ref:m.ref,token:m.token};})}).then(function(r){
     if(!r||!r.ok)return;r.list.forEach(function(s){SUM[s.ref]=s;});if(!$('vHome').classList.contains('hidden'))homeDraw();
@@ -156,7 +158,8 @@ function newDraw(keep){
     if(!D.purpose)h+='<div class="note">'+esc(tr('purposeFirst'))+'</div>';
     else h+='<select id="fReason" data-f="reason"><option value="">'+esc(tr('reasonPick'))+'</option>'+REASONS[D.purpose].map(function(k){return '<option value="'+k+'"'+(D.reason===k?' selected':'')+'>'+esc(tr(k))+'</option>';}).join('')+'<option value="rOther"'+(D.reason==='rOther'?' selected':'')+'>'+esc(tr('rOther'))+'</option></select>';
     h+='<label for="fPT">'+esc(D.reason==='rOther'?tr('reasonDescribe'):tr('reasonDetails'))+'</label><textarea id="fPT" data-f="purposeText" maxlength="260">'+esc(D.purposeText)+'</textarea>';
-    h+='<label for="fDept">'+esc(tr('dept'))+'</label><select id="fDept" data-f="dept"><option value="">'+esc(tr('deptPick'))+'</option>'+CFG.depts.map(function(c){return '<option value="'+esc(c)+'"'+(D.dept===c?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select>';
+    h+='<label>'+esc(tr('deptSec'))+'</label>'+mopt(D.deptSec==='Project','sec:Project',tr('secProject'),'')+mopt(D.deptSec==='Operations','sec:Operations',tr('secOps'),'');
+    if(D.deptSec){h+='<label for="fDept">'+esc(tr('dept'))+'</label><select id="fDept" data-f="dept"><option value="">'+esc(tr('deptPick'))+'</option>'+dgroups()[D.deptSec].map(function(c){var v=D.deptSec+' - '+c;return '<option value="'+esc(v)+'"'+(D.dept===v?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select>';}
     h+='<label for="fRep">'+esc(tr('icRep'))+'</label><input id="fRep" data-f="icRep" maxlength="60" autocomplete="off" value="'+esc(D.icRep)+'">';
     h+='<label for="fPos">'+esc(tr('icPos'))+'</label><input id="fPos" data-f="icPos" maxlength="40" autocomplete="off" value="'+esc(D.icPos)+'">';
     h+='<label for="fPhone">'+esc(tr('icPhone'))+'</label><div class="phrow"><select id="fCc" data-f="icCc" aria-label="'+esc(tr('countryCode'))+'">'+CCS.map(function(c){return '<option value="'+c[2]+'"'+(phSplit().cc===c[2]?' selected':'')+'>'+c[0]+' '+c[2]+' '+esc(c[1])+'</option>';}).join('')+'</select><input id="fPhone" data-pl="1" type="tel" inputmode="tel" maxlength="16" autocomplete="off" placeholder="812 3456 7890" value="'+esc(phSplit().loc)+'"></div>';
@@ -198,6 +201,7 @@ function stepOk(){
     if(!/^\d+$/.test(icDigits())||icDigits().length!==(D.icType==='KTP'?16:12)){nerr(D.icType==='KTP'?'f_icKTP':'f_icSIM','#fIcNo');return false;}
     if(!D.reason){nerr('f_reason','#fReason');return false;}
     if(D.purposeText.trim().length<3){nerr('f_reasonOther','#fPT');return false;}
+    if(!D.deptSec){nerr('f_sec','#nNext');return false;}
     if(!D.dept){nerr('f_dept','#fDept');return false;}
     if(D.icRep.trim().length<2){nerr('f_icRep','#fRep');return false;}
     if(D.icPos.trim().length<2){nerr('f_icPos','#fPos');return false;}
@@ -232,6 +236,7 @@ $('vNew').addEventListener('click',function(e){
   var t=e.target.closest('button');if(!t)return;
   if(t.getAttribute('data-xrm')){var xv=t.getAttribute('data-xrm');delete D.photos[xv];if(D.hash)delete D.hash[xv];newDraw(true);return;}
   if(t.getAttribute('data-zv')){var pz=D.photos[t.getAttribute('data-zv')];if(pz)zoomOpen('data:image/jpeg;base64,'+pz);return;}
+  if((t.getAttribute('data-mode')||'').indexOf('sec:')===0){var ns=t.getAttribute('data-mode').slice(4);if(ns!==D.deptSec){D.deptSec=ns;D.dept='';}saveDraft();newDraw(true);return;}
   if(t.getAttribute('data-mode')){var nm=t.getAttribute('data-mode');if(nm!==D.mode){D.mode=nm;D.photos={};D.hash={};}saveDraft();newDraw(true);return;}
   if(t.getAttribute('data-purpose')){var np=t.getAttribute('data-purpose');if(np!==D.purpose&&D.reason!=='rOther')D.reason='';D.purpose=np;saveDraft();newDraw(true);}
   else if(t.getAttribute('data-rm')!==null){D.items.splice(+t.getAttribute('data-rm'),1);saveDraft();newDraw(true);}
@@ -344,7 +349,7 @@ function passHtml(p,ph,one,st){
   h+='<table class="items" style="margin-top:3mm"><tr><th>S/NO</th><th>ITEM</th><th>QTY.</th><th>UNIT</th></tr>'+rows+'</table>';
   if(one)h+='<div class="ph2"><div><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>'+(isHC(p.vehicle)?'MATERIAL AND THE PERSON CARRYING IT':'FRONT VIEW OF THE VEHICLE')+'</small></div><div><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>'+(isHC(p.vehicle)?'CLOSE-UP OF THE MATERIAL (LABELS / TAGS)':'MATERIAL LOADED IN THE TRUCK')+'</small></div></div>';
   h+='<div class="sig"><div><b>CARRIED BY:</b><div class="l"></div><small>(Person taking the material out)</small><div style="font-size:9pt">'+esc(p.carrier)+'</div></div><div><b>CHECKED BY:</b><div class="l"></div><small>(IC responsible Person- Lead/Store in charge)</small><div style="font-size:9pt">'+esc(p.icRep+(p.icPos?', '+p.icPos:''))+(p.icPhone?'<br>Tel: '+esc(p.icPhone):'')+'</div></div></div>';
-  h+='<div class="sig" style="margin-top:3mm"><div><b>EcoOils Rep:</b><div class="l"></div><small>(Proj/Eng, Discipline Eng, HSSE, Stores)</small><div style="font-size:9pt">'+esc(p.dept)+'</div></div><div><b>Approval By:</b><div class="l"></div><small>(EcoOils Site Lead)</small><div style="font-size:9pt">'+esc(p.siteLead||'')+'</div></div></div>';
+  h+='<div class="sig" style="margin-top:3mm"><div><b>EcoOils Rep:</b><div class="l"></div><small>(Project / Operations - department)</small><div style="font-size:9pt">'+esc(p.dept)+'</div></div><div><b>Approval By:</b><div class="l"></div><small>(EcoOils Site Lead)</small><div style="font-size:9pt">'+esc(p.siteLead||'')+'</div></div></div>';
   h+='<div class="ft"><span>COPY: <i>SECURITY / CARRIER / STORES</i></span><span class="pn">'+esc(tr('printedAt'))+' '+esc(st.txt)+' &middot; Page 1 of '+tot+'</span></div></div>';
   if(!one){
     h+='<div class="pg pg2"><table class="hd"><tr><td class="lg" rowspan="3"><img alt="" src="'+LOGO+'"></td><td class="k">Item</td><td class="v">: EOSM-HSSE-FM003</td></tr><tr><td class="k">SR NO</td><td class="v">: '+esc(p.ref)+'</td></tr><tr><td class="k">Date</td><td class="v">: '+esc(fmtD(p.date))+'</td></tr></table>';

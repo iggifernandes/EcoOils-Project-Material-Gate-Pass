@@ -1,4 +1,4 @@
-/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.11
+/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.12
    Form EOSM-HSSE-FM003. Paste into Extensions > Apps Script of the "EcoOils Gate Pass Log" Google Sheet (personal Gmail account).
    Do NOT upload this file to GitHub (keep the repo to index.html and the static files only).
    Who calls this web app:
@@ -6,7 +6,7 @@
    - Public QR check: action 'verify' returns status only (no names, no ID numbers, no photos).
    - Patroli (guards): actions b_list / b_get / b_release, protected by the shared secret BRIDGE_SECRET (script property). The guard's name comes from Patroli's PIN login.
    - Admin (you): actions a_*, protected by the script property ADMIN_PIN. */
-var VERSION = 'v1.11';
+var VERSION = 'v1.12';
 var OFF = 7 * 3600000;      // Jakarta (WIB), no daylight saving
 var TZ = 'Asia/Jakarta';
 var P_HEAD = ['Ref', 'Created (WIB)', 'Date', 'Purpose', 'Carrier name', 'Carrier I/C no', 'Company', 'Vehicle no', 'Purpose of taking out', 'EcoOils dept', 'IC rep name', 'IC rep position', 'Items', 'Status', 'Token hash',
@@ -81,6 +81,14 @@ function cfg_(k, def) {
   return Object.prototype.hasOwnProperty.call(CFGM_, k) ? CFGM_[k] : def;
 }
 function cfgNum_(k, def) { var v = Number(cfg_(k, def)); return isFinite(v) && v > 0 ? v : def; }
+var DEPT_P_DEF = 'Project Management,Project Engineering,Discipline Engineering,Construction,Commissioning and Start-up,HSSE,Quality (QA/QC),Planning and Cost Control,Procurement and Contracts,Stores and Warehouse,Security';
+var DEPT_O_DEF = 'Plant Operations,Maintenance (Mechanical),Maintenance (Electrical and Instrument),Reliability and Inspection,Laboratory,Utilities,HSSE (Operations),Stores and Warehouse (Operations),Logistics and Dispatch,Security';
+/* v1.12: EcoOils section (Project or Operations) then department; stored as 'Project - HSSE'. Config keys DEPTS_PROJECT and DEPTS_OPERATIONS. Old plain DEPTS values are still accepted. */
+function deptGroups_() { return {Project: cfgList_('DEPTS_PROJECT', DEPT_P_DEF), Operations: cfgList_('DEPTS_OPERATIONS', DEPT_O_DEF)}; }
+function deptOk_(d) {
+  var g = deptGroups_();
+  return ['Project', 'Operations'].some(function (s) { return g[s].some(function (x) { return d === s + ' - ' + x; }); }) || cfgList_('DEPTS', 'Project Eng,Discipline Eng,HSSE,Stores').indexOf(d) >= 0;
+}
 function cfgList_(k, def) { return String(cfg_(k, def)).split(',').map(function (x) { return x.trim(); }).filter(function (x) { return x; }); }
 function failed_(k) { var c = CacheService.getScriptCache(); c.put(k, String(Number(c.get(k) || 0) + 1), 600); }
 function locked_(k, max) { return Number(CacheService.getScriptCache().get(k) || 0) >= max; }
@@ -194,7 +202,7 @@ function route_(b) {
   return {ok: false, err: 'action'};
 }
 function config_() {
-  return {ok: true, version: VERSION, units: cfgList_('UNITS', UNITS_DEF), companies: companies_(), depts: cfgList_('DEPTS', 'Project Eng,Discipline Eng,HSSE,Stores'), validHours: cfgNum_('VALID_HOURS', 48), signHours: cfgNum_('SIGN_WINDOW_HOURS', 72), maxItems: 15, siteLead: cfg_('SITE_LEAD_NAME', ''), now: Date.now()};
+  return {ok: true, version: VERSION, units: cfgList_('UNITS', UNITS_DEF), companies: companies_(), depts: cfgList_('DEPTS', 'Project Eng,Discipline Eng,HSSE,Stores'), deptGroups: deptGroups_(), validHours: cfgNum_('VALID_HOURS', 48), signHours: cfgNum_('SIGN_WINDOW_HOURS', 72), maxItems: 15, siteLead: cfg_('SITE_LEAD_NAME', ''), now: Date.now()};
 }
 /* Short key printed inside the pass QR. Whoever scans the paper QR may upload the signed copy of a pass that is still Awaiting signatures; nothing else. */
 function key_(ref) { return hash_('QK|' + String(ref).toUpperCase()).slice(0, 12); }
@@ -247,7 +255,7 @@ function create_(b) {
   if (icRep.length < 2) return {ok: false, err: 'bad_icrep'};
   if (icPos.length < 2) return {ok: false, err: 'bad_icpos'};
   if (!/^\+?[0-9][0-9 \-]{6,18}$/.test(icPhone) || icPhone.replace(/\D/g, '').length < 8 || icPhone.replace(/\D/g, '').length > 15) return {ok: false, err: 'bad_icphone'};
-  if (cfgList_('DEPTS', 'Project Eng,Discipline Eng,HSSE,Stores').indexOf(dept) < 0) return {ok: false, err: 'bad_dept'};
+  if (!deptOk_(dept)) return {ok: false, err: 'bad_dept'};
   var its = b.items;
   if (!Array.isArray(its) || its.length < 1 || its.length > 15) return {ok: false, err: 'bad_items'};
   var items = [];

@@ -20,7 +20,9 @@ ok(m.call({...base,items:[]}).err==='bad_items','items required');
 ok(m.call({...base,items:Array(16).fill({item:'x1',qty:1})}).err==='bad_items','max 15 items');
 ok(m.call({...base,items:[{item:'ab',qty:-1}]}).err==='bad_items','qty must be positive');
 ok(m.call({...base,photos:{...photos,load:'AAAA'}}).err==='bad_photo','2 real jpeg photos required');
-ok(m.call({...base,dept:'Kitchen'}).err==='bad_dept','department must be on the list');
+ok(m.call({...base,dept:'Kitchen'}).err==='bad_dept'&&m.call({...base,dept:'Operations - Kitchen'}).err==='bad_dept','department must be on the list');
+ok(cfg.deptGroups.Project.includes('HSSE')&&cfg.deptGroups.Operations.includes('Plant Operations'),'config returns Project and Operations department lists');
+ok(m.call({...base,dept:'Project - Laboratory'}).err==='bad_dept','a department of the other section is refused');
 ok(m.call({...base,purpose:'C'}).err==='bad_purpose','purpose A or B');
 // token protection
 ok(m.call({action:'get',ref:r1.ref,token:'wrong'}).err==='notfound','wrong token cannot read');
@@ -89,6 +91,7 @@ ok(m.call({...base,company:'WEN'}).ok&&m.call({...base,company:'WEN'}).ok&&m.cal
 const before=m.sheets.Passes.rows.length;
 const c1=m.call({...base,company:'KKS',cid:'abc123'}),c2=m.call({...base,company:'KKS',cid:'abc123'});
 ok(c1.ok&&c2.ok&&c2.dup&&c1.ref===c2.ref&&m.sheets.Passes.rows.length===before+1&&m.call({action:'get',ref:c2.ref,token:c2.token}).ok,'same client id = same pass (lost reply retry), fresh token');
+{const r=m.call({...base,company:'PBS',dept:'Operations - Laboratory'});ok(r.ok&&m.sheets.Passes.rows[m.sheets.Passes.rows.length-1].includes('Operations - Laboratory'),'Operations - Laboratory is accepted and stored');}
 // lookup (v1.4)
 const lk1=m.call({action:'lookup',q:r1.ref.toLowerCase()});
 ok(lk1.ok&&lk1.list.length===1&&lk1.list[0].ref===r1.ref&&!JSON.stringify(lk1).match(/Budi|KTP|SIM|photo/i),'lookup by pass number returns status-level facts only');
