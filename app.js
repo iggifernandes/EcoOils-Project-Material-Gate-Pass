@@ -1,4 +1,4 @@
-var VERSION='v1.27';
+var VERSION='v1.28';
 var PHV=['front','load'];
 var EXV=['x1','x2','x3','x4'];
 var ALLV=PHV.concat(EXV);
@@ -139,39 +139,47 @@ $('vHome').addEventListener('click',function(e){
 });
 
 /* ===== new pass wizard ===== */
-function newOpen(){if(D.done){D=newDraft();}if(!D.mode&&D.vehicle)D.mode='vehicle';D.step=D.step||1;show('vNew');newDraw();}
+function newOpen(){if(D.done){D=newDraft();}if(!D.mode&&D.vehicle)D.mode='vehicle';D.step=D.step||1;if(D.step===2)D.step=1;show('vNew');newDraw();}
 function mopt(sel,k,b,txt){return '<button type="button" class="opt'+(sel?' sel':'')+'" data-mode="'+k+'"><b>'+esc(b)+'</b><span>'+esc(txt)+'</span></button>';}
 function opt(sel,k,b,txt){return '<button type="button" class="opt'+(sel?' sel':'')+'" data-purpose="'+k+'"><b>'+b+'</b><span>'+esc(txt)+'</span></button>';}
-function newDraw(keep){
-  var st=D.step,sc=window.pageYOffset,h='';
-  h+=h1(tr('newPass'));
-  h+='<div class="steps">'+[1,2,3,4].map(function(i){return '<i class="'+(i<=st?'on':'')+'"></i>';}).join('')+'</div><div class="stepl">'+esc(tr('stepOf').replace('{a}',st).replace('{b}',4))+' · '+esc(tr('s'+st))+'</div>';
-  if(st===1){
-    h+='<p class="note">'+esc(tr('allReq'))+'</p>';
-    h+='<label>'+esc(tr('purposeLbl'))+'</label>'+opt(D.purpose==='A','A','A.',tr('purA'))+opt(D.purpose==='B','B','B.',tr('purB'));
-    h+='<label>'+esc(tr('transport'))+'</label>'+mopt(D.mode==='vehicle','vehicle',tr('tVeh'),tr('tVehSub'))+mopt(D.mode==='hand','hand',tr('tHand'),tr('tHandSub'));
-    h+='<label for="fCompany">'+esc(tr('company'))+'</label><select id="fCompany" data-f="company"><option value="">'+esc(tr('companyPick'))+'</option>'+CFG.companies.map(function(c){return '<option value="'+esc(c)+'"'+(D.company===c?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'<option value="__other"'+(D.company==='__other'?' selected':'')+'>'+esc(tr('other'))+'</option></select>';
-    if(D.company==='__other')h+='<label for="fCompanyOther">'+esc(tr('companyOther'))+'</label><input id="fCompanyOther" data-f="companyOther" maxlength="60" value="'+esc(D.companyOther)+'">';
-    if(D.mode==='hand')h+='<div class="note">'+esc(tr('handNote'))+'</div>';
-    else if(D.mode==='vehicle')h+='<label for="fVehicle">'+esc(tr('vehicle'))+'</label><input id="fVehicle" data-f="vehicle" maxlength="20" autocapitalize="characters" autocomplete="off" value="'+esc(D.vehicle)+'"><div class="note">'+esc(tr('vehicleHelp'))+'</div>';
-    h+='<label for="fCarrier">'+esc(tr('carrier'))+'</label><input id="fCarrier" data-f="carrier" maxlength="60" autocomplete="off" value="'+esc(D.carrier)+'">';
-    h+='<label for="fIcType">'+esc(tr('icType'))+'</label><select id="fIcType" data-f="icType"><option value="">'+esc(tr('icTypePick'))+'</option><option value="KTP"'+(D.icType==='KTP'?' selected':'')+'>'+esc(tr('icTypeKTP'))+'</option><option value="SIM"'+(D.icType==='SIM'?' selected':'')+'>'+esc(tr('icTypeSIM'))+'</option></select>';
-    h+='<label for="fIcNo">'+esc(tr('icNo'))+'</label><input id="fIcNo" data-f="icNo" inputmode="numeric" pattern="[0-9]*" autocomplete="off"'+(icNeed()?'':' disabled')+' placeholder="'+(icNeed()?icNeed()+' digits':'')+'" value="'+esc(D.icNo)+'"><div class="note">'+esc(tr('icHelp'))+'</div><div class="note" id="icCnt">'+esc(icCntText())+'</div>';
-    h+='<label for="fReason">'+esc(tr('reasonLbl'))+'</label>';
-    if(!D.purpose)h+='<div class="note">'+esc(tr('purposeFirst'))+'</div>';
-    else h+='<select id="fReason" data-f="reason"><option value="">'+esc(tr('reasonPick'))+'</option>'+REASONS[D.purpose].map(function(k){return '<option value="'+k+'"'+(D.reason===k?' selected':'')+'>'+esc(tr(k))+'</option>';}).join('')+'<option value="rOther"'+(D.reason==='rOther'?' selected':'')+'>'+esc(tr('rOther'))+'</option></select>';
-    h+='<label for="fPT">'+esc(D.reason==='rOther'?tr('reasonDescribe'):tr('reasonDetails'))+'</label><textarea id="fPT" data-f="purposeText" maxlength="260">'+esc(D.purposeText)+'</textarea>';
-    h+='<label>'+esc(tr('deptSec'))+'</label>'+mopt(D.deptSec==='Project','sec:Project',tr('secProject'),'')+mopt(D.deptSec==='Operations','sec:Operations',tr('secOps'),'');
-    if(D.deptSec)h+='<p class="note">'+esc(tr('apBy'))+': <b>'+esc(D.deptSec==='Operations'?tr('apOps'):tr('apProj'))+'</b></p>';
-    if(D.deptSec){h+='<label for="fDept">'+esc(tr('dept'))+'</label><select id="fDept" data-f="dept"><option value="">'+esc(tr('deptPick'))+'</option>'+dgroups()[D.deptSec].map(function(c){var v=D.deptSec+' - '+c;return '<option value="'+esc(v)+'"'+(D.dept===v?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select>';}
-    h+='<label for="fRep">'+esc(tr('icRep'))+'</label><input id="fRep" data-f="icRep" maxlength="60" autocomplete="off" value="'+esc(D.icRep)+'">';
-    h+='<label for="fPos">'+esc(tr('icPos'))+'</label><input id="fPos" data-f="icPos" maxlength="40" autocomplete="off" value="'+esc(D.icPos)+'">';
-    h+='<label for="fPhone">'+esc(tr('icPhone'))+'</label><div class="phrow"><select id="fCc" data-f="icCc" aria-label="'+esc(tr('countryCode'))+'">'+CCS.map(function(c){return '<option value="'+c[2]+'"'+(phSplit().cc===c[2]?' selected':'')+'>'+c[0]+' '+c[2]+' '+esc(c[1])+'</option>';}).join('')+'</select><input id="fPhone" data-pl="1" type="tel" inputmode="tel" maxlength="16" autocomplete="off" placeholder="812 3456 7890" value="'+esc(phSplit().loc)+'"></div>';
-  }else if(st===2){
+function itemsHtml(){var h='';
     D.items.forEach(function(it,i){
       h+='<div class="irow"><label style="margin-top:0">'+(i+1)+'. '+esc(tr('itemName'))+'</label><input data-i="'+i+'" data-k="item" maxlength="80" value="'+esc(it.item)+'" autocomplete="off"><div class="row3"><div><label style="margin-top:0">'+esc(tr('qty'))+'</label><input data-i="'+i+'" data-k="qty" inputmode="decimal" maxlength="8" value="'+esc(it.qty)+'"></div><div><label style="margin-top:0">'+esc(tr('unit'))+'</label><select data-i="'+i+'" data-k="unit"><option value="">'+esc(tr('unitPick'))+'</option>'+CFG.units.map(function(u){return '<option value="'+esc(u)+'"'+(it.unit===u?' selected':'')+'>'+esc(u)+'</option>';}).join('')+'</select></div></div>'+(D.items.length>1?'<button class="btn danger sm" type="button" data-rm="'+i+'">'+esc(tr('remove'))+'</button>':'')+'</div>';
     });
     h+=D.items.length<CFG.maxItems?'<button class="btn ghost" id="addItem" type="button">+ '+esc(tr('addItem'))+'</button>':'<div class="note">'+esc(tr('itemsMax'))+'</div>';
+  return h;}
+function newDraw(keep){
+  var st=D.step,sc=window.pageYOffset,h='';
+  h+=h1(tr('newPass'));
+  var dsp=st<=2?1:st-1;
+  h+='<div class="steps">'+[1,2,3].map(function(i){return '<i class="'+(i<=dsp?'on':'')+'"></i>';}).join('')+'</div><div class="stepl">'+esc(tr('stepOf').replace('{a}',dsp).replace('{b}',3))+' · '+esc(tr('s'+st))+'</div>';
+  if(st===1){
+    h+='<p class="note">'+esc(tr('allReq'))+'</p>';
+    h+='<label>'+esc(tr('purposeLbl'))+'</label>'+opt(D.purpose==='A','A','A.',tr('purA'))+opt(D.purpose==='B','B','B.',tr('purB'));
+    h+='<div class="toSec">'+esc(tr('toSec'))+'</div>';
+    h+='<label for="fCarrier">'+esc(tr('allowMr'))+'</label><input id="fCarrier" data-f="carrier" maxlength="60" autocomplete="off" value="'+esc(D.carrier)+'">';
+    h+='<label for="fIcType">'+esc(tr('icType'))+'</label><select id="fIcType" data-f="icType"><option value="">'+esc(tr('icTypePick'))+'</option><option value="KTP"'+(D.icType==='KTP'?' selected':'')+'>'+esc(tr('icTypeKTP'))+'</option><option value="SIM"'+(D.icType==='SIM'?' selected':'')+'>'+esc(tr('icTypeSIM'))+'</option></select>';
+    h+='<label for="fIcNo">'+esc(tr('icNo'))+'</label><input id="fIcNo" data-f="icNo" inputmode="numeric" pattern="[0-9]*" autocomplete="off"'+(icNeed()?'':' disabled')+' placeholder="'+(icNeed()?icNeed()+' digits':'')+'" value="'+esc(D.icNo)+'"><div class="note">'+esc(tr('icHelp'))+'</div><div class="note" id="icCnt">'+esc(icCntText())+'</div>';
+    h+='<label for="fCompany">'+esc(tr('company'))+'</label><select id="fCompany" data-f="company"><option value="">'+esc(tr('companyPick'))+'</option>'+CFG.companies.map(function(c){return '<option value="'+esc(c)+'"'+(D.company===c?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'<option value="__other"'+(D.company==='__other'?' selected':'')+'>'+esc(tr('other'))+'</option></select>';
+    if(D.company==='__other')h+='<label for="fCompanyOther">'+esc(tr('companyOther'))+'</label><input id="fCompanyOther" data-f="companyOther" maxlength="60" value="'+esc(D.companyOther)+'">';
+    h+='<label>'+esc(tr('transport'))+'</label>'+mopt(D.mode==='vehicle','vehicle',tr('tVeh'),tr('tVehSub'))+mopt(D.mode==='hand','hand',tr('tHand'),tr('tHandSub'));
+    if(D.mode==='hand')h+='<div class="note">'+esc(tr('handNote'))+'</div>';
+    else if(D.mode==='vehicle')h+='<label for="fVehicle">'+esc(tr('vehicle'))+'</label><input id="fVehicle" data-f="vehicle" maxlength="20" autocapitalize="characters" autocomplete="off" value="'+esc(D.vehicle)+'"><div class="note">'+esc(tr('vehicleHelp'))+'</div>';
+    h+='<label for="fReason">'+esc(tr('reasonLbl'))+'</label>';
+    if(!D.purpose)h+='<div class="note">'+esc(tr('purposeFirst'))+'</div>';
+    else h+='<select id="fReason" data-f="reason"><option value="">'+esc(tr('reasonPick'))+'</option>'+REASONS[D.purpose].map(function(k){return '<option value="'+k+'"'+(D.reason===k?' selected':'')+'>'+esc(tr(k))+'</option>';}).join('')+'<option value="rOther"'+(D.reason==='rOther'?' selected':'')+'>'+esc(tr('rOther'))+'</option></select>';
+    h+='<label for="fPT">'+esc(D.reason==='rOther'?tr('reasonDescribe'):tr('reasonDetails'))+'</label><textarea id="fPT" data-f="purposeText" maxlength="260">'+esc(D.purposeText)+'</textarea>';
+    h+='<h2>'+esc(tr('itemsH'))+'</h2>'+itemsHtml();
+    h+='<div class="blk"><label>'+esc(tr('carriedBy'))+'</label><div class="auto"><b id="cbName">'+esc(D.carrier.trim()||'-')+'</b><small>'+esc(tr('carriedCap'))+'</small></div></div>';
+    h+='<div class="blk"><label>'+esc(tr('checkedBy'))+'</label><p class="note">'+esc(tr('checkedCap'))+'</p></div>';
+    h+='<label for="fRep">'+esc(tr('icRepN'))+'</label><input id="fRep" data-f="icRep" maxlength="60" autocomplete="off" value="'+esc(D.icRep)+'">';
+    h+='<label for="fPos">'+esc(tr('icPos'))+'</label><input id="fPos" data-f="icPos" maxlength="40" autocomplete="off" value="'+esc(D.icPos)+'">';
+    h+='<label for="fPhone">'+esc(tr('icPhone'))+'</label><div class="phrow"><select id="fCc" data-f="icCc" aria-label="'+esc(tr('countryCode'))+'">'+CCS.map(function(c){return '<option value="'+c[2]+'"'+(phSplit().cc===c[2]?' selected':'')+'>'+c[0]+' '+c[2]+' '+esc(c[1])+'</option>';}).join('')+'</select><input id="fPhone" data-pl="1" type="tel" inputmode="tel" maxlength="16" autocomplete="off" placeholder="812 3456 7890" value="'+esc(phSplit().loc)+'"></div>';
+    h+='<div class="blk"></div>';
+    h+='<label>'+esc(tr('ecoRep'))+'</label>'+mopt(D.deptSec==='Project','sec:Project',tr('secProject'),'')+mopt(D.deptSec==='Operations','sec:Operations',tr('secOps'),'');
+    if(D.deptSec){h+='<label for="fDept">'+esc(tr('dept'))+'</label><select id="fDept" data-f="dept"><option value="">'+esc(tr('deptPick'))+'</option>'+dgroups()[D.deptSec].map(function(c){var v=D.deptSec+' - '+c;return '<option value="'+esc(v)+'"'+(D.dept===v?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select>';}
+    h+='<p class="note">'+esc(tr('ecoRepCap'))+'</p>';
+    h+='<div class="blk"><label>'+esc(tr('apprBy'))+'</label><div class="auto"><b>'+esc(D.deptSec==='Operations'?tr('apOps'):(D.deptSec==='Project'?tr('apProj'):'-'))+'</b><small>'+esc(tr('apprHint'))+'</small></div></div>';
   }else if(st===3){
     h+='<p class="note">'+esc(tr(D.mode==='hand'?'photoHelpH':'photoHelp'))+'</p><div class="tiles">';
     visViews().forEach(function(v){h+=tileHtml(v);});h+='</div>'+tilesZoomBar();if(D.photos.front&&D.photos.load)h+='<p class="note">'+esc(tr('extraHelp'))+'</p>';h+='<div>';
@@ -196,24 +204,24 @@ function stepOk(){
   var s=D.step,co=D.company==='__other'?D.companyOther:D.company;
   if(s===1){
     if(D.purpose!=='A'&&D.purpose!=='B'){nerr('f_purpose');return false;}
-    if(!co||String(co).trim().length<2){nerr('f_company',D.company==='__other'?'#fCompanyOther':'#fCompany');return false;}
-    if(D.mode!=='vehicle'&&D.mode!=='hand'){nerr('f_mode');return false;}
-    if(D.mode==='vehicle'&&D.vehicle.trim().length<2){nerr('f_vehicle','#fVehicle');return false;}
     if(D.carrier.trim().length<2){nerr('f_carrier','#fCarrier');return false;}
     if(!D.icType){nerr('f_icType','#fIcType');return false;}
     if(!D.icNo.trim()){nerr('f_icNo','#fIcNo');return false;}
     if(!/^\d+$/.test(icDigits())||icDigits().length!==(D.icType==='KTP'?16:12)){nerr(D.icType==='KTP'?'f_icKTP':'f_icSIM','#fIcNo');return false;}
+    if(!co||String(co).trim().length<2){nerr('f_company',D.company==='__other'?'#fCompanyOther':'#fCompany');return false;}
+    if(D.mode!=='vehicle'&&D.mode!=='hand'){nerr('f_mode');return false;}
+    if(D.mode==='vehicle'&&D.vehicle.trim().length<2){nerr('f_vehicle','#fVehicle');return false;}
     if(!D.reason){nerr('f_reason','#fReason');return false;}
     if(D.purposeText.trim().length<3){nerr('f_reasonOther','#fPT');return false;}
-    if(!D.deptSec){nerr('f_sec','#nNext');return false;}
-    if(!D.dept){nerr('f_dept','#fDept');return false;}
+    var nu=D.items.some(function(it){return String(it.item).trim().length>=2&&Number(String(it.qty).replace(',','.'))>0&&CFG.units.indexOf(String(it.unit||''))<0;});
+    if(nu){nerr('f_unit');return false;}
+    if(!validItems().length){nerr('f_items');return false;}
     if(D.icRep.trim().length<2){nerr('f_icRep','#fRep');return false;}
     if(D.icPos.trim().length<2){nerr('f_icPos','#fPos');return false;}
     if(!icPhoneOk()){nerr('f_icPhone','#fPhone');return false;}
-  }else if(s===2){
-    var nu=D.items.some(function(it){return String(it.item).trim().length>=2&&Number(String(it.qty).replace(',','.'))>0&&CFG.units.indexOf(String(it.unit||''))<0;});
-    if(nu){nerr('f_unit');return false;}
-    if(!validItems().length){nerr('f_items');return false;}}
+    if(!D.deptSec){nerr('f_sec','#nNext');return false;}
+    if(!D.dept){nerr('f_dept','#fDept');return false;}
+  }
   else if(s===3){if(!PHV.every(function(v){return D.photos[v];})){nerr('f_photos');return false;}}
   return true;
 }
@@ -221,7 +229,7 @@ $('vNew').addEventListener('change',function(e){if(e.target.id==='fIcType'){D.ic
 $('vNew').addEventListener('input',function(e){
   var t=e.target,f=t.getAttribute('data-f'),i=t.getAttribute('data-i');
   if(t.getAttribute('data-pl')){t.classList.remove('bad');if(String(t.value).trim().charAt(0)==='+'){D.icPhone=String(t.value).replace(/[^0-9+ \-]/g,'').trim();var sp=phSplit();D.icCc=sp.cc;var ccEl=$('fCc');if(ccEl)ccEl.value=sp.cc;t.value=sp.loc;}else phSet(phSplit().cc,t.value);saveDraft();return;}
-  if(f){D[f]=t.value;t.classList.remove('bad');if(f==='icNo'||f==='icType')icApply();saveDraft();}
+  if(f){D[f]=t.value;t.classList.remove('bad');if(f==='carrier'){var cb=$('cbName');if(cb)cb.textContent=t.value.trim()||'-';}if(f==='icNo'||f==='icType')icApply();saveDraft();}
   else if(i!==null){D.items[+i][t.getAttribute('data-k')]=t.value;saveDraft();}
 });
 $('vNew').addEventListener('change',function(e){
@@ -245,8 +253,8 @@ $('vNew').addEventListener('click',function(e){
   if(t.getAttribute('data-purpose')){var np=t.getAttribute('data-purpose');if(np!==D.purpose&&D.reason!=='rOther')D.reason='';D.purpose=np;saveDraft();newDraw(true);}
   else if(t.getAttribute('data-rm')!==null){D.items.splice(+t.getAttribute('data-rm'),1);saveDraft();newDraw(true);}
   else if(t.id==='addItem'){D.items.push({item:'',qty:'',unit:''});saveDraft();newDraw(true);}
-  else if(t.id==='nNext'){if(stepOk()){D.step++;saveDraft();newDraw();window.scrollTo(0,0);}}
-  else if(t.id==='nBack'){if(D.step>1){D.step--;saveDraft();newDraw();window.scrollTo(0,0);}else homeOpen();}
+  else if(t.id==='nNext'){if(stepOk()){D.step=D.step===1?3:D.step+1;saveDraft();newDraw();window.scrollTo(0,0);}}
+  else if(t.id==='nBack'){if(D.step>1){D.step=D.step===3?1:D.step-1;saveDraft();newDraw();window.scrollTo(0,0);}else homeOpen();}
   else if(t.id==='nSubmit'){submit();}
 });
 /* v1.22: a tiny picture fingerprint (64 bits) of the raw photo, taken before the time stamp, so the same picture cannot be used for both photos */

@@ -92,6 +92,9 @@ const before=m.sheets.Passes.rows.length;
 const c1=m.call({...base,company:'KKS',cid:'abc123'}),c2=m.call({...base,company:'KKS',cid:'abc123'});
 ok(c1.ok&&c2.ok&&c2.dup&&c1.ref===c2.ref&&m.sheets.Passes.rows.length===before+1&&m.call({action:'get',ref:c2.ref,token:c2.token}).ok,'same client id = same pass (lost reply retry), fresh token');
 {const r=m.call({...base,company:'PBS',dept:'Operations - Laboratory'});ok(r.ok&&m.sheets.Passes.rows[m.sheets.Passes.rows.length-1].includes('Operations - Laboratory'),'Operations - Laboratory is accepted and stored');}
+// v1.13: a Date cell (Sheets auto-converts '2026-11-14') is read back as YYYY-MM-DD
+{const P=m.sheets.Passes.rows;const row=P[P.length-1];const keep=row[2];row[2]=new Date(Date.parse(keep+'T00:00:00+07:00'));
+const g=m.call({action:'a_list',pin:m.props.ADMIN_PIN});ok(g.list[0].date===keep&&/^\d{4}-\d\d-\d\d$/.test(g.list[0].date),'a Date cell in the Sheet is read back as '+keep+' (got '+g.list[0].date+')');row[2]=keep;}
 // lookup (v1.4)
 const lk1=m.call({action:'lookup',q:r1.ref.toLowerCase()});
 ok(lk1.ok&&lk1.list.length===1&&lk1.list[0].ref===r1.ref&&!JSON.stringify(lk1).match(/Budi|KTP|SIM|photo/i),'lookup by pass number returns status-level facts only');

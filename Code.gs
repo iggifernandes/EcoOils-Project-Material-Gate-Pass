@@ -1,4 +1,4 @@
-/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.12
+/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.13
    Form EOSM-HSSE-FM003. Paste into Extensions > Apps Script of the "EcoOils Gate Pass Log" Google Sheet (personal Gmail account).
    Do NOT upload this file to GitHub (keep the repo to index.html and the static files only).
    Who calls this web app:
@@ -6,7 +6,7 @@
    - Public QR check: action 'verify' returns status only (no names, no ID numbers, no photos).
    - Patroli (guards): actions b_list / b_get / b_release, protected by the shared secret BRIDGE_SECRET (script property). The guard's name comes from Patroli's PIN login.
    - Admin (you): actions a_*, protected by the script property ADMIN_PIN. */
-var VERSION = 'v1.12';
+var VERSION = 'v1.13';
 var OFF = 7 * 3600000;      // Jakarta (WIB), no daylight saving
 var TZ = 'Asia/Jakarta';
 var P_HEAD = ['Ref', 'Created (WIB)', 'Date', 'Purpose', 'Carrier name', 'Carrier I/C no', 'Company', 'Vehicle no', 'Purpose of taking out', 'EcoOils dept', 'IC rep name', 'IC rep position', 'Items', 'Status', 'Token hash',
@@ -119,11 +119,21 @@ function folder_() {
 function log_(ref, ev, by, detail) { sh_('Log').appendRow([ymdhms_(Date.now()), ref || '', ev, safe_(by || ''), safe_(detail || '')]); }
 
 /* ---------- rows ---------- */
+function dateStr_(x) {
+  if (Object.prototype.toString.call(x) === '[object Date]') {
+    var tz = '';
+    try { tz = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(); } catch (e) {}
+    return Utilities.formatDate(x, tz || 'Asia/Jakarta', 'yyyy-MM-dd');
+  }
+  return String(x == null ? '' : x);
+}
 var ROWS_ = null;
 function rows_() {
   if (ROWS_) return ROWS_;
   var sh = sh_('Passes'), n = sh.getLastRow();
   ROWS_ = n > 1 ? sh.getRange(2, 1, n - 1, P_HEAD.length).getValues() : [];
+  /* v1.13: Google Sheets turns the text '2026-11-14' into a real date; read it back as 'YYYY-MM-DD' again (it printed as 'Sat Nov 14 2026 00:00:00 GMT+0700' and broke the daily cap and expiry) */
+  ROWS_.forEach(function (r) { r[PC['Date']] = dateStr_(r[PC['Date']]); });
   return ROWS_;
 }
 function rowOf_(ref) {
