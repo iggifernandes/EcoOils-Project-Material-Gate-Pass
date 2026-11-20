@@ -1,4 +1,4 @@
-var VERSION='v1.33';
+var VERSION='v1.34';
 var PHV=['front','load'];
 var EXV=['x1','x2','x3','x4'];
 var ALLV=PHV.concat(EXV);
@@ -38,12 +38,14 @@ function api(body,ms){
 
 /* ===== state ===== */
 var CFG={units:['Pcs','Units','Kgs','Ton','Liters','Meters','Sets','Rolls','Drums','Bags','Boxes','Pallets','Lots'],companies:['GSB','WEN','KKS','PBS','EcoOils (Project)','EcoOils (Operations)'],depts:['Project Eng','Discipline Eng','HSSE','Stores'],validHours:48,maxItems:15,siteLead:''};
-var DG0={Project:['Project Management','Project Engineering','Discipline Engineering','Construction','Commissioning and Start-up','HSSE','Quality (QA/QC)','Planning and Cost Control','Procurement and Contracts','Stores and Warehouse','HR','Security'],Operations:['Plant Operations','Maintenance (Mechanical)','Maintenance (Electrical and Instrument)','Reliability and Inspection','Laboratory','Utilities','HSSE (Operations)','Stores and Warehouse (Operations)','Logistics and Dispatch','HR','Security']};
+var DG0={Project:['Project Management','Project Engineering','Discipline Engineering','Construction','Commissioning and Start-up','HSSE','Quality (QA/QC)','Planning and Cost Control','Document Control','Procurement and Contracts','Stores and Warehouse','Environmental','Fire and Emergency','Medical / Clinic','IT and Communications','Finance and Accounting','Admin and General Affairs','Government and Community Relations','HR','Security'],Operations:['Plant Operations','Process Engineering','Maintenance (Mechanical)','Maintenance (Electrical and Instrument)','Reliability and Inspection','Laboratory','Quality Control (Operations)','Utilities','HSSE (Operations)','Environmental','Fire and Emergency','Medical / Clinic','Stores and Warehouse (Operations)','Logistics and Dispatch','IT and Communications','Finance and Accounting','Admin and General Affairs','Government and Community Relations','HR','Security']};
 try{var c0=JSON.parse(ls('gp_cfg')||'null');if(c0&&c0.companies)CFG=c0;}catch(e){}
 function secOf(d){return /^Operations - /.test(d||'')?'Operations':(/^Project - /.test(d||'')?'Project':'');}
 function apprCap(d){var s=secOf(d);return s==='Operations'?'(Operations HOF)':(s==='Project'?'(Project Site Lead)':'(EcoOils Site Lead)');}
 function apprName(p){return secOf(p.dept)==='Operations'?(p.hofName||CFG.hofName||''):(p.siteLead||CFG.siteLead||'');}
-function fixDept(){if(!D||!D.dept)return;var okv;if(oldBackend())okv=(CFG.depts||[]).indexOf(D.dept)>=0;else if(D.deptSec&&dgroups()[D.deptSec])okv=dgroups()[D.deptSec].some(function(c){return D.dept===D.deptSec+' - '+c;});else okv=(CFG.depts||[]).indexOf(D.dept)>=0;if(!okv)D.dept='';}
+function isOtherD(d){return d==='__other'||/^(Project|Operations) - Other: /.test(d||'');}
+function otherOk(t){return /^[A-Za-z0-9 .,&()\/\-]{2,60}$/.test(String(t||'').trim());}
+function fixDept(){if(!D||!D.dept)return;if(CFG.deptOther&&D.deptSec&&isOtherD(D.dept))return;var okv;if(oldBackend())okv=(CFG.depts||[]).indexOf(D.dept)>=0;else if(D.deptSec&&dgroups()[D.deptSec])okv=dgroups()[D.deptSec].some(function(c){return D.dept===D.deptSec+' - '+c;});else okv=(CFG.depts||[]).indexOf(D.dept)>=0;if(!okv)D.dept='';}
 function oldBackend(){return !!(CFG.live&&!CFG.deptGroups);}
 function dgroups(){var g=CFG.deptGroups;return g&&g.Project&&g.Operations?g:DG0;}
 var MINE=[];try{MINE=JSON.parse(ls('gp_mine')||'[]');if(!Array.isArray(MINE))MINE=[];}catch(e){MINE=[];}
@@ -134,7 +136,7 @@ function homeDraw(){
 }
 function homeLoad(){
   if(!API_URL)return;
-  api({action:'config'}).then(function(r){if(r&&r.ok){CFG={units:(r.units&&r.units.length?r.units:CFG.units),companies:r.companies,depts:r.depts,deptGroups:r.deptGroups,validHours:r.validHours,maxItems:r.maxItems||15,siteLead:r.siteLead||'',hofName:r.hofName||'',live:true,courier:!!r.courier,ver:r.version||''};try{var ed=document.querySelector('.eh-d');if(ed&&r.version&&!/server/.test(ed.textContent))ed.textContent+=' · server '+r.version;}catch(e){}ls('gp_cfg',JSON.stringify(CFG));}},function(){});
+  api({action:'config'}).then(function(r){if(r&&r.ok){CFG={units:(r.units&&r.units.length?r.units:CFG.units),companies:r.companies,depts:r.depts,deptGroups:r.deptGroups,validHours:r.validHours,maxItems:r.maxItems||15,siteLead:r.siteLead||'',hofName:r.hofName||'',live:true,courier:!!r.courier,deptOther:!!r.deptOther,ver:r.version||''};try{var ed=document.querySelector('.eh-d');if(ed&&r.version&&!/server/.test(ed.textContent))ed.textContent+=' · server '+r.version;}catch(e){}ls('gp_cfg',JSON.stringify(CFG));}},function(){});
   if(!MINE.length)return;
   api({action:'mine',list:MINE.slice(0,40).map(function(m){return {ref:m.ref,token:m.token};})}).then(function(r){
     if(!r||!r.ok)return;r.list.forEach(function(s){SUM[s.ref]=s;});if(!$('vHome').classList.contains('hidden'))homeDraw();
@@ -196,7 +198,7 @@ function newDraw(keep){
     h+='<div class="blk"></div>';
     if(oldBackend()){h+='<label for="fDept">'+esc(tr('ecoRep'))+'</label><p class="note">'+esc(tr('oldServer'))+'</p><select id="fDept" data-f="dept"><option value="">'+esc(tr('deptPick'))+'</option>'+(CFG.depts||[]).map(function(c){return '<option value="'+esc(c)+'"'+(D.dept===c?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select>';}else{
     h+='<label>'+esc(tr('ecoRep'))+'</label>'+mopt(D.deptSec==='Project','sec:Project',tr('secProject'),'')+mopt(D.deptSec==='Operations','sec:Operations',tr('secOps'),'');
-    if(D.deptSec){h+='<label for="fDept">'+esc(tr('dept'))+'</label><select id="fDept" data-f="dept"><option value="">'+esc(tr('deptPick'))+'</option>'+dgroups()[D.deptSec].map(function(c){var v=D.deptSec+' - '+c;return '<option value="'+esc(v)+'"'+(D.dept===v?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select>';}
+    if(D.deptSec){h+='<label for="fDept">'+esc(tr('dept'))+'</label><select id="fDept" data-f="dept"><option value="">'+esc(tr('deptPick'))+'</option>'+dgroups()[D.deptSec].map(function(c){var v=D.deptSec+' - '+c;return '<option value="'+esc(v)+'"'+(D.dept===v?' selected':'')+'>'+esc(c)+'</option>';}).join('')+(CFG.deptOther?'<option value="__other"'+(isOtherD(D.dept)?' selected':'')+'>'+esc(tr('deptOtherOpt'))+'</option>':'')+'</select>'+(CFG.deptOther&&isOtherD(D.dept)?'<label for="fDeptTxt">'+esc(tr('deptOtherL'))+'</label><input id="fDeptTxt" data-f="deptTxt" maxlength="60" autocomplete="off" value="'+esc(D.deptTxt||'')+'">':'');}
     h+='<p class="note">'+esc(tr('ecoRepCap'))+'</p>';
     if(isCourier())h+='<p class="note"><b>'+esc(tr('ecoOwn'))+'</b></p><label for="fEcoName">'+esc(tr('ecoNameL'))+'</label><input id="fEcoName" data-f="ecoName" maxlength="60" autocomplete="off" value="'+esc(D.ecoName||'')+'"><label for="fEcoIdType">'+esc(tr('icType'))+' ('+esc(tr('ecoIdL'))+')</label><select id="fEcoIdType" data-f="ecoIdType"><option value="">'+esc(tr('icTypePick'))+'</option><option value="KTP"'+(D.ecoIdType==='KTP'?' selected':'')+'>'+esc(tr('icTypeKTP'))+'</option><option value="SIM"'+(D.ecoIdType==='SIM'?' selected':'')+'>'+esc(tr('icTypeSIM'))+'</option></select><label for="fEcoId">'+esc(tr('ecoIdL'))+'</label><input id="fEcoId" data-f="ecoId" inputmode="numeric" maxlength="24" autocomplete="off" value="'+esc(D.ecoId||'')+'">';
     h+='<div class="blk"><label>'+esc(tr('apprBy'))+'</label><div class="auto"><b>'+esc(D.deptSec==='Operations'?tr('apOps'):(D.deptSec==='Project'?tr('apProj'):'-'))+'</b><small>'+esc(tr('apprHint'))+'</small></div></div>';
@@ -250,6 +252,7 @@ function stepOk(){
     if(!icPhoneOk()){nerr('f_icPhone','#fPhone');return false;}
     if(!oldBackend()&&!D.deptSec){nerr('f_sec','#nNext');return false;}
     if(!D.dept){nerr('f_dept','#fDept');return false;}
+    if(isOtherD(D.dept)&&!otherOk(D.deptTxt)){nerr('f_deptOther','#fDeptTxt');return false;}
     if(isCourier()&&!ecoNameOk()){nerr('f_ecoName','#fEcoName');return false;}
     if(isCourier()&&!D.ecoIdType){nerr('f_ecoIdType','#fEcoIdType');return false;}
     if(isCourier()&&!ecoIdOk()){nerr('f_ecoId','#fEcoId');return false;}
@@ -261,12 +264,13 @@ $('vNew').addEventListener('change',function(e){if(e.target.id==='fIcType'){D.ic
 $('vNew').addEventListener('input',function(e){
   var t=e.target,f=t.getAttribute('data-f'),i=t.getAttribute('data-i');
   if(t.getAttribute('data-pl')){t.classList.remove('bad');if(String(t.value).trim().charAt(0)==='+'){D.icPhone=String(t.value).replace(/[^0-9+ \-]/g,'').trim();var sp=phSplit();D.icCc=sp.cc;var ccEl=$('fCc');if(ccEl)ccEl.value=sp.cc;t.value=sp.loc;}else phSet(phSplit().cc,t.value);saveDraft();return;}
-  if(f){D[f]=t.value;t.classList.remove('bad');if(f==='carrier'){var cb=$('cbName');if(cb)cb.textContent=t.value.trim()||'-';}if(f==='icNo'||f==='icType')icApply();saveDraft();}
+  if(f){D[f]=t.value;t.classList.remove('bad');if(f==='carrier'){var cb=$('cbName');if(cb)cb.textContent=t.value.trim()||'-';}if(f==='icNo'||f==='icType')icApply();if(f==='deptTxt')D.dept=String(D.deptTxt||'').trim()?D.deptSec+' - Other: '+String(D.deptTxt).trim():'__other';saveDraft();}
   else if(i!==null){D.items[+i][t.getAttribute('data-k')]=t.value;saveDraft();}
 });
 $('vNew').addEventListener('change',function(e){
   var t=e.target,f=t.getAttribute('data-f');
   if(f==='icCc'){phSet(t.value,phSplit().loc);saveDraft();return;}
+  if(f==='dept'){saveDraft();newDraw(true);}
   if(f==='company'){D.company=t.value;saveDraft();newDraw(true);}
   if(f==='reason'){D.reason=t.value;saveDraft();newDraw(true);}
   if(f==='icType'){D.icType=t.value;saveDraft();newDraw(true);}

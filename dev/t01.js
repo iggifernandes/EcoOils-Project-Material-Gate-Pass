@@ -125,6 +125,11 @@ ok(m.call({...base,company:'PBS',cid:'cr4',icNo:'COURIER JNE AWB ab | REP Budi S
 {const r5=m.call({...base,company:'PBS',cid:'cr5',icNo:'COURIER JNE <b> | REP Budi Santoso (KTP 1234567890123456)'});const g=m.call({action:'a_list',pin:m.props.ADMIN_PIN}).list[0];ok(r5.err==='bad_icno'||!/[<>]/.test(JSON.stringify(g)),'odd characters never reach the sheet');}
 ok(m.call({...base,company:'PBS',cid:'cr7',icNo:'COURIER JNE AWB 1234 AWB 5678 | REP Budi Santoso (KTP 1234567890123456)'}).err==='bad_icno','only one waybill part is allowed');
 ok(m.call({...base,company:'PBS',cid:'cr8',icNo:'COURIER JNE AWB JNE0012345678'}).err==='bad_icno','a courier pass without the EcoOils rep name and ID is refused');
+{const o1=m.call({...base,company:'PBS',cid:'do1',dept:'Project - Other: Fire Station (Site)'});ok(o1.ok,'dept: Project - Other: free text accepted');
+ok(m.call({...base,company:'PBS',cid:'do2',dept:'Operations - Other: X'}).err==='bad_dept','dept: free text too short refused');
+ok(m.call({...base,company:'PBS',cid:'do3',dept:'Other: Fire Station'}).err==='bad_dept','dept: free text needs Project or Operations');
+ok(m.call({...base,company:'PBS',cid:'do4',dept:'Project - Other: =HYPERLINK("x";1)'}).err==='bad_dept','dept: odd characters refused (quotes, semicolons)');
+ok(m.call({action:'config'}).deptOther===true,'config says deptOther');}
 ok(m.call({...base,company:'PBS',cid:'cr9',icNo:'COURIER JNE | REP Budi Santoso (ID E-1234)'}).err==='bad_icno','EcoOils rep must give a valid KTP (16) or SIM (12) number, a staff ID is not accepted');
 ok(m.call({...base,company:'PBS',cid:'cr6',icNo:'KTP 123'}).err==='bad_icno','a KTP still needs 16 digits');}
 
