@@ -117,15 +117,15 @@ m.sheets.Config.rows.forEach(r=>{if(r[0]==='COMPANY_DAILY_CAP')r[1]='40'});
 {const bad=[];let n=0;['Project','Operations'].forEach(s=>cfg.deptGroups[s].forEach(d=>{const r=m.call({...base,company:['GSB','WEN','KKS','PBS'][n%4],cid:'dd'+(n++),dept:s+' - '+d});if(!r.ok)bad.push(s+' - '+d+' => '+r.err)}));ok(n>=20&&!bad.length,'all '+n+' offered departments are accepted '+bad.join('; '));}
 // v1.16: courier pass (no KTP/SIM number)
 ok(cfg.courier===true,'config announces courier support');
-{const c1=m.call({...base,company:'PBS',cid:'cr1',carrier:'Slamet Riyadi',icNo:'COURIER JNE AWB JNE0012345678 | REP Budi Santoso (ID E-1234)',purposeText:'Return rejected pipes | Vendor: PT Maju | Ref: PO-77'});
+{const c1=m.call({...base,company:'PBS',cid:'cr1',carrier:'Slamet Riyadi',icNo:'COURIER JNE AWB JNE0012345678 | REP Budi Santoso (KTP 1234567890123456)',purposeText:'Return rejected pipes | Vendor: PT Maju | Ref: PO-77'});
 ok(c1.ok,'courier pass is accepted: '+(c1.err||c1.ref));
-{const r2=m.call({...base,company:'PBS',cid:'cr2',icNo:'COURIER J&T | REP Budi Santoso (ID E-1234)'});ok(r2.ok,'courier without waybill is accepted '+r2.err);}
-ok(m.call({...base,company:'PBS',cid:'cr3',icNo:'COURIER X | REP Budi Santoso (ID E-1234)'}).err==='bad_icno','courier company must be at least 2 characters');
-ok(m.call({...base,company:'PBS',cid:'cr4',icNo:'COURIER JNE AWB ab | REP Budi Santoso (ID E-1234)'}).err==='bad_icno','waybill must be 4 to 30 characters');
-{const r5=m.call({...base,company:'PBS',cid:'cr5',icNo:'COURIER JNE <b> | REP Budi Santoso (ID E-1234)'});const g=m.call({action:'a_list',pin:m.props.ADMIN_PIN}).list[0];ok(r5.err==='bad_icno'||!/[<>]/.test(JSON.stringify(g)),'odd characters never reach the sheet');}
-ok(m.call({...base,company:'PBS',cid:'cr7',icNo:'COURIER JNE AWB 1234 AWB 5678 | REP Budi Santoso (ID E-1234)'}).err==='bad_icno','only one waybill part is allowed');
+{const r2=m.call({...base,company:'PBS',cid:'cr2',icNo:'COURIER J&T | REP Budi Santoso (KTP 1234567890123456)'});ok(r2.ok,'courier without waybill is accepted '+r2.err);}
+ok(m.call({...base,company:'PBS',cid:'cr3',icNo:'COURIER X | REP Budi Santoso (KTP 1234567890123456)'}).err==='bad_icno','courier company must be at least 2 characters');
+ok(m.call({...base,company:'PBS',cid:'cr4',icNo:'COURIER JNE AWB ab | REP Budi Santoso (KTP 1234567890123456)'}).err==='bad_icno','waybill must be 4 to 30 characters');
+{const r5=m.call({...base,company:'PBS',cid:'cr5',icNo:'COURIER JNE <b> | REP Budi Santoso (KTP 1234567890123456)'});const g=m.call({action:'a_list',pin:m.props.ADMIN_PIN}).list[0];ok(r5.err==='bad_icno'||!/[<>]/.test(JSON.stringify(g)),'odd characters never reach the sheet');}
+ok(m.call({...base,company:'PBS',cid:'cr7',icNo:'COURIER JNE AWB 1234 AWB 5678 | REP Budi Santoso (KTP 1234567890123456)'}).err==='bad_icno','only one waybill part is allowed');
 ok(m.call({...base,company:'PBS',cid:'cr8',icNo:'COURIER JNE AWB JNE0012345678'}).err==='bad_icno','a courier pass without the EcoOils rep name and ID is refused');
-ok(m.call({...base,company:'PBS',cid:'cr9',icNo:'COURIER JNE | REP B (ID 1)'}).err==='bad_icno','EcoOils rep name and staff ID must be valid');
+ok(m.call({...base,company:'PBS',cid:'cr9',icNo:'COURIER JNE | REP Budi Santoso (ID E-1234)'}).err==='bad_icno','EcoOils rep must give a valid KTP (16) or SIM (12) number, a staff ID is not accepted');
 ok(m.call({...base,company:'PBS',cid:'cr6',icNo:'KTP 123'}).err==='bad_icno','a KTP still needs 16 digits');}
 
 const nx=m.call({...base,company:'GSB'});

@@ -1,4 +1,4 @@
-var VERSION='v1.32';
+var VERSION='v1.33';
 var PHV=['front','load'];
 var EXV=['x1','x2','x3','x4'];
 var ALLV=PHV.concat(EXV);
@@ -75,10 +75,11 @@ function coName(){return String(D.cCo==='__other'?D.cOther:D.cCo||'').trim();}
 function coOk(){return /^[A-Za-z0-9 .&\-\/()]{2,40}$/.test(coName())&&!/ AWB /i.test(' '+coName()+' ');}
 function awbOk(){var x=String(D.awb||'').trim();return !x||/^[A-Za-z0-9\-]{4,30}$/.test(x);}
 function ecoNameOk(){return /^[A-Za-z][A-Za-z .'\-]{1,59}$/.test(String(D.ecoName||'').trim());}
-function ecoIdOk(){return /^[A-Za-z0-9\-\/]{3,20}$/.test(String(D.ecoId||'').trim());}
-function courierParts(s){var m=/^COURIER (.*?)(?: AWB (\S+))?(?: \| REP (.*) \(ID (.*)\))?$/.exec(String(s||''));return m?{co:m[1],awb:m[2]||'',rep:m[3]||'',rid:m[4]||''}:null;}
-function icFull(){if(isCourier())return 'COURIER '+coName()+(String(D.awb||'').trim()?' AWB '+String(D.awb).trim():'')+' | REP '+String(D.ecoName).trim()+' (ID '+String(D.ecoId).trim()+')';var d=icDigits();return (D.icType||'')+' '+d;}
-function newDraft(){return {ecoName:'',ecoId:'',who:'person',cCo:'',cOther:'',awb:'',vendor:'',vref:'',mode:'',purpose:'',company:'',companyOther:'',vehicle:'',carrier:'',icType:'',icNo:'',icPhone:'',purposeText:'',reason:'',deptSec:'',dept:'',icRep:'',icPos:'',items:[{item:'',qty:'',unit:''}],photos:{},cid:Date.now().toString(36)+Math.random().toString(36).slice(2,10),step:1};}
+function ecoDigits(){return String(D.ecoId||'').replace(/[\s.\-]/g,'');}
+function ecoIdOk(){return (D.ecoIdType==='KTP'||D.ecoIdType==='SIM')&&/^\d+$/.test(ecoDigits())&&ecoDigits().length===(D.ecoIdType==='KTP'?16:12);}
+function courierParts(s){var m=/^COURIER (.*?)(?: AWB (\S+))?(?: \| REP (.*) \(((?:KTP|SIM) \d+)\))?$/.exec(String(s||''));return m?{co:m[1],awb:m[2]||'',rep:m[3]||'',rid:m[4]||''}:null;}
+function icFull(){if(isCourier())return 'COURIER '+coName()+(String(D.awb||'').trim()?' AWB '+String(D.awb).trim():'')+' | REP '+String(D.ecoName).trim()+' ('+D.ecoIdType+' '+ecoDigits()+')';var d=icDigits();return (D.icType||'')+' '+d;}
+function newDraft(){return {ecoName:'',ecoIdType:'',ecoId:'',who:'person',cCo:'',cOther:'',awb:'',vendor:'',vref:'',mode:'',purpose:'',company:'',companyOther:'',vehicle:'',carrier:'',icType:'',icNo:'',icPhone:'',purposeText:'',reason:'',deptSec:'',dept:'',icRep:'',icPos:'',items:[{item:'',qty:'',unit:''}],photos:{},cid:Date.now().toString(36)+Math.random().toString(36).slice(2,10),step:1};}
 function saveDraft(){var o={};Object.keys(D).forEach(function(k){if(k!=='photos')o[k]=D[k];});ls('gp_draft',JSON.stringify(o));}
 try{var d0=JSON.parse(ls('gp_draft')||'null');if(d0&&d0.items){D=Object.assign(newDraft(),d0);D.photos={};D.hash={};}}catch(e){}
 
@@ -197,7 +198,7 @@ function newDraw(keep){
     h+='<label>'+esc(tr('ecoRep'))+'</label>'+mopt(D.deptSec==='Project','sec:Project',tr('secProject'),'')+mopt(D.deptSec==='Operations','sec:Operations',tr('secOps'),'');
     if(D.deptSec){h+='<label for="fDept">'+esc(tr('dept'))+'</label><select id="fDept" data-f="dept"><option value="">'+esc(tr('deptPick'))+'</option>'+dgroups()[D.deptSec].map(function(c){var v=D.deptSec+' - '+c;return '<option value="'+esc(v)+'"'+(D.dept===v?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select>';}
     h+='<p class="note">'+esc(tr('ecoRepCap'))+'</p>';
-    if(isCourier())h+='<p class="note"><b>'+esc(tr('ecoOwn'))+'</b></p><label for="fEcoName">'+esc(tr('ecoNameL'))+'</label><input id="fEcoName" data-f="ecoName" maxlength="60" autocomplete="off" value="'+esc(D.ecoName||'')+'"><label for="fEcoId">'+esc(tr('ecoIdL'))+'</label><input id="fEcoId" data-f="ecoId" maxlength="20" autocomplete="off" value="'+esc(D.ecoId||'')+'">';
+    if(isCourier())h+='<p class="note"><b>'+esc(tr('ecoOwn'))+'</b></p><label for="fEcoName">'+esc(tr('ecoNameL'))+'</label><input id="fEcoName" data-f="ecoName" maxlength="60" autocomplete="off" value="'+esc(D.ecoName||'')+'"><label for="fEcoIdType">'+esc(tr('icType'))+' ('+esc(tr('ecoIdL'))+')</label><select id="fEcoIdType" data-f="ecoIdType"><option value="">'+esc(tr('icTypePick'))+'</option><option value="KTP"'+(D.ecoIdType==='KTP'?' selected':'')+'>'+esc(tr('icTypeKTP'))+'</option><option value="SIM"'+(D.ecoIdType==='SIM'?' selected':'')+'>'+esc(tr('icTypeSIM'))+'</option></select><label for="fEcoId">'+esc(tr('ecoIdL'))+'</label><input id="fEcoId" data-f="ecoId" inputmode="numeric" maxlength="24" autocomplete="off" value="'+esc(D.ecoId||'')+'">';
     h+='<div class="blk"><label>'+esc(tr('apprBy'))+'</label><div class="auto"><b>'+esc(D.deptSec==='Operations'?tr('apOps'):(D.deptSec==='Project'?tr('apProj'):'-'))+'</b><small>'+esc(tr('apprHint'))+'</small></div></div>';
     }
   }else if(st===3){
@@ -206,7 +207,7 @@ function newDraw(keep){
     h+='</div>';
   }else{
     var co=D.company==='__other'?D.companyOther:D.company;
-    h+='<p class="note">'+esc(tr('reviewHelp'))+'</p>'+(isCourier()?'':'<p class="note"><b>'+esc(tr('icCheck'))+'</b></p>')+'<div class="card"><div class="kv"><span>'+esc(tr('purposeShort'))+'</span><span>'+esc(D.purpose+'. '+(D.purpose==='A'?tr('purA'):tr('purB')))+'</span><span>'+esc(tr('compShort'))+'</span><span>'+esc(co)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(D.vehicle.toUpperCase())+'</span><span>'+esc(tr('driver'))+'</span><span>'+esc(D.carrier)+' ('+esc(icFull())+')</span><span>'+esc(tr('ecoDept'))+'</span><span>'+esc(D.dept+(isCourier()?' - '+D.ecoName.trim()+', ID '+D.ecoId.trim():''))+'</span><span>'+esc(tr('icRepShort'))+'</span><span>'+esc(D.icRep+(D.icPos?', '+D.icPos:'')+(D.icPhone?', '+D.icPhone:''))+'</span><span>'+esc(tr('purposeText'))+'</span><span>'+esc(purposeFull())+'</span></div>';
+    h+='<p class="note">'+esc(tr('reviewHelp'))+'</p>'+(isCourier()?'':'<p class="note"><b>'+esc(tr('icCheck'))+'</b></p>')+'<div class="card"><div class="kv"><span>'+esc(tr('purposeShort'))+'</span><span>'+esc(D.purpose+'. '+(D.purpose==='A'?tr('purA'):tr('purB')))+'</span><span>'+esc(tr('compShort'))+'</span><span>'+esc(co)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(D.vehicle.toUpperCase())+'</span><span>'+esc(tr('driver'))+'</span><span>'+esc(D.carrier)+' ('+esc(icFull())+')</span><span>'+esc(tr('ecoDept'))+'</span><span>'+esc(D.dept+(isCourier()?' - '+D.ecoName.trim()+', '+D.ecoIdType+' '+ecoDigits():''))+'</span><span>'+esc(tr('icRepShort'))+'</span><span>'+esc(D.icRep+(D.icPos?', '+D.icPos:'')+(D.icPhone?', '+D.icPhone:''))+'</span><span>'+esc(tr('purposeText'))+'</span><span>'+esc(purposeFull())+'</span></div>';
     h+='<table class="it"><tr><th>#</th><th>'+esc(tr('itemName'))+'</th><th>'+esc(tr('qty'))+'</th><th>'+esc(tr('unit'))+'</th></tr>'+validItems().map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(it.item)+'</td><td>'+esc(it.qty)+'</td><td>'+esc(it.unit)+'</td></tr>';}).join('')+'</table>';
     h+='<div class="row2" style="margin-top:10px">'+takenViews(D.photos).map(function(v){return '<div class="pv"><small class="note">'+esc(phl(v,D.mode==='hand'))+'</small><img alt="" data-zoom="data:image/jpeg;base64,'+D.photos[v]+'" src="data:image/jpeg;base64,'+D.photos[v]+'"></div>';}).join('')+'</div></div>';
   }
@@ -250,6 +251,7 @@ function stepOk(){
     if(!oldBackend()&&!D.deptSec){nerr('f_sec','#nNext');return false;}
     if(!D.dept){nerr('f_dept','#fDept');return false;}
     if(isCourier()&&!ecoNameOk()){nerr('f_ecoName','#fEcoName');return false;}
+    if(isCourier()&&!D.ecoIdType){nerr('f_ecoIdType','#fEcoIdType');return false;}
     if(isCourier()&&!ecoIdOk()){nerr('f_ecoId','#fEcoId');return false;}
   }
   else if(s===3){if(!PHV.every(function(v){return D.photos[v];})){nerr('f_photos');return false;}}
@@ -394,7 +396,7 @@ function passHtml(p,ph,one,st){
   h+='<table class="items" style="margin-top:3mm"><tr><th>S/NO</th><th>ITEM</th><th>QTY.</th><th>UNIT</th></tr>'+rows+'</table>';
   if(one)h+='<div class="ph2"><div><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>'+(isHC(p.vehicle)?'MATERIAL AND THE PERSON CARRYING IT':'FRONT VIEW OF THE VEHICLE')+'</small></div><div><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>'+(isHC(p.vehicle)?'CLOSE-UP OF THE MATERIAL (LABELS / TAGS)':'MATERIAL LOADED IN THE TRUCK')+'</small></div></div>';
   h+='<div class="sig"><div><b>CARRIED BY:</b><div class="l"></div><small>(Person taking the material out)</small><div style="font-size:9pt">'+esc(p.carrier)+'</div></div><div><b>CHECKED BY:</b><div class="l"></div><small>(IC responsible Person- Lead/Store in charge)</small><div style="font-size:9pt">'+esc(p.icRep+(p.icPos?', '+p.icPos:''))+(p.icPhone?'<br>Tel: '+esc(p.icPhone):'')+'</div></div></div>';
-  h+='<div class="sig" style="margin-top:3mm"><div><b>EcoOils Rep:</b><div class="l"></div><small>(Project / Operations - department)</small><div style="font-size:9pt">'+esc(p.dept)+'</div>'+(function(){var cp=courierParts(p.icNo);return cp&&cp.rep?'<div style="font-size:9pt">'+esc(cp.rep+', ID '+cp.rid)+'</div>':'';})()+'</div><div><b>Approval By:</b><div class="l"></div><small>'+esc(apprCap(p.dept))+'</small><div style="font-size:9pt">'+esc(apprName(p))+'</div></div></div>';
+  h+='<div class="sig" style="margin-top:3mm"><div><b>EcoOils Rep:</b><div class="l"></div><small>(Project / Operations - department)</small><div style="font-size:9pt">'+esc(p.dept)+'</div>'+(function(){var cp=courierParts(p.icNo);return cp&&cp.rep?'<div style="font-size:9pt">'+esc(cp.rep+', '+cp.rid)+'</div>':'';})()+'</div><div><b>Approval By:</b><div class="l"></div><small>'+esc(apprCap(p.dept))+'</small><div style="font-size:9pt">'+esc(apprName(p))+'</div></div></div>';
   h+='<div class="ft"><span>COPY: <i>SECURITY / CARRIER / STORES</i></span><span class="pn">'+esc(tr('printedAt'))+' '+esc(st.txt)+' &middot; Page 1 of '+tot+'</span></div></div>';
   if(!one){
     h+='<div class="pg pg2"><table class="hd"><tr><td class="lg" rowspan="3"><img alt="" src="'+LOGO+'"></td><td class="k">Item</td><td class="v">: EOSM-HSSE-FM003</td></tr><tr><td class="k">SR NO</td><td class="v">: '+esc(p.ref)+'</td></tr><tr><td class="k">Date</td><td class="v">: '+esc(fmtD(p.date))+'</td></tr></table>';

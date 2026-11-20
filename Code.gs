@@ -1,4 +1,4 @@
-/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.17
+/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.18
    Form EOSM-HSSE-FM003. Paste into Extensions > Apps Script of the "EcoOils Gate Pass Log" Google Sheet (personal Gmail account).
    Do NOT upload this file to GitHub (keep the repo to index.html and the static files only).
    Who calls this web app:
@@ -6,7 +6,7 @@
    - Public QR check: action 'verify' returns status only (no names, no ID numbers, no photos).
    - Patroli (guards): actions b_list / b_get / b_release, protected by the shared secret BRIDGE_SECRET (script property). The guard's name comes from Patroli's PIN login.
    - Admin (you): actions a_*, protected by the script property ADMIN_PIN. */
-var VERSION = 'v1.17';
+var VERSION = 'v1.18';
 var OFF = 7 * 3600000;      // Jakarta (WIB), no daylight saving
 var TZ = 'Asia/Jakarta';
 var P_HEAD = ['Ref', 'Created (WIB)', 'Date', 'Purpose', 'Carrier name', 'Carrier I/C no', 'Company', 'Vehicle no', 'Purpose of taking out', 'EcoOils dept', 'IC rep name', 'IC rep position', 'Items', 'Status', 'Token hash',
@@ -85,10 +85,10 @@ var DEPT_P_DEF = 'Project Management,Project Engineering,Discipline Engineering,
 var DEPT_O_DEF = 'Plant Operations,Maintenance (Mechanical),Maintenance (Electrical and Instrument),Reliability and Inspection,Laboratory,Utilities,HSSE (Operations),Stores and Warehouse (Operations),Logistics and Dispatch,HR,Security';
 /* v1.12: EcoOils section (Project or Operations) then department; stored as 'Project - HSSE'. Config keys DEPTS_PROJECT and DEPTS_OPERATIONS. Old plain DEPTS values are still accepted. */
 function courierOk_(s) {
-  /* 'COURIER JNE AWB JNE123 | REP Budi Santoso (ID E-1234)': courier company, optional waybill, and the EcoOils rep (name + staff ID) who owns the hand-over (required) */
+  /* 'COURIER JNE AWB JNE123 | REP Budi Santoso (KTP 1234567890123456)': courier company, optional waybill, and the EcoOils rep (name + KTP 16 digits or SIM 12 digits) who owns the hand-over (required) */
   if (s.indexOf('COURIER ') !== 0) return false;
   var q = s.slice(8).split(' | REP ');
-  if (q.length !== 2 || !/^[A-Za-z][A-Za-z .'\-]{1,59} \(ID [A-Za-z0-9\-\/]{3,20}\)$/.test(q[1])) return false;
+  if (q.length !== 2 || !/^[A-Za-z][A-Za-z .'\-]{1,59} \((KTP \d{16}|SIM \d{12})\)$/.test(q[1])) return false;
   var p = q[0].split(' AWB ');
   if (p.length > 2 || !/^[A-Za-z0-9 .&\-\/()]{2,40}$/.test(p[0])) return false;
   return p.length === 1 || /^[A-Za-z0-9\-]{4,30}$/.test(p[1]);
