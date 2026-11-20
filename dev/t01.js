@@ -115,6 +115,18 @@ ok(m.trashed.includes(r2.ref)&&m.call({action:'verify',ref:r2.ref}).found===fals
 m.sheets.Config.rows.forEach(r=>{if(r[0]==='COMPANY_DAILY_CAP')r[1]='40'});
 // v1.15: EVERY department the app offers must be accepted (long ones such as 'Operations - Maintenance (Electrical and Instrument)' were cut at 40 characters and refused as bad_dept)
 {const bad=[];let n=0;['Project','Operations'].forEach(s=>cfg.deptGroups[s].forEach(d=>{const r=m.call({...base,company:['GSB','WEN','KKS','PBS'][n%4],cid:'dd'+(n++),dept:s+' - '+d});if(!r.ok)bad.push(s+' - '+d+' => '+r.err)}));ok(n>=20&&!bad.length,'all '+n+' offered departments are accepted '+bad.join('; '));}
+// v1.16: courier pass (no KTP/SIM number)
+ok(cfg.courier===true,'config announces courier support');
+{const c1=m.call({...base,company:'PBS',cid:'cr1',carrier:'Slamet Riyadi',icNo:'COURIER JNE AWB JNE0012345678 | REP Budi Santoso (ID E-1234)',purposeText:'Return rejected pipes | Vendor: PT Maju | Ref: PO-77'});
+ok(c1.ok,'courier pass is accepted: '+(c1.err||c1.ref));
+{const r2=m.call({...base,company:'PBS',cid:'cr2',icNo:'COURIER J&T | REP Budi Santoso (ID E-1234)'});ok(r2.ok,'courier without waybill is accepted '+r2.err);}
+ok(m.call({...base,company:'PBS',cid:'cr3',icNo:'COURIER X | REP Budi Santoso (ID E-1234)'}).err==='bad_icno','courier company must be at least 2 characters');
+ok(m.call({...base,company:'PBS',cid:'cr4',icNo:'COURIER JNE AWB ab | REP Budi Santoso (ID E-1234)'}).err==='bad_icno','waybill must be 4 to 30 characters');
+{const r5=m.call({...base,company:'PBS',cid:'cr5',icNo:'COURIER JNE <b> | REP Budi Santoso (ID E-1234)'});const g=m.call({action:'a_list',pin:m.props.ADMIN_PIN}).list[0];ok(r5.err==='bad_icno'||!/[<>]/.test(JSON.stringify(g)),'odd characters never reach the sheet');}
+ok(m.call({...base,company:'PBS',cid:'cr7',icNo:'COURIER JNE AWB 1234 AWB 5678 | REP Budi Santoso (ID E-1234)'}).err==='bad_icno','only one waybill part is allowed');
+ok(m.call({...base,company:'PBS',cid:'cr8',icNo:'COURIER JNE AWB JNE0012345678'}).err==='bad_icno','a courier pass without the EcoOils rep name and ID is refused');
+ok(m.call({...base,company:'PBS',cid:'cr9',icNo:'COURIER JNE | REP B (ID 1)'}).err==='bad_icno','EcoOils rep name and staff ID must be valid');
+ok(m.call({...base,company:'PBS',cid:'cr6',icNo:'KTP 123'}).err==='bad_icno','a KTP still needs 16 digits');}
 
 const nx=m.call({...base,company:'GSB'});
 ok(nx.ok&&!nx.ref.endsWith('-0002')&&!nx.ref.endsWith('-0003'),'a deleted number is never reused: '+nx.ref);

@@ -1,4 +1,4 @@
-var VERSION='v1.30';
+var VERSION='v1.32';
 var PHV=['front','load'];
 var EXV=['x1','x2','x3','x4'];
 var ALLV=PHV.concat(EXV);
@@ -53,7 +53,8 @@ var D=newDraft();
 function icDigits(){return String(D.icNo||'').replace(/[\s.\-]/g,'');}
 var REASONS={A:['rA1','rA2','rA3','rA4','rA5','rA6'],B:['rB1','rB2','rB3','rB4','rB5','rB6','rB7']};
 /* The printed form is in English, so the stored reason is the English text whatever language the screen is in. */
-function purposeFull(){var d=String(D.purposeText||'').trim();if(!D.reason||D.reason==='rOther')return d;var r=T.en[D.reason]||'';return d?r+' - '+d:r;}
+function purposeFull0(){var d=String(D.purposeText||'').trim();if(!D.reason||D.reason==='rOther')return d;var r=T.en[D.reason]||'';return d?r+' - '+d:r;}
+function purposeFull(){var p=purposeFull0();if(isCourier())p+=' | Vendor: '+String(D.vendor||'').trim()+(String(D.vref||'').trim()?' | Ref: '+String(D.vref).trim():'');return p;}
 function icNeed(){return D.icType==='KTP'?16:D.icType==='SIM'?12:0;}
 /* the number box takes exactly as many digits as the document: SIM 12, KTP 16 (digits only) */
 function icApply(){
@@ -68,8 +69,16 @@ var CCS=[['\uD83C\uDDEE\uD83C\uDDE9','Indonesia','+62'],['\uD83C\uDDF2\uD83C\uDD
 function phSplit(){var t=String(D.icPhone||'').trim(),cc=D.icCc||'+62',loc=t;if(t.charAt(0)==='+'){var best='';CCS.forEach(function(c){if(t.indexOf(c[2])===0&&c[2].length>best.length)best=c[2];});if(best){cc=best;loc=t.slice(best.length).trim();}}return {cc:cc,loc:loc};}
 function phSet(cc,loc){D.icCc=cc;var l=String(loc||'').replace(/[^0-9 \-]/g,'').replace(/^[\s0\-]+/,'').trim();D.icPhone=l?cc+' '+l:'';}
 function icPhoneOk(){var t=String(D.icPhone||'').trim(),d=t.replace(/\D/g,'');return /^\+?[0-9][0-9 \-]{6,18}$/.test(t)&&d.length>=8&&d.length<=15;}
-function icFull(){var d=icDigits();return (D.icType||'')+' '+d;}
-function newDraft(){return {mode:'',purpose:'',company:'',companyOther:'',vehicle:'',carrier:'',icType:'',icNo:'',icPhone:'',purposeText:'',reason:'',deptSec:'',dept:'',icRep:'',icPos:'',items:[{item:'',qty:'',unit:''}],photos:{},cid:Date.now().toString(36)+Math.random().toString(36).slice(2,10),step:1};}
+var COURIERS=['JNE','J&T','SiCepat','Pos Indonesia','TIKI','Anteraja','Ninja Xpress'];
+function isCourier(){return D.who==='courier'&&!!CFG.courier;}
+function coName(){return String(D.cCo==='__other'?D.cOther:D.cCo||'').trim();}
+function coOk(){return /^[A-Za-z0-9 .&\-\/()]{2,40}$/.test(coName())&&!/ AWB /i.test(' '+coName()+' ');}
+function awbOk(){var x=String(D.awb||'').trim();return !x||/^[A-Za-z0-9\-]{4,30}$/.test(x);}
+function ecoNameOk(){return /^[A-Za-z][A-Za-z .'\-]{1,59}$/.test(String(D.ecoName||'').trim());}
+function ecoIdOk(){return /^[A-Za-z0-9\-\/]{3,20}$/.test(String(D.ecoId||'').trim());}
+function courierParts(s){var m=/^COURIER (.*?)(?: AWB (\S+))?(?: \| REP (.*) \(ID (.*)\))?$/.exec(String(s||''));return m?{co:m[1],awb:m[2]||'',rep:m[3]||'',rid:m[4]||''}:null;}
+function icFull(){if(isCourier())return 'COURIER '+coName()+(String(D.awb||'').trim()?' AWB '+String(D.awb).trim():'')+' | REP '+String(D.ecoName).trim()+' (ID '+String(D.ecoId).trim()+')';var d=icDigits();return (D.icType||'')+' '+d;}
+function newDraft(){return {ecoName:'',ecoId:'',who:'person',cCo:'',cOther:'',awb:'',vendor:'',vref:'',mode:'',purpose:'',company:'',companyOther:'',vehicle:'',carrier:'',icType:'',icNo:'',icPhone:'',purposeText:'',reason:'',deptSec:'',dept:'',icRep:'',icPos:'',items:[{item:'',qty:'',unit:''}],photos:{},cid:Date.now().toString(36)+Math.random().toString(36).slice(2,10),step:1};}
 function saveDraft(){var o={};Object.keys(D).forEach(function(k){if(k!=='photos')o[k]=D[k];});ls('gp_draft',JSON.stringify(o));}
 try{var d0=JSON.parse(ls('gp_draft')||'null');if(d0&&d0.items){D=Object.assign(newDraft(),d0);D.photos={};D.hash={};}}catch(e){}
 
@@ -124,7 +133,7 @@ function homeDraw(){
 }
 function homeLoad(){
   if(!API_URL)return;
-  api({action:'config'}).then(function(r){if(r&&r.ok){CFG={units:(r.units&&r.units.length?r.units:CFG.units),companies:r.companies,depts:r.depts,deptGroups:r.deptGroups,validHours:r.validHours,maxItems:r.maxItems||15,siteLead:r.siteLead||'',hofName:r.hofName||'',live:true,ver:r.version||''};try{var ed=document.querySelector('.eh-d');if(ed&&r.version&&!/server/.test(ed.textContent))ed.textContent+=' · server '+r.version;}catch(e){}ls('gp_cfg',JSON.stringify(CFG));}},function(){});
+  api({action:'config'}).then(function(r){if(r&&r.ok){CFG={units:(r.units&&r.units.length?r.units:CFG.units),companies:r.companies,depts:r.depts,deptGroups:r.deptGroups,validHours:r.validHours,maxItems:r.maxItems||15,siteLead:r.siteLead||'',hofName:r.hofName||'',live:true,courier:!!r.courier,ver:r.version||''};try{var ed=document.querySelector('.eh-d');if(ed&&r.version&&!/server/.test(ed.textContent))ed.textContent+=' · server '+r.version;}catch(e){}ls('gp_cfg',JSON.stringify(CFG));}},function(){});
   if(!MINE.length)return;
   api({action:'mine',list:MINE.slice(0,40).map(function(m){return {ref:m.ref,token:m.token};})}).then(function(r){
     if(!r||!r.ok)return;r.list.forEach(function(s){SUM[s.ref]=s;});if(!$('vHome').classList.contains('hidden'))homeDraw();
@@ -160,9 +169,14 @@ function newDraw(keep){
     h+='<p class="note">'+esc(tr('allReq'))+'</p>';
     h+='<label>'+esc(tr('purposeLbl'))+'</label>'+opt(D.purpose==='A','A','A.',tr('purA'))+opt(D.purpose==='B','B','B.',tr('purB'));
     h+='<div class="toSec">'+esc(tr('toSec'))+'</div>';
+    if(CFG.courier)h+='<label>'+esc(tr('who'))+'</label>'+mopt(!isCourier(),'who:person',tr('whoPerson'),'')+mopt(isCourier(),'who:courier',tr('whoCourier'),'');
     h+='<label for="fCarrier">'+esc(tr('allowMr'))+'</label><input id="fCarrier" data-f="carrier" maxlength="60" autocomplete="off" value="'+esc(D.carrier)+'">';
+    if(isCourier()){h+='<p class="note">'+esc(tr('noIdNote'))+'</p><label for="fCCo">'+esc(tr('cCo'))+'</label><select id="fCCo" data-f="cCo"><option value="">'+esc(tr('cCoPick'))+'</option>'+COURIERS.map(function(c){return '<option value="'+esc(c)+'"'+(D.cCo===c?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'<option value="__other"'+(D.cCo==='__other'?' selected':'')+'>'+esc(tr('other'))+'</option></select>';
+      if(D.cCo==='__other')h+='<input id="fCOther" data-f="cOther" maxlength="40" autocomplete="off" placeholder="'+esc(tr('cOtherL'))+'" value="'+esc(D.cOther||'')+'">';
+      h+='<label for="fAwb">'+esc(tr('awbL'))+'</label><input id="fAwb" data-f="awb" maxlength="30" autocomplete="off" value="'+esc(D.awb||'')+'"><label for="fVendor">'+esc(tr('vendorL'))+'</label><input id="fVendor" data-f="vendor" maxlength="60" autocomplete="off" value="'+esc(D.vendor||'')+'"><label for="fVref">'+esc(tr('vrefL'))+'</label><input id="fVref" data-f="vref" maxlength="40" autocomplete="off" value="'+esc(D.vref||'')+'">';}else{
     h+='<label for="fIcType">'+esc(tr('icType'))+'</label><select id="fIcType" data-f="icType"><option value="">'+esc(tr('icTypePick'))+'</option><option value="KTP"'+(D.icType==='KTP'?' selected':'')+'>'+esc(tr('icTypeKTP'))+'</option><option value="SIM"'+(D.icType==='SIM'?' selected':'')+'>'+esc(tr('icTypeSIM'))+'</option></select>';
     h+='<label for="fIcNo">'+esc(tr('icNo'))+'</label><input id="fIcNo" data-f="icNo" inputmode="numeric" pattern="[0-9]*" autocomplete="off"'+(icNeed()?'':' disabled')+' placeholder="'+(icNeed()?icNeed()+' digits':'')+'" value="'+esc(D.icNo)+'"><div class="note">'+esc(tr('icHelp'))+'</div><div class="note" id="icCnt">'+esc(icCntText())+'</div>';
+    }
     h+='<label for="fCompany">'+esc(tr('company'))+'</label><select id="fCompany" data-f="company"><option value="">'+esc(tr('companyPick'))+'</option>'+CFG.companies.map(function(c){return '<option value="'+esc(c)+'"'+(D.company===c?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'<option value="__other"'+(D.company==='__other'?' selected':'')+'>'+esc(tr('other'))+'</option></select>';
     if(D.company==='__other')h+='<label for="fCompanyOther">'+esc(tr('companyOther'))+'</label><input id="fCompanyOther" data-f="companyOther" maxlength="60" value="'+esc(D.companyOther)+'">';
     h+='<label>'+esc(tr('transport'))+'</label>'+mopt(D.mode==='vehicle','vehicle',tr('tVeh'),tr('tVehSub'))+mopt(D.mode==='hand','hand',tr('tHand'),tr('tHandSub'));
@@ -183,6 +197,7 @@ function newDraw(keep){
     h+='<label>'+esc(tr('ecoRep'))+'</label>'+mopt(D.deptSec==='Project','sec:Project',tr('secProject'),'')+mopt(D.deptSec==='Operations','sec:Operations',tr('secOps'),'');
     if(D.deptSec){h+='<label for="fDept">'+esc(tr('dept'))+'</label><select id="fDept" data-f="dept"><option value="">'+esc(tr('deptPick'))+'</option>'+dgroups()[D.deptSec].map(function(c){var v=D.deptSec+' - '+c;return '<option value="'+esc(v)+'"'+(D.dept===v?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select>';}
     h+='<p class="note">'+esc(tr('ecoRepCap'))+'</p>';
+    if(isCourier())h+='<p class="note"><b>'+esc(tr('ecoOwn'))+'</b></p><label for="fEcoName">'+esc(tr('ecoNameL'))+'</label><input id="fEcoName" data-f="ecoName" maxlength="60" autocomplete="off" value="'+esc(D.ecoName||'')+'"><label for="fEcoId">'+esc(tr('ecoIdL'))+'</label><input id="fEcoId" data-f="ecoId" maxlength="20" autocomplete="off" value="'+esc(D.ecoId||'')+'">';
     h+='<div class="blk"><label>'+esc(tr('apprBy'))+'</label><div class="auto"><b>'+esc(D.deptSec==='Operations'?tr('apOps'):(D.deptSec==='Project'?tr('apProj'):'-'))+'</b><small>'+esc(tr('apprHint'))+'</small></div></div>';
     }
   }else if(st===3){
@@ -191,7 +206,7 @@ function newDraw(keep){
     h+='</div>';
   }else{
     var co=D.company==='__other'?D.companyOther:D.company;
-    h+='<p class="note">'+esc(tr('reviewHelp'))+'</p><p class="note"><b>'+esc(tr('icCheck'))+'</b></p><div class="card"><div class="kv"><span>'+esc(tr('purposeShort'))+'</span><span>'+esc(D.purpose+'. '+(D.purpose==='A'?tr('purA'):tr('purB')))+'</span><span>'+esc(tr('compShort'))+'</span><span>'+esc(co)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(D.vehicle.toUpperCase())+'</span><span>'+esc(tr('driver'))+'</span><span>'+esc(D.carrier)+' ('+esc(icFull())+')</span><span>'+esc(tr('ecoDept'))+'</span><span>'+esc(D.dept)+'</span><span>'+esc(tr('icRepShort'))+'</span><span>'+esc(D.icRep+(D.icPos?', '+D.icPos:'')+(D.icPhone?', '+D.icPhone:''))+'</span><span>'+esc(tr('purposeText'))+'</span><span>'+esc(purposeFull())+'</span></div>';
+    h+='<p class="note">'+esc(tr('reviewHelp'))+'</p>'+(isCourier()?'':'<p class="note"><b>'+esc(tr('icCheck'))+'</b></p>')+'<div class="card"><div class="kv"><span>'+esc(tr('purposeShort'))+'</span><span>'+esc(D.purpose+'. '+(D.purpose==='A'?tr('purA'):tr('purB')))+'</span><span>'+esc(tr('compShort'))+'</span><span>'+esc(co)+'</span><span>'+esc(tr('vehShort'))+'</span><span>'+esc(D.vehicle.toUpperCase())+'</span><span>'+esc(tr('driver'))+'</span><span>'+esc(D.carrier)+' ('+esc(icFull())+')</span><span>'+esc(tr('ecoDept'))+'</span><span>'+esc(D.dept+(isCourier()?' - '+D.ecoName.trim()+', ID '+D.ecoId.trim():''))+'</span><span>'+esc(tr('icRepShort'))+'</span><span>'+esc(D.icRep+(D.icPos?', '+D.icPos:'')+(D.icPhone?', '+D.icPhone:''))+'</span><span>'+esc(tr('purposeText'))+'</span><span>'+esc(purposeFull())+'</span></div>';
     h+='<table class="it"><tr><th>#</th><th>'+esc(tr('itemName'))+'</th><th>'+esc(tr('qty'))+'</th><th>'+esc(tr('unit'))+'</th></tr>'+validItems().map(function(it,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(it.item)+'</td><td>'+esc(it.qty)+'</td><td>'+esc(it.unit)+'</td></tr>';}).join('')+'</table>';
     h+='<div class="row2" style="margin-top:10px">'+takenViews(D.photos).map(function(v){return '<div class="pv"><small class="note">'+esc(phl(v,D.mode==='hand'))+'</small><img alt="" data-zoom="data:image/jpeg;base64,'+D.photos[v]+'" src="data:image/jpeg;base64,'+D.photos[v]+'"></div>';}).join('')+'</div></div>';
   }
@@ -211,9 +226,16 @@ function stepOk(){
   if(s===1){
     if(D.purpose!=='A'&&D.purpose!=='B'){nerr('f_purpose');return false;}
     if(D.carrier.trim().length<2){nerr('f_carrier','#fCarrier');return false;}
-    if(!D.icType){nerr('f_icType','#fIcType');return false;}
-    if(!D.icNo.trim()){nerr('f_icNo','#fIcNo');return false;}
-    if(!/^\d+$/.test(icDigits())||icDigits().length!==(D.icType==='KTP'?16:12)){nerr(D.icType==='KTP'?'f_icKTP':'f_icSIM','#fIcNo');return false;}
+    if(isCourier()){
+      if(!D.cCo){nerr('f_cCo','#fCCo');return false;}
+      if(!coOk()){nerr('f_cCo',D.cCo==='__other'?'#fCOther':'#fCCo');return false;}
+      if(!awbOk()){nerr('f_awb','#fAwb');return false;}
+      if(String(D.vendor||'').trim().length<2){nerr('f_vendor','#fVendor');return false;}
+    }else{
+      if(!D.icType){nerr('f_icType','#fIcType');return false;}
+      if(!D.icNo.trim()){nerr('f_icNo','#fIcNo');return false;}
+      if(!/^\d+$/.test(icDigits())||icDigits().length!==(D.icType==='KTP'?16:12)){nerr(D.icType==='KTP'?'f_icKTP':'f_icSIM','#fIcNo');return false;}
+    }
     if(!co||String(co).trim().length<2){nerr('f_company',D.company==='__other'?'#fCompanyOther':'#fCompany');return false;}
     if(D.mode!=='vehicle'&&D.mode!=='hand'){nerr('f_mode');return false;}
     if(D.mode==='vehicle'&&D.vehicle.trim().length<2){nerr('f_vehicle','#fVehicle');return false;}
@@ -227,6 +249,8 @@ function stepOk(){
     if(!icPhoneOk()){nerr('f_icPhone','#fPhone');return false;}
     if(!oldBackend()&&!D.deptSec){nerr('f_sec','#nNext');return false;}
     if(!D.dept){nerr('f_dept','#fDept');return false;}
+    if(isCourier()&&!ecoNameOk()){nerr('f_ecoName','#fEcoName');return false;}
+    if(isCourier()&&!ecoIdOk()){nerr('f_ecoId','#fEcoId');return false;}
   }
   else if(s===3){if(!PHV.every(function(v){return D.photos[v];})){nerr('f_photos');return false;}}
   return true;
@@ -244,6 +268,7 @@ $('vNew').addEventListener('change',function(e){
   if(f==='company'){D.company=t.value;saveDraft();newDraw(true);}
   if(f==='reason'){D.reason=t.value;saveDraft();newDraw(true);}
   if(f==='icType'){D.icType=t.value;saveDraft();newDraw(true);}
+  if(f==='cCo'){D.cCo=t.value;saveDraft();newDraw(true);}
   if(t.getAttribute('data-view')){
     var f0=t.files&&t.files[0],v=t.getAttribute('data-view');if(!f0)return;
     var co=D.company==='__other'?D.companyOther:D.company;
@@ -254,6 +279,7 @@ $('vNew').addEventListener('click',function(e){
   var t=e.target.closest('button');if(!t)return;
   if(t.getAttribute('data-xrm')){var xv=t.getAttribute('data-xrm');delete D.photos[xv];if(D.hash)delete D.hash[xv];newDraw(true);return;}
   if(t.getAttribute('data-zv')){var pz=D.photos[t.getAttribute('data-zv')];if(pz)zoomOpen('data:image/jpeg;base64,'+pz);return;}
+  if((t.getAttribute('data-mode')||'').indexOf('who:')===0){D.who=t.getAttribute('data-mode').slice(4);saveDraft();newDraw(true);return;}
   if((t.getAttribute('data-mode')||'').indexOf('sec:')===0){var ns=t.getAttribute('data-mode').slice(4);if(ns!==D.deptSec){D.deptSec=ns;D.dept='';}saveDraft();newDraw(true);return;}
   if(t.getAttribute('data-mode')){var nm=t.getAttribute('data-mode');if(nm!==D.mode){D.mode=nm;D.photos={};D.hash={};}saveDraft();newDraw(true);return;}
   if(t.getAttribute('data-purpose')){var np=t.getAttribute('data-purpose');if(np!==D.purpose&&D.reason!=='rOther')D.reason='';D.purpose=np;saveDraft();newDraw(true);}
@@ -362,13 +388,13 @@ function passHtml(p,ph,one,st){
   h+='<div class="ttl">MATERIAL GATE PASS</div>';
   h+='<div class="top"><div><div class="ln">SR NO: <span class="u" style="min-width:48mm">'+esc(p.ref)+'</span></div><div class="ln">DATE: <span class="u" style="min-width:48mm">'+esc(fmtD(p.date))+'</span></div>';
   h+='<div class="ln" style="margin-top:3mm">THIS NON-RETURNABLE GATE PASS IS USED FOR</div><div class="ln" style="margin-left:6mm"><span class="chk">'+(p.purpose==='A'?'X':'')+'</span>A.&nbsp; SENDING BACK REJECTED ITEMS TO SUPPLIER</div><div class="ln" style="margin-left:6mm"><span class="chk">'+(p.purpose==='B'?'X':'')+'</span>B.&nbsp; SENDING BACK CONTRACTOR&rsquo;S OWN MATERIAL</div></div><div>'+qrSvg(verifyUrl(p.ref,p.qk))+'</div></div>';
-  h+='<div class="ln" style="margin-top:3mm">TO: SECURITY</div><div class="ln">PLEASE ALLOWS MR/MISS: <span class="u" style="min-width:50mm">'+esc(p.carrier)+'</span> &nbsp;ID NO (KTP/SIM): <span class="u" style="min-width:48mm;white-space:nowrap">'+esc(p.icNo)+'</span></div>';
+  h+='<div class="ln" style="margin-top:3mm">TO: SECURITY</div><div class="ln">PLEASE ALLOWS MR/MISS: <span class="u" style="min-width:50mm">'+esc(p.carrier)+'</span> &nbsp;'+(/^COURIER /.test(p.icNo||'')?'COURIER (NO ID NO. TAKEN)':'ID NO (KTP/SIM)')+': <span class="u" style="min-width:48mm;white-space:nowrap">'+esc(String(p.icNo||'').split(' | REP ')[0])+'</span></div>';
   h+='<div class="ln">COMPANY NAME: <span class="u" style="min-width:140mm">'+esc(p.company)+'</span></div><div class="ln">VEHICLE NO: <span class="u" style="min-width:140mm">'+esc(isHC(p.vehicle)?'HAND CARRY (NO VEHICLE)':p.vehicle)+'</span></div>';
   h+='<div class="ln">PURPOSE OF TAKING THE ITEM OUT: <span class="u" style="display:block;margin-top:1mm;min-width:0;font-weight:600">'+esc(p.purposeText)+'</span></div>';
   h+='<table class="items" style="margin-top:3mm"><tr><th>S/NO</th><th>ITEM</th><th>QTY.</th><th>UNIT</th></tr>'+rows+'</table>';
   if(one)h+='<div class="ph2"><div><div class="pi">'+(ph&&ph.front?'<img alt="" src="'+ph.front+'">':'')+'</div><small>'+(isHC(p.vehicle)?'MATERIAL AND THE PERSON CARRYING IT':'FRONT VIEW OF THE VEHICLE')+'</small></div><div><div class="pi">'+(ph&&ph.load?'<img alt="" src="'+ph.load+'">':'')+'</div><small>'+(isHC(p.vehicle)?'CLOSE-UP OF THE MATERIAL (LABELS / TAGS)':'MATERIAL LOADED IN THE TRUCK')+'</small></div></div>';
   h+='<div class="sig"><div><b>CARRIED BY:</b><div class="l"></div><small>(Person taking the material out)</small><div style="font-size:9pt">'+esc(p.carrier)+'</div></div><div><b>CHECKED BY:</b><div class="l"></div><small>(IC responsible Person- Lead/Store in charge)</small><div style="font-size:9pt">'+esc(p.icRep+(p.icPos?', '+p.icPos:''))+(p.icPhone?'<br>Tel: '+esc(p.icPhone):'')+'</div></div></div>';
-  h+='<div class="sig" style="margin-top:3mm"><div><b>EcoOils Rep:</b><div class="l"></div><small>(Project / Operations - department)</small><div style="font-size:9pt">'+esc(p.dept)+'</div></div><div><b>Approval By:</b><div class="l"></div><small>'+esc(apprCap(p.dept))+'</small><div style="font-size:9pt">'+esc(apprName(p))+'</div></div></div>';
+  h+='<div class="sig" style="margin-top:3mm"><div><b>EcoOils Rep:</b><div class="l"></div><small>(Project / Operations - department)</small><div style="font-size:9pt">'+esc(p.dept)+'</div>'+(function(){var cp=courierParts(p.icNo);return cp&&cp.rep?'<div style="font-size:9pt">'+esc(cp.rep+', ID '+cp.rid)+'</div>':'';})()+'</div><div><b>Approval By:</b><div class="l"></div><small>'+esc(apprCap(p.dept))+'</small><div style="font-size:9pt">'+esc(apprName(p))+'</div></div></div>';
   h+='<div class="ft"><span>COPY: <i>SECURITY / CARRIER / STORES</i></span><span class="pn">'+esc(tr('printedAt'))+' '+esc(st.txt)+' &middot; Page 1 of '+tot+'</span></div></div>';
   if(!one){
     h+='<div class="pg pg2"><table class="hd"><tr><td class="lg" rowspan="3"><img alt="" src="'+LOGO+'"></td><td class="k">Item</td><td class="v">: EOSM-HSSE-FM003</td></tr><tr><td class="k">SR NO</td><td class="v">: '+esc(p.ref)+'</td></tr><tr><td class="k">Date</td><td class="v">: '+esc(fmtD(p.date))+'</td></tr></table>';
