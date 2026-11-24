@@ -1,4 +1,4 @@
-var VERSION='v1.34';
+var VERSION='v1.35';
 var PHV=['front','load'];
 var EXV=['x1','x2','x3','x4'];
 var ALLV=PHV.concat(EXV);
@@ -376,8 +376,9 @@ function getPhotos(p){
     },function(){res(null);});
   });
 }
+function refOk(p){if(p&&!p.date&&p.createdAt)p.date=String(p.createdAt).slice(0,10);if(p&&p.ref&&p.qk&&p.date)return true;try{alert(tr('noRef'));}catch(e){}return false;}
 function printPass(p,one){
-  if(!p)return;
+  if(!refOk(p))return;
   getPhotos(p).then(function(ph){printPassNow(p,ph,!!one);});
 }
 function stampNow(){
@@ -499,7 +500,7 @@ function saveBlob(blob,name){
   setTimeout(function(){URL.revokeObjectURL(u);a.remove();},5000);
 }
 function pdfPass(p,btn){
-  if(!p)return;
+  if(!refOk(p))return;
   var lbl=btn?btn.textContent:'';if(btn){btn.disabled=true;btn.textContent=tr('pdfWait');}
   var done=function(){if(btn){btn.disabled=false;btn.textContent=lbl;}};
   Promise.all([getPhotos(p),jostCss()]).then(function(a){
