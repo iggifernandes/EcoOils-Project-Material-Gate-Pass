@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gate Pass familiarisation</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&display=swap">
+<style>
+:root{--g:#44a276;--y:#ffc600;--k:#231f20;--m:#6b6667;--l:#d9d6cf;--bg:#f7f6f1}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--k);font-family:'Jost',system-ui,sans-serif;font-size:17px;line-height:1.45}
+header{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 16px;max-width:1100px;margin:0 auto}
+header a.back{font-size:15px;color:var(--k);text-decoration:none;border-bottom:3px solid var(--g);padding-bottom:2px}
+.rt{text-align:right}.ver{font-size:14px;color:var(--m)}
+.lg button{background:none;border:0;border-bottom:3px solid transparent;font:inherit;font-size:15px;padding:2px 6px;cursor:pointer;color:var(--k)}
+.lg button.on{border-bottom-color:var(--g);font-weight:600}
+main{max-width:1100px;margin:0 auto;padding:0 16px 48px}
+h1{font-weight:300;text-transform:uppercase;letter-spacing:.18em;color:var(--m);font-size:24px;margin:8px 0 6px;border-bottom:1px solid var(--k);padding-bottom:10px}
+h1:after{content:"";display:block;width:44px;height:7px;background:var(--g);margin-top:10px}
+.intro{color:var(--m);margin:14px 0 20px}
+.step{background:#fff;border-left:8px solid var(--g);border-radius:8px;padding:16px;margin:18px 0}
+.step .n{display:inline-block;background:var(--y);font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;margin-bottom:8px}
+.step h2{margin:0 0 8px;font-size:21px;font-weight:500}
+.step ul{margin:6px 0 10px;padding-left:20px}.step li{margin:4px 0}
+.pics{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;align-items:flex-start}
+.pics img{max-width:100%;border:2px solid var(--l);border-radius:12px;background:#fff;cursor:zoom-in}
+.pics img.ph{width:230px}.pics img.pg{width:340px;border-radius:0}
+.pics figure{margin:0}.pics figcaption{font-size:14px;margin-top:4px}
+.good figcaption{color:#2f7f58;font-weight:600}.bad figcaption{color:#c0392b;font-weight:600}
+.dd{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:760px){.dd{grid-template-columns:1fr 1fr}.step .row{display:flex;gap:24px}.step .row>div{flex:1}}
+.do{border-left-color:var(--g)}.dont{border-left-color:#c0392b}
+.note{background:#fff7d6;border:1px solid var(--y);border-radius:8px;padding:12px 14px;margin:18px 0}
+#ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9;align-items:center;justify-content:center;padding:12px}
+#ov img{max-width:100%;max-height:100%;background:#fff}
+.btn{display:inline-block;background:var(--g);color:var(--k);font-weight:600;border:0;border-radius:8px;padding:12px 20px;text-decoration:none;min-height:44px;margin-top:8px}
+</style></head><body>
+<header>
+ <a class="back" id="back" href="./">&larr; <span id="tBack"></span></a>
+ <div class="rt"><div class="ver">v1.36</div><div class="lg"><button data-l="en">EN</button><button data-l="id">ID</button><button data-l="ms">MS</button></div></div>
+</header>
+<main id="m"></main>
+<div id="ov"><img alt=""></div>
+<script>
+var I='fam/';
+var T={
+en:{back:'Back to the Gate Pass app',title:'Familiarisation: how to make a gate pass',intro:'Follow the pictures from top to bottom. The pictures use made-up sample data. Nothing here is a real pass.',
+ s0:['Before you start',['A phone with a camera and the internet','The link to the Gate Pass app','Name of the person taking the material out, with KTP (16 digits) or SIM (12 digits)','Vehicle number, or note that the material is hand carried','Item list with quantities','Name, position and phone of the IC responsible person']],
+ s1:['Step 1: Details',['Choose A or B: what the pass is used for','Person taking the material, with KTP or SIM number','Company, and how it leaves: vehicle or hand carry','Purpose of taking the items out','Every field is mandatory']],
+ s2:['Step 1 (continued): Items, checker, EcoOils rep',['One line per item: name, quantity and unit','Checked by: IC responsible person, position and phone','EcoOils rep: Project or Operations, then the department','Approval by follows the section automatically']],
+ s3:['Step 2: Photos',['Photo 1: the FRONT of the vehicle, landscape, taken with the camera','Confirm “This is the front of the vehicle”, or take it again','Photo 2: the material loaded in the truck','Optional: up to 4 extra photos','Hand carry: 2 material photos instead (all material with the person, and a close-up of labels)']],
+ s4:['Step 3: Review and submit',['Read every line on the review screen','Tap Submit: the system makes the pass number, for example MGP-KKS-2611-0001','You never type the pass number yourself']],
+ s5:['Step 4: Print',['Both sides: page 1 is the form, page 2 the photos','One side: 1 page with small photos','Or Download PDF and print it','Before you leave the screen, check that SR NO, DATE and the QR are printed']],
+ s6:['Check the paper: good pass and bad pass',['A pass with a blank SR NO or DATE, or an empty QR, is NOT valid. The guard will not release it.','If it happens: reload the app, open My passes and print again.']],good:'GOOD: number, date and QR printed',badc:'BAD: do not use',
+ s7:['Step 5: Sign (on paper)',['Carried by: the driver or person taking the material out','Checked by: IC responsible person','EcoOils rep: the department rep named on the pass','Approval by: Project Site Lead or Operations HOF']],
+ s8:['Step 6: Send the signed copy',['After all signatures, scan the signed pass in colour with the scan button in the app, or scan the QR on the paper','The signed copy can be sent only once','Keep the signed paper original: the guard compares it at the gate']],
+ s9:['Step 7: At the gate',['The guard scans the QR and finds the pass in the system','Compares the paper original with the signed copy and the photos','Checks the ID, the plate and the load','Releases the vehicle, or rejects the pass with a reason']],
+ doH:'Do',doL:['Take the photos on site with the camera','Check SR NO, DATE and QR on the printout','Get all four signatures before you scan','Bring the paper original to the gate','Raise a new pass if anything changes'],
+ dontH:'Don’t',dontL:['Don’t use a pass with a blank SR NO or an empty QR','Don’t take the same picture twice','Don’t send photos of a different vehicle or load','Don’t share your KTP or SIM number outside the form','Don’t expect release without the paper original'],
+ go:'Open the Gate Pass app'},
+id:{back:'Kembali ke aplikasi Gate Pass',title:'Pengenalan: cara membuat gate pass',intro:'Ikuti gambar dari atas ke bawah. Gambar memakai data contoh karangan. Ini bukan pass sungguhan.',
+ s0:['Sebelum mulai',['Ponsel dengan kamera dan internet','Tautan aplikasi Gate Pass','Nama orang yang membawa material keluar, dengan KTP (16 digit) atau SIM (12 digit)','Nomor kendaraan, atau catat bahwa material dibawa tangan','Daftar barang dengan jumlahnya','Nama, jabatan dan telepon penanggung jawab IC']],
+ s1:['Langkah 1: Detail',['Pilih A atau B: untuk apa pass ini dipakai','Orang yang membawa material, dengan nomor KTP atau SIM','Perusahaan, dan cara keluar: kendaraan atau dibawa tangan','Tujuan membawa barang keluar','Semua kolom wajib diisi']],
+ s2:['Langkah 1 (lanjutan): Barang, pemeriksa, wakil EcoOils',['Satu baris per barang: nama, jumlah dan satuan','Diperiksa oleh: penanggung jawab IC, jabatan dan telepon','Wakil EcoOils: Project atau Operations, lalu departemen','Persetujuan oleh mengikuti bagian secara otomatis']],
+ s3:['Langkah 2: Foto',['Foto 1: bagian DEPAN kendaraan, mendatar, diambil dengan kamera','Konfirmasi “Ini bagian depan kendaraan”, atau ambil ulang','Foto 2: material yang dimuat di truk','Opsional: sampai 4 foto tambahan','Dibawa tangan: 2 foto material (semua material bersama pembawanya, dan close-up label)']],
+ s4:['Langkah 3: Periksa dan kirim',['Baca setiap baris di layar periksa','Ketuk Kirim: sistem membuat nomor pass, contoh MGP-KKS-2611-0001','Anda tidak pernah mengetik nomor pass sendiri']],
+ s5:['Langkah 4: Cetak',['Dua sisi: halaman 1 formulir, halaman 2 foto','Satu sisi: 1 halaman dengan foto kecil','Atau Unduh PDF lalu cetak','Sebelum meninggalkan layar, pastikan SR NO, DATE dan QR tercetak']],
+ s6:['Periksa kertasnya: pass baik dan pass buruk',['Pass dengan SR NO atau DATE kosong, atau QR kosong, TIDAK sah. Satpam tidak akan melepasnya.','Jika terjadi: muat ulang aplikasi, buka Pass saya, lalu cetak lagi.']],good:'BAIK: nomor, tanggal dan QR tercetak',badc:'BURUK: jangan dipakai',
+ s7:['Langkah 5: Tanda tangan (di kertas)',['Dibawa oleh: sopir atau orang yang membawa material keluar','Diperiksa oleh: penanggung jawab IC','Wakil EcoOils: wakil departemen yang tertulis di pass','Persetujuan oleh: Project Site Lead atau Operations HOF']],
+ s8:['Langkah 6: Kirim salinan bertanda tangan',['Setelah semua tanda tangan, pindai pass dengan warna lewat tombol pindai di aplikasi, atau pindai QR di kertas','Salinan bertanda tangan hanya bisa dikirim satu kali','Simpan kertas asli bertanda tangan: satpam membandingkannya di gerbang']],
+ s9:['Langkah 7: Di gerbang',['Satpam memindai QR dan menemukan pass di sistem','Membandingkan kertas asli dengan salinan bertanda tangan dan foto','Memeriksa identitas, plat dan muatan','Melepas kendaraan, atau menolak pass dengan alasan']],
+ doH:'Lakukan',doL:['Ambil foto di lokasi dengan kamera','Periksa SR NO, DATE dan QR pada hasil cetak','Dapatkan keempat tanda tangan sebelum memindai','Bawa kertas asli ke gerbang','Buat pass baru jika ada yang berubah'],
+ dontH:'Jangan',dontL:['Jangan pakai pass dengan SR NO kosong atau QR kosong','Jangan memotret gambar yang sama dua kali','Jangan kirim foto kendaraan atau muatan lain','Jangan bagikan nomor KTP atau SIM di luar formulir','Jangan berharap dilepas tanpa kertas asli'],
+ go:'Buka aplikasi Gate Pass'},
+ms:{back:'Kembali ke aplikasi Gate Pass',title:'Pengenalan: cara membuat gate pass',intro:'Ikut gambar dari atas ke bawah. Gambar menggunakan data contoh rekaan. Ini bukan pas sebenar.',
+ s0:['Sebelum bermula',['Telefon dengan kamera dan internet','Pautan aplikasi Gate Pass','Nama orang yang membawa bahan keluar, dengan KTP (16 digit) atau SIM (12 digit)','Nombor kenderaan, atau catat bahawa bahan dibawa dengan tangan','Senarai barang dengan kuantiti','Nama, jawatan dan telefon orang bertanggungjawab IC']],
+ s1:['Langkah 1: Butiran',['Pilih A atau B: untuk apa pas ini digunakan','Orang yang membawa bahan, dengan nombor KTP atau SIM','Syarikat, dan cara keluar: kenderaan atau dibawa dengan tangan','Tujuan membawa barang keluar','Semua ruang wajib diisi']],
+ s2:['Langkah 1 (sambungan): Barang, pemeriksa, wakil EcoOils',['Satu baris setiap barang: nama, kuantiti dan unit','Disemak oleh: orang bertanggungjawab IC, jawatan dan telefon','Wakil EcoOils: Project atau Operations, kemudian jabatan','Kelulusan oleh mengikut bahagian secara automatik']],
+ s3:['Langkah 2: Foto',['Foto 1: bahagian HADAPAN kenderaan, mendatar, diambil dengan kamera','Sahkan “Ini bahagian hadapan kenderaan”, atau ambil semula','Foto 2: bahan yang dimuatkan dalam trak','Pilihan: sehingga 4 foto tambahan','Dibawa dengan tangan: 2 foto bahan (semua bahan bersama pembawanya, dan gambar dekat label)']],
+ s4:['Langkah 3: Semak dan hantar',['Baca setiap baris pada skrin semakan','Ketik Hantar: sistem membuat nombor pas, contoh MGP-KKS-2611-0001','Anda tidak pernah menaip nombor pas sendiri']],
+ s5:['Langkah 4: Cetak',['Dua muka: muka 1 borang, muka 2 foto','Satu muka: 1 muka dengan foto kecil','Atau Muat turun PDF kemudian cetak','Sebelum meninggalkan skrin, pastikan SR NO, DATE dan QR tercetak']],
+ s6:['Semak kertas: pas baik dan pas buruk',['Pas dengan SR NO atau DATE kosong, atau QR kosong, TIDAK sah. Pengawal tidak akan melepaskannya.','Jika berlaku: muat semula aplikasi, buka Pas saya, kemudian cetak semula.']],good:'BAIK: nombor, tarikh dan QR tercetak',badc:'BURUK: jangan guna',
+ s7:['Langkah 5: Tandatangan (di atas kertas)',['Dibawa oleh: pemandu atau orang yang membawa bahan keluar','Disemak oleh: orang bertanggungjawab IC','Wakil EcoOils: wakil jabatan yang tertulis pada pas','Kelulusan oleh: Project Site Lead atau Operations HOF']],
+ s8:['Langkah 6: Hantar salinan bertandatangan',['Selepas semua tandatangan, imbas pas dalam warna dengan butang imbas dalam aplikasi, atau imbas QR pada kertas','Salinan bertandatangan hanya boleh dihantar sekali','Simpan kertas asal bertandatangan: pengawal membandingkannya di pintu pagar']],
+ s9:['Langkah 7: Di pintu pagar',['Pengawal mengimbas QR dan menemui pas dalam sistem','Membandingkan kertas asal dengan salinan bertandatangan dan foto','Menyemak ID, plat dan muatan','Melepaskan kenderaan, atau menolak pas dengan sebab']],
+ doH:'Buat',doL:['Ambil foto di tapak dengan kamera','Semak SR NO, DATE dan QR pada cetakan','Dapatkan keempat-empat tandatangan sebelum mengimbas','Bawa kertas asal ke pintu pagar','Buat pas baharu jika ada perubahan'],
+ dontH:'Jangan',dontL:['Jangan guna pas dengan SR NO kosong atau QR kosong','Jangan ambil gambar yang sama dua kali','Jangan hantar foto kenderaan atau muatan lain','Jangan kongsi nombor KTP atau SIM di luar borang','Jangan harap dilepaskan tanpa kertas asal'],
+ go:'Buka aplikasi Gate Pass'}};
+var L='en';try{L=localStorage.getItem('gp_lang')||'';}catch(e){}
+if(!T[L]){var n=(navigator.language||'en').slice(0,2);L=T[n]?n:'en';}
+function e(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function ul(a){return '<ul>'+a.map(function(x){return '<li>'+e(x)+'</li>';}).join('')+'</ul>';}
+function img(f,c,cls){return '<figure class="'+(cls||'')+'"><img class="'+c+'" src="'+I+f+'" alt="">'+(cap?'':'')+'</figure>';}
+var cap='';
+function step(tag,s,pics){return '<div class="step"><span class="n">'+e(s[0].split(':')[0])+'</span><h2>'+e(s[0].indexOf(':')>0?s[0].split(':').slice(1).join(':').trim()||s[0]:s[0])+'</h2>'+ul(s[1])+'<div class="pics">'+pics+'</div></div>';}
+function draw(){
+ var t=T[L];document.documentElement.lang=L;document.getElementById('tBack').textContent=t.back;
+ document.title=t.title;
+ var h='<h1>'+e(t.title)+'</h1><p class="intro">'+e(t.intro)+'</p>';
+ h+='<div class="step"><h2>'+e(t.s0[0])+'</h2>'+ul(t.s0[1])+'<div class="pics">'+img('s01_home.jpg','ph')+'</div></div>';
+ h+=step('',t.s1,img('s03_person.jpg','ph'));
+ h+=step('',t.s2,img('s05_items.jpg','ph')+img('s06_rep.jpg','ph'));
+ h+=step('',t.s3,img('s07_photos.jpg','ph')+img('s08_confirm.jpg','ph'));
+ h+=step('',t.s4,img('s10_review.jpg','ph')+img('s11_done.jpg','ph'));
+ h+=step('',t.s5,img('s12_print.jpg','pg'));
+ h+='<div class="step"><h2>'+e(t.s6[0])+'</h2>'+ul(t.s6[1])+'<div class="pics"><figure class="good"><img class="pg" src="'+I+'s12_print.jpg" alt=""><figcaption>'+e(t.good)+'</figcaption></figure><figure class="bad"><img class="pg" src="'+I+'s13_bad.jpg" alt=""><figcaption>'+e(t.badc)+'</figcaption></figure></div></div>';
+ h+=step('',t.s7,'')+step('',t.s8,'')+step('',t.s9,'');
+ h+='<div class="dd"><div class="step do"><h2>'+e(t.doH)+'</h2>'+ul(t.doL)+'</div><div class="step dont"><h2>'+e(t.dontH)+'</h2>'+ul(t.dontL)+'</div></div>';
+ h+='<a class="btn" href="./">'+e(t.go)+'</a>';
+ document.getElementById('m').innerHTML=h;
+ [].forEach.call(document.querySelectorAll('.lg button'),function(b){b.className=b.dataset.l===L?'on':'';});
+}
+document.querySelector('.lg').addEventListener('click',function(ev){var b=ev.target.closest('button');if(!b)return;L=b.dataset.l;try{localStorage.setItem('gp_lang',L);}catch(x){}draw();});
+document.getElementById('m').addEventListener('click',function(ev){var i=ev.target.closest('img');if(!i)return;var o=document.getElementById('ov');o.firstChild.src=i.src;o.style.display='flex';});
+document.getElementById('ov').addEventListener('click',function(){this.style.display='none';});
+draw();
+</script></body></html>

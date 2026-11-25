@@ -1,4 +1,4 @@
-var VERSION='v1.35';
+var VERSION='v1.36';
 var PHV=['front','load'];
 var EXV=['x1','x2','x3','x4'];
 var ALLV=PHV.concat(EXV);
@@ -127,7 +127,7 @@ $('vGuide').addEventListener('click',function(e){var t=e.target.closest('button'
 function homeOpen(){show('vHome');homeDraw();homeLoad();}
 function homeDraw(){
   var h='<button class="btn" id="hNew" type="button">+ '+esc(tr('newPass'))+'</button>'+h1(tr('title'));
-  h+='<div class="card"><b>'+esc(tr('how'))+'</b><ol style="margin:8px 0 0;padding-left:20px"><li>'+esc(tr('how1'))+'</li><li>'+esc(tr('how2'))+'</li><li>'+esc(tr('how3'))+'</li><li>'+esc(tr('how4'))+'</li></ol></div><button class="btn ghost" id="hGuide" type="button">'+esc(tr('guide'))+'</button>';
+  h+='<div class="card"><b>'+esc(tr('how'))+'</b><ol style="margin:8px 0 0;padding-left:20px"><li>'+esc(tr('how1'))+'</li><li>'+esc(tr('how2'))+'</li><li>'+esc(tr('how3'))+'</li><li>'+esc(tr('how4'))+'</li></ol></div><button class="btn ghost" id="hGuide" type="button">'+esc(tr('guide'))+'</button><button class="btn" id="hFam" type="button">'+esc(tr('fam'))+'</button>';
   h+='<h2>'+esc(tr('mine'))+'</h2>';
   if(!MINE.length)h+='<p class="note">'+esc(tr('noneMine'))+'</p>';
   MINE.slice(0,30).forEach(function(m){var s=SUM[m.ref];h+='<button class="pas" type="button" data-open="'+esc(m.ref)+'"><span><b>'+esc(m.ref)+'</b><small>'+esc((m.company||'')+' · '+vehTxt(m.vehicle||''))+'</small></span>'+(s&&!s.gone?chip(s.status):'')+'</button>';});
@@ -148,6 +148,7 @@ $('vHome').addEventListener('click',function(e){
   else if(t.id==='hRefresh'){homeLoad();}
   else if(t.id==='hFind'){findOpen();}
   else if(t.id==='hGuide'){guideOpen();}
+  else if(t.id==='hFam'){location.href='familiarisation.html';}
   else if(t.id==='hAdmin'){adminOpen();}
   else if(t.getAttribute('data-open')){passOpen(t.getAttribute('data-open'));}
 });
