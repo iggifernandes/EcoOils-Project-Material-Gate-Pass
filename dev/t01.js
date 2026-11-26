@@ -158,6 +158,7 @@ const prow=m.sheets.Passes.rows.find(r=>r[0]===ph1.ref);const pc=m.ctx.PC['IC re
 m.sheets.Passes.rows.forEach((r,i)=>{if(r[0]===ph1.ref){r[pc]='#ERROR!';m.sheets.Passes.fm[(i+1)+','+(pc+1)]='=+62 812 3456 7890'}});
 const rp=m.ctx.repairPhones();const g2=m.call({action:'a_get',ref:ph1.ref,pin:m.props.ADMIN_PIN});
 ok(g2.pass.icPhone==='+62 812 3456 7890','repairPhones restores an old #ERROR! phone: '+rp+' -> '+g2.pass.icPhone);
+
 console.log(fails?'FAILED '+fails:'ALL PASSED');
 // v1.10: up to 4 optional extra photos
 const xp=m.call({...base,photos:{...base.photos,x1:base.photos.front,x2:base.photos.load}});
@@ -168,4 +169,20 @@ const xb=m.call({...base,photos:{...base.photos,x1:'notajpeg'+'A'.repeat(3000)}}
 ok(!xb.ok&&xb.err==='bad_photo'&&xb.view==='x1','a broken extra photo is refused: '+JSON.stringify(xb));
 const xc=m.call(base);const xd=m.call({action:'photos',ref:xc.ref,pin:m.props.ADMIN_PIN});
 ok(xc.ok&&xd.ok&&!xd.images.x1,'a pass without extras still works');
+// ---- Admin PIN reset by email (Code.gs v1.20)
+const oldPin=m.props.ADMIN_PIN;
+ok(m.call({action:'a_list',pin:'000000'}).err==='pin','a wrong PIN is refused with err pin');
+const f1=m.call({action:'a_forgot'});
+const mail=m.ctx.mails[m.ctx.mails.length-1];
+ok(f1.ok&&/^ig\*\*\*@ecooils\.com\.my$/.test(f1.masked)&&mail.to==='ignatius.ambrosio@ecooils.com.my','reset link goes only to the HSSE manager address, masked in the reply');
+const tok=(/resetpin=([0-9a-f]{64})/.exec(mail.body)||[])[1];
+ok(!!tok&&mail.body.indexOf(oldPin)<0,'the mail holds a 64-hex token and never the old PIN');
+ok(m.call({action:'a_reset',token:'0'.repeat(64),newPin:'123456'}).err==='badtoken','a wrong token is refused');
+ok(m.call({action:'a_reset',token:tok,newPin:'12345'}).err==='badpin','a PIN that is not 6 digits is refused');
+const rr1=m.call({action:'a_reset',token:tok,newPin:'482915'});
+ok(rr1.ok&&!m.props.ADMIN_PIN&&m.props.ADMIN_PIN_HASH&&m.props.ADMIN_PIN_HASH.indexOf('482915')<0,'reset stores only a hash and deletes the plain PIN');
+ok(m.call({action:'a_list',pin:oldPin}).err==='pin'&&m.call({action:'a_list',pin:'482915'}).ok,'old PIN stops, new PIN works');
+ok(m.call({action:'a_reset',token:tok,newPin:'111111'}).err==='badtoken','the link works only once');
+m.call({action:'a_forgot'});m.call({action:'a_forgot'});
+ok(m.call({action:'a_forgot'}).err==='busy','a 4th request in an hour is refused');
 console.log(fails?'FAILED '+fails:'ALL PASSED');

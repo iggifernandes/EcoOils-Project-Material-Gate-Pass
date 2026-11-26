@@ -1,4 +1,4 @@
-/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.19
+/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.20
    Form EOSM-HSSE-FM003. Paste into Extensions > Apps Script of the "EcoOils Gate Pass Log" Google Sheet (personal Gmail account).
    Do NOT upload this file to GitHub (keep the repo to index.html and the static files only).
    Who calls this web app:
@@ -6,7 +6,7 @@
    - Public QR check: action 'verify' returns status only (no names, no ID numbers, no photos).
    - Patroli (guards): actions b_list / b_get / b_release, protected by the shared secret BRIDGE_SECRET (script property). The guard's name comes from Patroli's PIN login.
    - Admin (you): actions a_*, protected by the script property ADMIN_PIN. */
-var VERSION = 'v1.19';
+var VERSION = 'v1.20';
 var OFF = 7 * 3600000;      // Jakarta (WIB), no daylight saving
 var TZ = 'Asia/Jakarta';
 var P_HEAD = ['Ref', 'Created (WIB)', 'Date', 'Purpose', 'Carrier name', 'Carrier I/C no', 'Company', 'Vehicle no', 'Purpose of taking out', 'EcoOils dept', 'IC rep name', 'IC rep position', 'Items', 'Status', 'Token hash',
@@ -45,7 +45,7 @@ function setup() {
   var c = s.getSheetByName('Config');
   if (c.getLastRow() < 2) c.getRange(2, 1, 6, 2).setValues([['COMPANIES', 'GSB,WEN,KKS,PBS'], ['DEPTS', 'Project Eng,Discipline Eng,HSSE,Stores'], ['VALID_HOURS', '48'], ['SIGN_WINDOW_HOURS', '72'], ['COMPANY_DAILY_CAP', '40'], ['SITE_LEAD_NAME', '']]);
   var p = props_();
-  if (!p.getProperty('ADMIN_PIN')) p.setProperty('ADMIN_PIN', rand6_());
+  if (!p.getProperty('ADMIN_PIN') && !p.getProperty('ADMIN_PIN_HASH')) p.setProperty('ADMIN_PIN', rand6_());
   if (!p.getProperty('BRIDGE_SECRET')) p.setProperty('BRIDGE_SECRET', secret_());
   if (!p.getProperty('TOKEN_SALT')) p.setProperty('TOKEN_SALT', secret_());
   folder_();
@@ -54,7 +54,7 @@ function setup() {
 /* Prints the Admin PIN and the Patroli bridge secret in the Execution log. Copy the secret into Patroli (Project Settings > Script properties > GATEPASS_SECRET). Never paste it in chat or WhatsApp. */
 function showCodes() {
   var p = props_();
-  Logger.log('ADMIN_PIN = ' + p.getProperty('ADMIN_PIN'));
+  Logger.log(p.getProperty('ADMIN_PIN_HASH') ? 'ADMIN_PIN was reset by email and is stored only as a hash. Use Forgot PIN in the app.' : 'ADMIN_PIN = ' + p.getProperty('ADMIN_PIN'));
   Logger.log('BRIDGE_SECRET = ' + p.getProperty('BRIDGE_SECRET'));
 }
 function rand6_() { return ('00000' + Math.floor(Math.random() * 1000000)).slice(-6); }
@@ -106,7 +106,8 @@ function locked_(k, max) { return Number(CacheService.getScriptCache().get(k) ||
 function hits_(k, max, secs) { var c = CacheService.getScriptCache(), n = Number(c.get(k) || 0) + 1; c.put(k, String(n), secs); return n <= max; }
 function adminOk_(pin) {
   if (locked_('fp', 10)) return false;
-  var ok = !!pin && String(pin).trim() === String(props_().getProperty('ADMIN_PIN') || '').trim();
+  var pr = props_(), hh = pr.getProperty('ADMIN_PIN_HASH'), pn = String(pin || '').trim();
+  var ok = !!pn && (hh ? hash_('AP|' + pn) === hh : pn === String(pr.getProperty('ADMIN_PIN') || '').trim());
   if (!ok) failed_('fp');
   return ok;
 }
@@ -218,6 +219,8 @@ function route_(b) {
   if (a === 'signed') return signed_(b);
   if (a === 'cancel') return cancel_(b);
   if (a === 'verify') return verify_(b);
+  if (a === 'a_forgot') return adminForgot_();
+  if (a === 'a_reset') return adminReset_(b);
   if (a.indexOf('a_') === 0) { if (!adminOk_(b.pin)) return {ok: false, err: 'pin'}; return admin_(a, b); }
   if (a.indexOf('b_') === 0) { if (!bridgeOk_(b.secret)) return {ok: false, err: 'auth'}; return bridge_(a, b); }
   return {ok: false, err: 'action'};
@@ -548,3 +551,35 @@ function img_(id) {
   if (!id) return '';
   try { return 'data:image/jpeg;base64,' + Utilities.base64Encode(DriveApp.getFileById(id).getBlob().getBytes()); } catch (e) { return ''; }
 }
+
+
+/* ---------- Admin PIN reset by email (v1.20) ----------
+   The ONLY address that can receive a reset link is ADMIN_EMAIL below (the HSSE manager). Nobody can choose another address.
+   a_forgot (no PIN, 3 per hour): mails a one-use link APP_URL?resetpin=<token> (30 minutes, only its hash is stored).
+   a_reset (token + new 6-digit PIN): stores the PIN only as a salted hash (script property ADMIN_PIN_HASH), deletes the plain ADMIN_PIN,
+   clears the Admin lockout and mails a 'PIN was changed' notice. Wrong tokens count toward a 10-try lock. */
+var ADMIN_EMAIL = 'ignatius.ambrosio@ecooils.com.my';
+function adminForgot_() {
+  if (!hits_('fgt', 3, 3600)) return {ok: false, err: 'busy'};
+  var p = props_(), tok = secret_();
+  p.setProperty('RESET_HASH', hash_('RT|' + tok));
+  p.setProperty('RESET_EXP', String(Date.now() + 30 * 60 * 1000));
+  try {
+    MailApp.sendEmail({to: ADMIN_EMAIL, subject: 'Gate Pass: reset your Admin PIN',
+      body: 'Someone asked to reset the Gate Pass Admin PIN. If it was you, open this link within 30 minutes (it works once):\n\n' + APP_URL_ + '?resetpin=' + tok + '\n\nIf it was not you, ignore this email: nothing changes.'});
+  } catch (e) { return {ok: false, err: 'mail'}; }
+  return {ok: true, masked: ADMIN_EMAIL.slice(0, 2) + '***@' + ADMIN_EMAIL.split('@')[1]};
+}
+function adminReset_(b) {
+  if (locked_('frt', 10)) return {ok: false, err: 'locked'};
+  var p = props_(), tok = String(b.token || ''), pin = String(b.newPin || '');
+  var okTok = /^[0-9a-f]{64}$/.test(tok) && p.getProperty('RESET_HASH') === hash_('RT|' + tok) && Number(p.getProperty('RESET_EXP') || 0) > Date.now();
+  if (!okTok) { failed_('frt'); return {ok: false, err: 'badtoken'}; }
+  if (!/^\d{6}$/.test(pin)) return {ok: false, err: 'badpin'};
+  p.setProperty('ADMIN_PIN_HASH', hash_('AP|' + pin));
+  p.deleteProperty('ADMIN_PIN'); p.deleteProperty('RESET_HASH'); p.deleteProperty('RESET_EXP');
+  CacheService.getScriptCache().remove('fp');
+  try { MailApp.sendEmail({to: ADMIN_EMAIL, subject: 'Gate Pass: Admin PIN was changed', body: 'The Gate Pass Admin PIN was changed just now. If it was not you, open Forgot PIN in the app and set a new one.'}); } catch (e) {}
+  return {ok: true};
+}
+var APP_URL_ = 'https://iggifernandes.github.io/EcoOils-Project-Material-Gate-Pass/';

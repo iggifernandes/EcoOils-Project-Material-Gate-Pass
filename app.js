@@ -1,4 +1,4 @@
-var VERSION='v1.36';
+var VERSION='v1.37';
 var PHV=['front','load'];
 var EXV=['x1','x2','x3','x4'];
 var ALLV=PHV.concat(EXV);
@@ -720,13 +720,14 @@ var AD={pin:ls('gp_apin')||'',list:null,counts:{},q:'',st:'',sel:null,chk:{}};
 function adminOpen(){show('vAdmin');if(AD.pin)adminLoad();else adminDraw();}
 function adminLoad(){
   api({action:'a_list',pin:AD.pin,q:AD.q,status:AD.st}).then(function(r){
-    if(!r||!r.ok){if(r&&r.err==='pin'){AD.pin='';ls('gp_apin',null);}AD.err=r?errText(r.err):tr('err_net');adminDraw();return;}
+    if(!r||!r.ok){if(r&&r.err==='pin'){AD.pin='';ls('gp_apin',null);}AD.err=(r&&r.err==='pin')?tr('notAdmin'):(r?errText(r.err):tr('err_net'));adminDraw();return;}
     AD.list=r.list;AD.counts=r.counts;AD.err='';adminDraw();
   },function(){AD.err=tr('err_net');adminDraw();});
 }
 function adminDraw(){
   var h=h1(tr('admin'));
-  if(!AD.pin){h+='<label for="adPin">'+esc(tr('pin'))+'</label><input id="adPin" type="password" inputmode="numeric" autocomplete="off" maxlength="12"><div class="err">'+esc(AD.err||'')+'</div><button class="btn" id="adGo" type="button">'+esc(tr('login'))+'</button><button class="btn ghost" id="adBack" type="button">'+esc(tr('back'))+'</button>';$('vAdmin').innerHTML=h;return;}
+  if(AD.reset){h+='<p class="note">'+esc(tr('rstIntro'))+'</p><label for="rsP1">'+esc(tr('rstNew'))+'</label><input id="rsP1" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6"><label for="rsP2">'+esc(tr('rstAgain'))+'</label><input id="rsP2" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6"><div class="err" style="font-weight:600">'+esc(AD.err||'')+'</div><button class="btn" id="rsGo" type="button">'+esc(tr('rstSave'))+'</button>';$('vAdmin').innerHTML=h;return;}
+  if(!AD.pin){h+='<label for="adPin">'+esc(tr('pin'))+'</label><input id="adPin" type="password" inputmode="numeric" autocomplete="off" maxlength="12"><div class="err" style="font-weight:600;font-size:17px">'+esc(AD.err||'')+'</div>'+(AD.note?'<div class="note">'+esc(AD.note)+'</div>':'')+'<button class="btn" id="adGo" type="button">'+esc(tr('login'))+'</button><button class="btn ghost" id="adForgot" type="button">'+esc(tr('forgotPin'))+'</button><button class="btn ghost" id="adBack" type="button">'+esc(tr('back'))+'</button>';$('vAdmin').innerHTML=h;return;}
   if(AD.sel){adminDetailDraw(h);return;}
   if(AD.dash){dashDraw(h);return;}
   h+='<div class="row2"><input id="adQ" placeholder="'+esc(tr('search'))+'" value="'+esc(AD.q)+'"><select id="adSt"><option value="">'+esc(tr('all'))+'</option>'+Object.keys(ST).map(function(s){return '<option value="'+esc(s)+'"'+(AD.st===s?' selected':'')+'>'+esc(tr(ST[s][0]))+' ('+(AD.counts[s]||0)+')</option>';}).join('')+'</select></div>';
@@ -835,6 +836,8 @@ $('vAdmin').addEventListener('click',function(e){
   else if(t.id==='adDash'){dashOpen();return;}
   else if(t.id==='dbBack'){AD.dash=null;adminLoad();return;}
   else if(t.getAttribute('data-dbp')){AD.dash.per=+t.getAttribute('data-dbp');adminDraw();return;}
+  else if(t.id==='adForgot'){AD.err='';AD.note='';t.disabled=true;api({action:'a_forgot'}).then(function(r){AD.note='';if(r&&r.ok)AD.note=tr('rstSent').replace('{m}',r.masked||'');else if(r&&r.err==='pin')AD.err=tr('rstOld');else AD.err=r?errText(r.err):tr('err_net');adminDraw();},function(){AD.err=tr('err_net');adminDraw();});return;}
+  else if(t.id==='rsGo'){var p1=$('rsP1').value.trim(),p2=$('rsP2').value.trim();if(!/^\d{6}$/.test(p1)){AD.err=tr('rstSix');adminDraw();return;}if(p1!==p2){AD.err=tr('rstSame');adminDraw();return;}api({action:'a_reset',token:AD.rtok,newPin:p1}).then(function(r){if(r&&r.ok){AD.reset=false;AD.rtok='';AD.err='';AD.note=tr('rstDone');}else AD.err=r?errText(r.err):tr('err_net');adminDraw();},function(){AD.err=tr('err_net');adminDraw();});return;}
   else if(t.id==='adGo'){AD.pin=$('adPin').value.trim();ls('gp_apin',AD.pin);adminLoad();}
   else if(t.id==='adOut'){AD.pin='';AD.list=null;ls('gp_apin',null);adminDraw();}
   else if(t.id==='adList'){AD.sel=null;adminDraw();}
@@ -858,6 +861,8 @@ function csv(){
   applyLang();
   var m=/[?&]v=([^&#]+)/.exec(location.search);
   var mk=/[?&]k=([A-Za-z0-9]+)/.exec(location.search);
+  var rp=/[?&]resetpin=([0-9a-f]{64})/.exec(location.search);
+  if(rp){AD.reset=true;AD.rtok=rp[1];try{history.replaceState(null,'',location.pathname);}catch(e){}show('vAdmin');adminDraw();return;}
   if(m){verifyOpen(decodeURIComponent(m[1]).toUpperCase(),mk?mk[1]:'');return;}
   homeOpen();
 })();
