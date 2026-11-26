@@ -1,4 +1,4 @@
-var VERSION='v1.38';
+var VERSION='v1.39';
 var PHV=['front','load'];
 var EXV=['x1','x2','x3','x4'];
 var ALLV=PHV.concat(EXV);

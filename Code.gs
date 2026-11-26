@@ -1,4 +1,4 @@
-/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.21
+/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.22
    Form EOSM-HSSE-FM003. Paste into Extensions > Apps Script of the "EcoOils Gate Pass Log" Google Sheet (personal Gmail account).
    Do NOT upload this file to GitHub (keep the repo to index.html and the static files only).
    Who calls this web app:
@@ -6,7 +6,7 @@
    - Public QR check: action 'verify' returns status only (no names, no ID numbers, no photos).
    - Patroli (guards): actions b_list / b_get / b_release, protected by the shared secret BRIDGE_SECRET (script property). The guard's name comes from Patroli's PIN login.
    - Admin (you): actions a_*, protected by the script property ADMIN_PIN. */
-var VERSION = 'v1.21';
+var VERSION = 'v1.22';
 var OFF = 7 * 3600000;      // Jakarta (WIB), no daylight saving
 var TZ = 'Asia/Jakarta';
 var P_HEAD = ['Ref', 'Created (WIB)', 'Date', 'Purpose', 'Carrier name', 'Carrier I/C no', 'Company', 'Vehicle no', 'Purpose of taking out', 'EcoOils dept', 'IC rep name', 'IC rep position', 'Items', 'Status', 'Token hash',
@@ -716,7 +716,7 @@ function auditDone_(b) {
     auditSet_(hit.row, 'Inconsistency', bad ? 'yes' : 'no'); auditSet_(hit.row, 'Note', note);
     auditSet_(hit.row, 'Done (WIB)', ymdhms_(now)); auditSet_(hit.row, 'Done ms', now);
     log_(ref, bad ? 'AUDIT_INCONSISTENCY' : 'AUDIT_OK', by, note);
-    if (bad) { try { MailApp.sendEmail({to: ADMIN_EMAIL, subject: 'Gate Pass audit INCONSISTENCY: ' + ref, body: ref + ' was audited by ' + by + ' (' + role + ').\nPaper original held: ' + pa + '\nPhotos match: ' + ph + '\nItems match: ' + it + '\nNote: ' + note + '\nReleased by: ' + String(hit.v[AC['Released by']]) + '\nAuto flags: ' + (String(hit.v[AC['Auto flags']]) || 'none')}); } catch (e) { Logger.log('audit mail: ' + e); } }
+    if (bad) { try { MailApp.sendEmail({to: ADMIN_EMAIL, subject: 'Gate Pass audit INCONSISTENCY: ' + ref, body: ref + ' was audited by ' + by + ' (' + role + ').\nSigned scan clear with 4 signatures: ' + pa + '\nPhotos match: ' + ph + '\nItems match: ' + it + '\nNote: ' + note + '\nReleased by: ' + String(hit.v[AC['Released by']]) + '\nAuto flags: ' + (String(hit.v[AC['Auto flags']]) || 'none')}); } catch (e) { Logger.log('audit mail: ' + e); } }
     return {ok: true, inconsistency: bad};
   } finally { lock.releaseLock(); }
 }
