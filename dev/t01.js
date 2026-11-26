@@ -185,4 +185,44 @@ ok(m.call({action:'a_list',pin:oldPin}).err==='pin'&&m.call({action:'a_list',pin
 ok(m.call({action:'a_reset',token:tok,newPin:'111111'}).err==='badtoken','the link works only once');
 m.call({action:'a_forgot'});m.call({action:'a_forgot'});
 ok(m.call({action:'a_forgot'}).err==='busy','a 4th request in an hour is refused');
+
+// ---- Daily audit (Code.gs v1.21)
+{
+const cf=m.sheets.Config;cf.rows.push(['AUDIT_OPEN_H','0'],['AUDIT_CLOSE_H','24'],['AUDIT_MIN','2'],['AUDIT_MAX','2'],['AUDIT_PCT','10']);
+const P=m.sheets.Passes,IX=h=>m.ctx.PC[h];const made=[];P.rows.forEach(r=>{if(r[IX('Status')]==='Released')r[IX('Decided ms')]=Number(r[IX('Decided ms')])-3*86400000;});
+['WEN','KKS','PBS','WEN','KKS'].forEach((co,i)=>{
+  const c=m.call({...base,company:co,cid:'aud'+i+Math.random(),vehicle:'BK '+(100+i)+' AU',icNo:'KTP 99710123456789'+('0'+i).slice(-2)});
+  if(!c.ok){ok(false,'audit setup create '+i+' '+JSON.stringify(c));return;}
+  m.call({action:'signed',ref:c.ref,token:c.token,photos:[jpg,jpg]});
+  m.call({action:'b_release',secret:sec,ref:c.ref,by:'Guard '+(i%2?'B':'A'),role:'Security Guard',decision:'release'});
+  made.push(c.ref);});
+ok(made.length===5,'5 passes released for the audit test');
+// make 4 of them look clean: signed copy scanned 10 minutes before release; the 5th stays a QUICK_RELEASE
+made.slice(0,4).forEach(ref=>{const r=P.rows.find(x=>x[0]===ref);r[IX('Signed ms')]=Number(r[IX('Decided ms')])-600000;});
+const ad=m.ctx.auditDaily();
+ok(ad.ok&&ad.released===5&&ad.assigned===3,'auditDaily: 1 flagged + 2 sample of 4 clean = 3 assigned (got '+JSON.stringify(ad)+')');
+const A=m.sheets.Audit.rows.slice(1);if(process.env.DBG)console.log(JSON.stringify(A.map(x=>[x[1],x[2],x[3],x[4]])));
+const quick=A.find(x=>x[1]===made[4]);
+ok(quick&&quick[2]==='Flag'&&quick[3]==='Major'&&/QUICK_RELEASE/.test(quick[4]),'the quick release is flagged Major');
+ok(A.filter(x=>x[2]==='Random sample'&&x[3]==='Compliant').length===2,'two clean passes were drawn at random');
+ok(m.ctx.mails[m.ctx.mails.length-1].to==='ignatius.ambrosio@ecooils.com.my'&&/1 MAJOR/.test(m.ctx.mails[m.ctx.mails.length-1].subject),'owner gets the daily mail with the major flag');
+const ad2=m.ctx.auditDaily();ok(ad2.assigned===0,'running it again assigns nothing twice '+JSON.stringify(ad2));
+const L=m.call({action:'b_audit_list',secret:sec});
+ok(L.ok&&L.n===3&&L.list.every(x=>x.company&&x.vehicle&&x.releasedBy),'bridge lists the 3 open audits with pass details');
+ok(m.call({action:'b_audit_list',secret:'bad'}).err==='auth','audit list needs the bridge secret');
+const t0=L.list.find(x=>x.ref===made[4]);
+ok(m.call({action:'b_audit_done',secret:sec,ref:t0.ref,by:t0.releasedBy,role:'Danru',paper:'yes',photos:'yes',items:'yes'}).err==='own_release','nobody audits a pass released by himself');
+ok(m.call({action:'b_audit_done',secret:sec,ref:t0.ref,by:'Irsan',role:'Danru',paper:'yes',photos:'yes'}).err==='need_checks','all three checks must be answered');
+ok(m.call({action:'b_audit_done',secret:sec,ref:t0.ref,by:'Irsan',role:'Danru',paper:'yes',photos:'no',items:'yes'}).err==='need_note','a No needs a note');
+const nm=m.ctx.mails.length;
+const d1=m.call({action:'b_audit_done',secret:sec,ref:t0.ref,by:'Irsan',role:'Danru',paper:'yes',photos:'no',items:'yes',note:'Plate in photo is not BK 104 AU'});
+ok(d1.ok&&d1.inconsistency&&m.ctx.mails.length===nm+1&&/INCONSISTENCY/.test(m.ctx.mails[nm].subject),'an inconsistency is saved and the owner is emailed at once');
+ok(m.call({action:'b_audit_done',secret:sec,ref:t0.ref,by:'Irsan',role:'Danru',paper:'yes',photos:'yes',items:'yes'}).err==='already_done','an audit cannot be done twice');
+const other=L.list.find(x=>x.ref!==t0.ref&&x.releasedBy!=='Irsan');
+ok(m.call({action:'b_audit_done',secret:sec,ref:other.ref,by:'Irsan',role:'Danru',paper:'yes',photos:'yes',items:'yes'}).ok,'a clean audit is saved');
+const ag=m.call({action:'a_audit',pin:m.props.ADMIN_PIN_HASH?'482915':m.props.ADMIN_PIN,days:30});
+ok(ag.ok&&ag.counts.Inconsistency===1&&ag.counts.Done===1&&ag.counts.Open===1,'Admin sees the audit counts: '+JSON.stringify(ag.counts));
+P.rows.forEach(r=>{});const as=m.sheets.Audit.rows;as[as.length-1][m.ctx.AC['Assigned ms']]=Date.now()-20*3600000;
+const od=m.ctx.auditOverdue();ok(od>=0,'overdue check runs ('+od+')');
+}
 console.log(fails?'FAILED '+fails:'ALL PASSED');

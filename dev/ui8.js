@@ -22,4 +22,5 @@ await page.waitForFunction(()=>/not the same/.test(document.getElementById('vAdm
 await page.fill('#rsP1','482915');await page.fill('#rsP2','482915');await page.click('#rsGo');
 await page.waitForFunction(()=>/New PIN saved/.test(document.getElementById('vAdmin').innerText));ok(true,'new PIN saved');
 await page.fill('#adPin','482915');await page.click('#adGo');await page.waitForSelector('#adOut');ok(true,'login with the new PIN works');
+await page.click('#adAudit');await page.waitForFunction(()=>/Every evening/.test(document.getElementById('vAdmin').innerText));ok(true,'Admin Audit screen opens');
 await br.close();console.log(fails?'FAILURES '+fails:'ALL PASSED');process.exit(fails?1:0);})();

@@ -1,4 +1,4 @@
-/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.20
+/* EcoOils Mentari - Material Gate Pass backend (Google Apps Script)  v1.21
    Form EOSM-HSSE-FM003. Paste into Extensions > Apps Script of the "EcoOils Gate Pass Log" Google Sheet (personal Gmail account).
    Do NOT upload this file to GitHub (keep the repo to index.html and the static files only).
    Who calls this web app:
@@ -6,7 +6,7 @@
    - Public QR check: action 'verify' returns status only (no names, no ID numbers, no photos).
    - Patroli (guards): actions b_list / b_get / b_release, protected by the shared secret BRIDGE_SECRET (script property). The guard's name comes from Patroli's PIN login.
    - Admin (you): actions a_*, protected by the script property ADMIN_PIN. */
-var VERSION = 'v1.20';
+var VERSION = 'v1.21';
 var OFF = 7 * 3600000;      // Jakarta (WIB), no daylight saving
 var TZ = 'Asia/Jakarta';
 var P_HEAD = ['Ref', 'Created (WIB)', 'Date', 'Purpose', 'Carrier name', 'Carrier I/C no', 'Company', 'Vehicle no', 'Purpose of taking out', 'EcoOils dept', 'IC rep name', 'IC rep position', 'Items', 'Status', 'Token hash',
@@ -437,6 +437,7 @@ function verify_(b) {
 
 /* ---------- admin (Admin PIN) ---------- */
 function admin_(a, b) {
+  if (a === 'a_audit') return auditAdmin_(b);
   var now = Date.now();
   if (a === 'a_list') {
     var q = clean_(b.q, 40).toUpperCase(), stf = clean_(b.status, 30), out = [], counts = {};
@@ -545,6 +546,8 @@ function bridge_(a, b) {
       return {ok: true, status: dec === 'release' ? ST_REL : ST_REJ, at: ymdhms_(now), ref: String(h.v[0]), company: String(h.v[PC['Company']]), vehicle: String(h.v[PC['Vehicle no']])};
     } finally { lock.releaseLock(); }
   }
+  if (a === 'b_audit_list') return auditList_();
+  if (a === 'b_audit_done') return auditDone_(b);
   return {ok: false, err: 'action'};
 }
 function img_(id) {
@@ -583,3 +586,149 @@ function adminReset_(b) {
   return {ok: true};
 }
 var APP_URL_ = 'https://iggifernandes.github.io/EcoOils-Project-Material-Gate-Pass/';
+
+
+/* ---------- Daily pass audit (v1.21) ----------
+   Every evening (auditDaily trigger, about 20:00 WIB) the system looks at the passes RELEASED that day, scores each one from the data (flags),
+   and puts into the Audit sheet: every pass with a flag + a random sample of the clean ones (Config AUDIT_PCT default 20, AUDIT_MIN 3, AUDIT_MAX 10).
+   The Security Danru / Shift Supervisor (Patroli app, via the bridge secret, never the Admin PIN) checks each assigned pass against the paper original
+   and reports inconsistencies (b_audit_list, b_audit_done). A person cannot audit a pass released by himself. An inconsistency emails the owner at once.
+   auditOverdue (trigger about 12:00 WIB next day) marks assigned passes still open after 16 hours as Overdue and emails the owner. Run setupAuditTriggers() once.
+   Config (all optional): AUDIT_PCT, AUDIT_MIN, AUDIT_MAX, AUDIT_OPEN_H (default 6), AUDIT_CLOSE_H (default 22), GATE_LAT, GATE_LNG, GATE_RADIUS_M (default 300). */
+HEAD.Audit = ['Audit date', 'Ref', 'Why', 'Auto score', 'Auto flags', 'Status', 'Assigned (WIB)', 'Assigned ms', 'Auditor', 'Auditor role', 'Paper held', 'Photos match', 'Items match', 'Inconsistency', 'Note', 'Done (WIB)', 'Done ms', 'Released by'];
+var AC = {}; HEAD.Audit.forEach(function (h, i) { AC[h] = i; });
+function auditSheet_() {
+  var s = SpreadsheetApp.getActiveSpreadsheet(), sh = s.getSheetByName('Audit');
+  if (!sh) { sh = s.insertSheet('Audit'); sh.appendRow(HEAD.Audit); sh.setFrozenRows(1); sh.getRange(1, 1, 1, HEAD.Audit.length).setFontWeight('bold'); }
+  return sh;
+}
+function auditRows_() {
+  var sh = auditSheet_(), n = sh.getLastRow();
+  if (n < 2) return [];
+  return sh.getRange(2, 1, n - 1, HEAD.Audit.length).getValues().map(function (v, i) { return {row: i + 2, v: v}; });
+}
+function auditSet_(row, name, val) { auditSheet_().getRange(row, AC[name] + 1).setValue(safe_(val)); }
+function distM_(la1, lo1, la2, lo2) {
+  var R = 6371000, d = Math.PI / 180, a = Math.sin((la2 - la1) * d / 2), b = Math.sin((lo2 - lo1) * d / 2);
+  var h = a * a + Math.cos(la1 * d) * Math.cos(la2 * d) * b * b;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+/* flags of one RELEASED pass (v = Passes row). Major: NO_SIGNED, QUICK_RELEASE. Minor: the rest. */
+function auditFlags_(v, all) {
+  var f = [], sig = String(v[PC['Signed IDs']] || '').replace(/[, ]/g, ''), sMs = Number(v[PC['Signed ms']]) || 0, dMs = Number(v[PC['Decided ms']]) || 0;
+  if (!sig) f.push('NO_SIGNED');
+  if (sMs && dMs && dMs - sMs < 60000) f.push('QUICK_RELEASE');
+  if (dMs) {
+    var h = new Date(dMs + OFF).getUTCHours();
+    if (h < Number(cfg_('AUDIT_OPEN_H', 6)) || h >= Number(cfg_('AUDIT_CLOSE_H', 22))) f.push('AFTER_HOURS');
+  }
+  var gl = num_(cfg_('GATE_LAT', '')), gn = num_(cfg_('GATE_LNG', '')), la = num_(v[PC['Dec lat']]), lo = num_(v[PC['Dec lng']]);
+  if (gl != null && gn != null) {
+    if (la == null || lo == null) f.push('NO_GATE_GPS');
+    else if (distM_(la, lo, gl, gn) > Number(cfg_('GATE_RADIUS_M', 300))) f.push('FAR_FROM_GATE');
+  }
+  var ic = String(v[PC['Carrier I/C no']] || ''), co = String(v[PC['Company']] || '');
+  if (ic && ic.indexOf('COURIER ') !== 0 && all.some(function (o) { return o !== v && String(o[PC['Carrier I/C no']] || '') === ic && String(o[PC['Company']] || '') !== co && dMs && Math.abs((Number(o[PC['Created ms']]) || 0) - dMs) < 30 * 86400000; })) f.push('SHARED_ID');
+  var veh = String(v[PC['Vehicle no']] || '').toUpperCase();
+  if (veh && veh !== 'HAND CARRY' && all.filter(function (o) { return String(o[PC['Vehicle no']] || '').toUpperCase() === veh && String(o[PC['Date']] || '') === String(v[PC['Date']] || ''); }).length > 3) f.push('REPEAT_VEHICLE');
+  return f;
+}
+function auditScore_(f) { return f.some(function (x) { return x === 'NO_SIGNED' || x === 'QUICK_RELEASE'; }) ? 'Major' : (f.length ? 'Minor' : 'Compliant'); }
+function auditDaily(dayMs) {
+  var lock = LockService.getScriptLock(); lock.waitLock(25000);
+  try {
+    CFGM_ = null; ROWS_ = null;
+    var forced = typeof dayMs === 'number', now = forced ? dayMs : Date.now(), day = ymd_(now), all = rows_().map(function (r) { return r; });
+    if (!forced && props_().getProperty('AUDIT_LAST') === day) return {ok: true, day: day, released: 0, assigned: 0, skipped: true};   /* once per day: a second run would draw more samples */
+    var have = {}; auditRows_().forEach(function (r) { have[String(r.v[AC['Ref']])] = true; });
+    var rel = all.filter(function (v) { var d = Number(v[PC['Decided ms']]) || 0; return String(v[PC['Status']]) === ST_REL && d && ymd_(d) === day && !have[String(v[0])]; });
+    var flagged = [], clean = [];
+    rel.forEach(function (v) { var f = auditFlags_(v, all); (f.length ? flagged : clean).push({v: v, f: f}); });
+    var pct = Number(cfg_('AUDIT_PCT', 20)), mn = Number(cfg_('AUDIT_MIN', 3)), mx = Number(cfg_('AUDIT_MAX', 10));
+    var take = clean.length ? Math.min(clean.length, Math.min(mx, Math.max(mn, Math.ceil(clean.length * pct / 100)))) : 0;
+    for (var i = clean.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = clean[i]; clean[i] = clean[j]; clean[j] = t; }
+    var pick = flagged.map(function (x) { x.why = 'Flag'; return x; }).concat(clean.slice(0, take).map(function (x) { x.why = 'Random sample'; return x; }));
+    var sh = auditSheet_();
+    pick.forEach(function (x) {
+      sh.appendRow([day, String(x.v[0]), x.why, auditScore_(x.f), x.f.join(', '), 'Open', ymdhms_(now), now, '', '', '', '', '', '', '', '', '', String(x.v[PC['Decided by']] || '')]);
+    });
+    var major = flagged.filter(function (x) { return auditScore_(x.f) === 'Major'; });
+    var open = all.filter(function (v) { var st = statusNow_(v, now); return (st === ST_WAIT || st === ST_PEND) && now - (Number(v[PC['Created ms']]) || now) > 72 * 3600000; });
+    try {
+      MailApp.sendEmail({to: ADMIN_EMAIL, subject: 'Gate Pass audit ' + day + ': ' + rel.length + ' released, ' + pick.length + ' to audit' + (major.length ? ', ' + major.length + ' MAJOR flag' : ''),
+        body: 'Gate Pass audit for ' + day + ' (WIB)\n\nReleased today: ' + rel.length + '\nAssigned to the Security Danru / Shift Supervisor: ' + pick.length + ' (' + flagged.length + ' flagged, ' + Math.min(take, clean.length) + ' random sample)\n' +
+        (major.length ? '\nMAJOR flags:\n' + major.map(function (x) { return ' - ' + x.v[0] + ': ' + x.f.join(', '); }).join('\n') + '\n' : '') +
+        (open.length ? '\nOpen for more than 72 hours (not released): ' + open.map(function (v) { return v[0]; }).join(', ') + '\n' : '') +
+        '\nThey audit in the Patroli app (Gate pass audit) and report any inconsistency; you are emailed at once if they find one.'});
+    } catch (e) { Logger.log('audit mail: ' + e); }
+    if (!forced) props_().setProperty('AUDIT_LAST', day);
+    log_('', 'AUDIT_ASSIGNED', 'system', day + ': ' + pick.length + ' of ' + rel.length);
+    return {ok: true, day: day, released: rel.length, assigned: pick.length};
+  } finally { lock.releaseLock(); }
+}
+function auditOverdue() {
+  var now = Date.now(), late = [];
+  auditRows_().forEach(function (r) {
+    var st = String(r.v[AC['Status']]), ms = Number(r.v[AC['Assigned ms']]) || 0;
+    if ((st === 'Open' || st === 'Overdue') && ms && now - ms > 16 * 3600000) { if (st === 'Open') auditSet_(r.row, 'Status', 'Overdue'); late.push(String(r.v[AC['Ref']])); }
+  });
+  if (late.length) { try { MailApp.sendEmail({to: ADMIN_EMAIL, subject: 'Gate Pass audit overdue: ' + late.length + ' pass(es) not audited', body: 'These assigned passes have not been audited after 16 hours:\n' + late.join('\n')}); } catch (e) { Logger.log('overdue mail: ' + e); } }
+  return late.length;
+}
+/* run ONCE from the editor: it asks to authorise sending mail; it makes the evening and noon triggers */
+function setupAuditTriggers() {
+  ScriptApp.getProjectTriggers().forEach(function (t) { var n = t.getHandlerFunction(); if (n === 'auditDaily' || n === 'auditOverdue') ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger('auditDaily').timeBased().everyDays(1).atHour(13).create();    /* 13:00 UTC = 20:00 WIB */
+  ScriptApp.newTrigger('auditOverdue').timeBased().everyDays(1).atHour(5).create();   /* 05:00 UTC = 12:00 WIB */
+  Logger.log('Audit triggers set: assignment 20:00 WIB, overdue check 12:00 WIB (Google may run them within the hour).');
+}
+function auditView_(r, all, now) {
+  var hit = null; all.forEach(function (v) { if (String(v[0]) === String(r.v[AC['Ref']])) hit = v; });
+  var o = {ref: String(r.v[AC['Ref']]), day: String(r.v[AC['Audit date']]), why: String(r.v[AC['Why']]), score: String(r.v[AC['Auto score']]), flags: String(r.v[AC['Auto flags']]), status: String(r.v[AC['Status']]), releasedBy: String(r.v[AC['Released by']])};
+  if (hit) { o.company = String(hit[PC['Company']]); o.vehicle = String(hit[PC['Vehicle no']]); o.carrier = String(hit[PC['Carrier name']]); o.items = Number(hit[PC['Items']]) || 0; o.releasedAt = String(hit[PC['Decided at (WIB)']] || ''); }
+  return o;
+}
+function auditList_() {
+  var now = Date.now(), all = rows_(), rs = auditRows_(), open = [], done = 0;
+  rs.forEach(function (r) { var st = String(r.v[AC['Status']]); if (st === 'Open' || st === 'Overdue') open.push(auditView_(r, all, now)); else if (st.indexOf('Done') === 0 && ymd_(now) === ymd_(Number(r.v[AC['Done ms']]) || 0)) done++; });
+  return {ok: true, list: open, n: open.length, doneToday: done, now: now};
+}
+function auditDone_(b) {
+  var ref = String(b.ref || '').toUpperCase(), by = clean_(b.by, 60), role = clean_(b.role, 30), note = clean_(b.note, 400);
+  if (!ref) return {ok: false, err: 'bad_ref'};
+  if (!by) return {ok: false, err: 'bad_by'};
+  var yn = function (x) { return x === 'yes' ? 'yes' : (x === 'no' ? 'no' : ''); };
+  var pa = yn(b.paper), ph = yn(b.photos), it = yn(b.items);
+  if (!pa || !ph || !it) return {ok: false, err: 'need_checks'};
+  var bad = pa === 'no' || ph === 'no' || it === 'no';
+  if (bad && note.length < 3) return {ok: false, err: 'need_note'};
+  var lock = LockService.getScriptLock(); lock.waitLock(25000);
+  try {
+    var hit = null; auditRows_().forEach(function (r) { if (String(r.v[AC['Ref']]) === ref && !hit) hit = r; });
+    if (!hit) return {ok: false, err: 'notfound'};
+    var st = String(hit.v[AC['Status']]);
+    if (st.indexOf('Done') === 0) return {ok: false, err: 'already_done', by: String(hit.v[AC['Auditor']])};
+    if (String(hit.v[AC['Released by']]).toLowerCase() === by.toLowerCase()) return {ok: false, err: 'own_release'};
+    var now = Date.now();
+    auditSet_(hit.row, 'Status', bad ? 'Done - inconsistency' : 'Done');
+    auditSet_(hit.row, 'Auditor', by); auditSet_(hit.row, 'Auditor role', role);
+    auditSet_(hit.row, 'Paper held', pa); auditSet_(hit.row, 'Photos match', ph); auditSet_(hit.row, 'Items match', it);
+    auditSet_(hit.row, 'Inconsistency', bad ? 'yes' : 'no'); auditSet_(hit.row, 'Note', note);
+    auditSet_(hit.row, 'Done (WIB)', ymdhms_(now)); auditSet_(hit.row, 'Done ms', now);
+    log_(ref, bad ? 'AUDIT_INCONSISTENCY' : 'AUDIT_OK', by, note);
+    if (bad) { try { MailApp.sendEmail({to: ADMIN_EMAIL, subject: 'Gate Pass audit INCONSISTENCY: ' + ref, body: ref + ' was audited by ' + by + ' (' + role + ').\nPaper original held: ' + pa + '\nPhotos match: ' + ph + '\nItems match: ' + it + '\nNote: ' + note + '\nReleased by: ' + String(hit.v[AC['Released by']]) + '\nAuto flags: ' + (String(hit.v[AC['Auto flags']]) || 'none')}); } catch (e) { Logger.log('audit mail: ' + e); } }
+    return {ok: true, inconsistency: bad};
+  } finally { lock.releaseLock(); }
+}
+function auditAdmin_(b) {
+  var now = Date.now(), all = rows_(), from = Date.now() - (Number(b.days) || 30) * 86400000, out = [], cnt = {Open: 0, Overdue: 0, Done: 0, Inconsistency: 0};
+  auditRows_().forEach(function (r) {
+    var st = String(r.v[AC['Status']]); var o = auditView_(r, all, now);
+    o.auditor = String(r.v[AC['Auditor']]); o.role = String(r.v[AC['Auditor role']]); o.paper = String(r.v[AC['Paper held']]); o.photos = String(r.v[AC['Photos match']]); o.itemsOk = String(r.v[AC['Items match']]); o.note = String(r.v[AC['Note']]); o.doneAt = String(r.v[AC['Done (WIB)']]);
+    if (Date.parse(String(r.v[AC['Audit date']]) + 'T00:00:00Z') < from - 86400000) return;
+    out.push(o);
+    if (st === 'Open') cnt.Open++; else if (st === 'Overdue') cnt.Overdue++; else if (st === 'Done - inconsistency') cnt.Inconsistency++; else cnt.Done++;
+  });
+  out.reverse();
+  return {ok: true, list: out.slice(0, 500), counts: cnt};
+}

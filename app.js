@@ -1,4 +1,4 @@
-var VERSION='v1.37';
+var VERSION='v1.38';
 var PHV=['front','load'];
 var EXV=['x1','x2','x3','x4'];
 var ALLV=PHV.concat(EXV);
@@ -729,13 +729,14 @@ function adminDraw(){
   if(AD.reset){h+='<p class="note">'+esc(tr('rstIntro'))+'</p><label for="rsP1">'+esc(tr('rstNew'))+'</label><input id="rsP1" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6"><label for="rsP2">'+esc(tr('rstAgain'))+'</label><input id="rsP2" type="password" inputmode="numeric" autocomplete="new-password" maxlength="6"><div class="err" style="font-weight:600">'+esc(AD.err||'')+'</div><button class="btn" id="rsGo" type="button">'+esc(tr('rstSave'))+'</button>';$('vAdmin').innerHTML=h;return;}
   if(!AD.pin){h+='<label for="adPin">'+esc(tr('pin'))+'</label><input id="adPin" type="password" inputmode="numeric" autocomplete="off" maxlength="12"><div class="err" style="font-weight:600;font-size:17px">'+esc(AD.err||'')+'</div>'+(AD.note?'<div class="note">'+esc(AD.note)+'</div>':'')+'<button class="btn" id="adGo" type="button">'+esc(tr('login'))+'</button><button class="btn ghost" id="adForgot" type="button">'+esc(tr('forgotPin'))+'</button><button class="btn ghost" id="adBack" type="button">'+esc(tr('back'))+'</button>';$('vAdmin').innerHTML=h;return;}
   if(AD.sel){adminDetailDraw(h);return;}
+  if(AD.audit){auditDraw(h);return;}
   if(AD.dash){dashDraw(h);return;}
   h+='<div class="row2"><input id="adQ" placeholder="'+esc(tr('search'))+'" value="'+esc(AD.q)+'"><select id="adSt"><option value="">'+esc(tr('all'))+'</option>'+Object.keys(ST).map(function(s){return '<option value="'+esc(s)+'"'+(AD.st===s?' selected':'')+'>'+esc(tr(ST[s][0]))+' ('+(AD.counts[s]||0)+')</option>';}).join('')+'</select></div>';
   h+='<div class="err">'+esc(AD.err||'')+'</div>'+(AD.note?'<div class="note">'+esc(AD.note)+'</div>':'');
   (AD.list||[]).forEach(function(s){h+='<div class="adrow"><input type="checkbox" data-adsel="'+esc(s.ref)+'"'+(AD.chk[s.ref]?' checked':'')+' aria-label="'+esc(s.ref)+'"><button class="pas" type="button" data-adopen="'+esc(s.ref)+'"><span><b>'+esc(s.ref)+'</b><small>'+esc(s.company+' · '+s.vehicle+' · '+s.carrier)+'<br>'+esc(s.createdAt)+'</small></span>'+chip(s.status)+'</button></div>';});
   var nsel=Object.keys(AD.chk).filter(function(k){return AD.chk[k];}).length;
   if(nsel)h+='<button class="btn danger" id="adDelSel" type="button">'+esc(tr('adDeleteSel').replace('{n}',nsel))+'</button>';
-  h+='<button class="btn" id="adDash" type="button">'+esc(tr('dash'))+'</button><button class="btn ghost" id="adCsv" type="button">'+esc(tr('csv'))+'</button><button class="btn ghost" id="adOut" type="button">'+esc(tr('logout'))+'</button><button class="btn ghost" id="adBack" type="button">'+esc(tr('back'))+'</button>';
+  h+='<button class="btn" id="adDash" type="button">'+esc(tr('dash'))+'</button><button class="btn" id="adAudit" type="button">'+esc(tr('audit'))+'</button><button class="btn ghost" id="adCsv" type="button">'+esc(tr('csv'))+'</button><button class="btn ghost" id="adOut" type="button">'+esc(tr('logout'))+'</button><button class="btn ghost" id="adBack" type="button">'+esc(tr('back'))+'</button>';
   $('vAdmin').innerHTML=h;
 }
 
@@ -752,6 +753,25 @@ function dashOpen(){
     else{AD.dash.rows=r.rows;AD.dash.today=r.today;}
     adminDraw();
   },function(){if(AD.dash){AD.dash.err=tr('err_net');AD.dash.rows=[];adminDraw();}});
+}
+function auditOpen(){
+  AD.audit={rows:null,counts:{},err:''};AD.sel=null;adminDraw();
+  api({action:'a_audit',pin:AD.pin,days:30},60000).then(function(r){
+    if(!AD.audit)return;
+    if(!r||!r.ok){AD.audit.err=(r&&(r.err==='action'||r.err==='unknown'))?tr('dbOldBack'):(r?errText(r.err):tr('err_net'));AD.audit.rows=[];}
+    else{AD.audit.rows=r.list;AD.audit.counts=r.counts;}
+    adminDraw();
+  },function(){if(AD.audit){AD.audit.err=tr('err_net');AD.audit.rows=[];adminDraw();}});
+}
+function auditDraw(h){
+  var A=AD.audit;h+='<h2>'+esc(tr('audit'))+'</h2><p class="note">'+esc(tr('auditNote'))+'</p>';
+  if(A.rows===null){$('vAdmin').innerHTML=h+'<span class="sp"></span><button class="btn ghost" id="auAuBack" type="button">'+esc(tr('back'))+'</button>';return;}
+  if(A.err)h+='<div class="err">'+esc(A.err)+'</div>';
+  var c=A.counts||{};h+='<div class="card"><b>'+esc(tr('auOpen'))+': '+(c.Open||0)+' · '+esc(tr('auLate'))+': '+(c.Overdue||0)+' · '+esc(tr('auDone'))+': '+(c.Done||0)+' · '+esc(tr('auInc'))+': '+(c.Inconsistency||0)+'</b></div>';
+  A.rows.forEach(function(o){var bad=/inconsistency/i.test(o.status),late=o.status==='Overdue';
+    h+='<div class="card" style="border-left:6px solid '+(bad?'#c0392b':late?'#e67e22':o.status==='Open'?'#ffc600':'#44a276')+'"><b>'+esc(o.ref)+'</b> · '+esc(o.company||'')+' · '+esc(o.vehicle||'')+'<br><small>'+esc(o.day)+' · '+esc(o.why)+' · '+esc(o.score)+(o.flags?' ('+esc(o.flags)+')':'')+' · '+esc(o.status)+'<br>'+esc(tr('auBy'))+': '+esc(o.auditor||'-')+(o.role?' ('+esc(o.role)+')':'')+' · '+esc(tr('auRel'))+': '+esc(o.releasedBy||'-')+(o.note?'<br>'+esc(o.note):'')+'</small></div>';});
+  if(!A.rows.length&&!A.err)h+='<p class="note">'+esc(tr('auNone'))+'</p>';
+  $('vAdmin').innerHTML=h+'<button class="btn ghost" id="auAuBack" type="button">'+esc(tr('back'))+'</button>';
 }
 function dBar(parts,total){var h='<div class="dbbar">';parts.forEach(function(p){if(p[0]>0)h+='<i style="width:'+(p[0]/total*100).toFixed(1)+'%;background:'+p[1]+'" title="'+esc(p[2])+': '+p[0]+'"></i>';});return h+'</div>';}
 function dashDraw(h){
@@ -834,6 +854,8 @@ $('vAdmin').addEventListener('click',function(e){
   var t=e.target.closest('button');if(!t)return;
   if(t.id==='adBack')homeOpen();
   else if(t.id==='adDash'){dashOpen();return;}
+  else if(t.id==='adAudit'){auditOpen();return;}
+  else if(t.id==='auAuBack'){AD.audit=null;adminLoad();return;}
   else if(t.id==='dbBack'){AD.dash=null;adminLoad();return;}
   else if(t.getAttribute('data-dbp')){AD.dash.per=+t.getAttribute('data-dbp');adminDraw();return;}
   else if(t.id==='adForgot'){AD.err='';AD.note='';t.disabled=true;api({action:'a_forgot'}).then(function(r){AD.note='';if(r&&r.ok)AD.note=tr('rstSent').replace('{m}',r.masked||'');else if(r&&r.err==='pin')AD.err=tr('rstOld');else AD.err=r?errText(r.err):tr('err_net');adminDraw();},function(){AD.err=tr('err_net');adminDraw();});return;}
